@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Noggin.NetCoreAuth", "Noggin.NetCoreAuth\Noggin.NetCoreAuth.csproj", "{1B96BE9B-8AA5-4E2F-8F24-D32DFAFDDE67}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Noggin.SampleSite", "Noggin.SampleSite\Noggin.SampleSite.csproj", "{C67E21A7-8007-4E22-A12B-DCB0DE66028B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1B96BE9B-8AA5-4E2F-8F24-D32DFAFDDE67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B96BE9B-8AA5-4E2F-8F24-D32DFAFDDE67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B96BE9B-8AA5-4E2F-8F24-D32DFAFDDE67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B96BE9B-8AA5-4E2F-8F24-D32DFAFDDE67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C67E21A7-8007-4E22-A12B-DCB0DE66028B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C67E21A7-8007-4E22-A12B-DCB0DE66028B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C67E21A7-8007-4E22-A12B-DCB0DE66028B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C67E21A7-8007-4E22-A12B-DCB0DE66028B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

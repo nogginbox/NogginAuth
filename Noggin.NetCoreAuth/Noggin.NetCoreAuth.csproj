@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- summary is not migrated from project.json, but you can use the <Description> property for that if needed. -->
+    <PackageTags>machine learning;framework</PackageTags>
+    <PackageReleaseNotes>Version 0.9.12-beta</PackageReleaseNotes>
+    <PackageIconUrl>http://numl.net/images/ico.png</PackageIconUrl>
+    <PackageProjectUrl>http://numl.net</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/sethjuarez/numl/master/LICENSE.md</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://raw.githubusercontent.com/sethjuarez/numl</RepositoryUrl>
+    <!-- owners is not supported in MSBuild -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Config\ProviderConfig.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="1.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="1.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="1.1.2" />
+    <PackageReference Include="RestSharp.NetCore" Version="105.2.3" />
+    <PackageReference Include="System.ValueTuple" Version="4.3.1" />
+  </ItemGroup>
+
+  <!-- https://docs.microsoft.com/en-gb/visualstudio/msbuild/msbuild-targets -->
+  <!-- https://docs.microsoft.com/en-us/dotnet/core/tools/project-json-to-csproj -->
+  <Target Name="AfterBuild">
+    <Message Text="Running after build" />
+    <!--
+    <Exec Command="dotnet pack - -no-build - -configuration %compile:Configuration%" />-->
+
+  </Target>
+  
+  
+  
+</Project>
