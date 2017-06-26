@@ -1,12 +1,21 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Noggin.NetCoreAuth.Exceptions;
+using Noggin.NetCoreAuth.Providers;
 
 namespace Noggin.NetCoreAuth.Config
 {
     public static class ConfigExtensions
     {
+        public static IServiceCollection AddNogginNetCoreAuth(this IServiceCollection services, IConfigurationRoot configuration)
+        {
+            services.Configure<AuthConfigSection>(configuration.GetSection("NogginNetAuth"));
+            services.AddSingleton<IProviderFactory, ProviderFactory>();
+            return services;
+        }
+
         public static IRouteBuilder MapNogginNetAuthRoutes(this IRouteBuilder routes, IConfigurationSection configSection)
         {
             var config = configSection.Get<AuthConfigSection>();

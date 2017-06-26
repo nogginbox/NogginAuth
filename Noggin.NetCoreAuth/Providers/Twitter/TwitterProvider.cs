@@ -13,23 +13,20 @@ using Noggin.NetCoreAuth.Config;
 
 namespace Noggin.NetCoreAuth.Providers.Twitter
 {
-    internal class TwitterProvider
+    internal class TwitterProvider : Provider
     {
         private readonly string _baseUrl;
         private readonly IRestClient _restClient;
 
         private readonly ApiConfig _apiDetails;
 
-
         private const string DeniedKey = "denied";
         private const string OAuthTokenKey = "oauth_token";
         private const string OAuthTokenSecretKey = "oauth_token_secret";
         private const string OAuthVerifierKey = "oauth_verifier";
 
-        internal TwitterProvider(ProviderConfig config)
+        internal TwitterProvider(ProviderConfig config) : base(config)
         {
-            config.CheckIsValid();
-
             _baseUrl = "https://api.twitter.com";
 
             // Todo: If not all methods need client, perhaps don't always init it
@@ -76,7 +73,6 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
                 AccessToken = oAuthAccessToken
             };
         }
-
 
         private static (string oAuthToken, string oAuthVerifier) RetrieveOAuthVerifier(IQueryCollection queryStringParameters)
         {

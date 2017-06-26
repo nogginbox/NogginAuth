@@ -25,6 +25,7 @@ namespace Noggin.SampleSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<AuthConfigSection>(Configuration.GetSection("NogginNetAuth"));
+            services.AddNogginNetCoreAuth(Configuration);
             
             // Add framework services.
             services.AddMvc();
