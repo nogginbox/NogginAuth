@@ -35,9 +35,11 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
             _apiDetails = config.Api;
         }
 
-        internal async Task<(string url, string secret)> GenerateStartRequestUrl()
+        internal override async Task<(string url, string secret)> GenerateStartRequestUrl()
         {
-            var uri = "http://localhost:49860/NogginNetCoreAuth/ExternalLogin";
+            // Todo: Work out URL bettererer
+            var uri = "http://localhost:52699/auth/twitter/callback";
+
             _restClient.Authenticator = OAuth1Authenticator.ForRequestToken(_apiDetails.PublicKey, _apiDetails.PrivateKey, uri);
             var restRequest = new RestRequest("oauth/request_token", Method.POST);
 
@@ -52,7 +54,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
 
         }
 
-        internal async Task<UserInformation> AuthenticateUser(IQueryCollection queryStringParameters, string state, Uri callbackUri)
+        internal override async Task<UserInformation> AuthenticateUser(IQueryCollection queryStringParameters, string state, Uri callbackUri)
         {
             // Retrieve the OAuth Verifier.
             var oAuthVerifier = RetrieveOAuthVerifier(queryStringParameters);

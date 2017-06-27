@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 using Noggin.NetCoreAuth.Providers;
 
 
-
-
 namespace Noggin.NetCoreAuth.Mvc.TagHelpers
 {
     public class AuthLinkTagHelper : TagHelper

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Noggin.NetCoreAuth.Config;
+using System;
 
 namespace Noggin.SampleSite
 {
@@ -26,7 +27,17 @@ namespace Noggin.SampleSite
         {
             services.Configure<AuthConfigSection>(Configuration.GetSection("NogginNetAuth"));
             services.AddNogginNetCoreAuth(Configuration);
-            
+
+            services
+                .AddMemoryCache()
+                .AddSession(options =>
+                {
+                    // Set a short timeout for easy testing.
+                    options.IdleTimeout = TimeSpan.FromMinutes(5);
+                    options.CookieHttpOnly = true;
+                    options.CookieName = ".Font.Wtf.Session";
+                });
+
             // Add framework services.
             services.AddMvc();
         }
@@ -48,7 +59,7 @@ namespace Noggin.SampleSite
             }
 
             app.UseStaticFiles();
-
+            app.UseSession();
 
 
             app.UseMvc(routes =>
