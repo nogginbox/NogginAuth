@@ -25,7 +25,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
         private const string OAuthTokenSecretKey = "oauth_token_secret";
         private const string OAuthVerifierKey = "oauth_verifier";
 
-        internal TwitterProvider(ProviderConfig config) : base(config)
+        internal TwitterProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
         {
             _baseUrl = "https://api.twitter.com";
 
@@ -35,10 +35,11 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
             _apiDetails = config.Api;
         }
 
-        internal override async Task<(string url, string secret)> GenerateStartRequestUrl()
+        internal override async Task<(string url, string secret)> GenerateStartRequestUrl(string host, bool isHttps)
         {
-            // Todo: Work out URL bettererer
-            var uri = "http://localhost:52699/auth/twitter/callback";
+            // Work out callback URL
+            var protocal = isHttps ? "https" : "http";
+            var uri = $"{protocal}://{host}/{CallbackTemplate}";
 
             _restClient.Authenticator = OAuth1Authenticator.ForRequestToken(_apiDetails.PublicKey, _apiDetails.PrivateKey, uri);
             var restRequest = new RestRequest("oauth/request_token", Method.POST);

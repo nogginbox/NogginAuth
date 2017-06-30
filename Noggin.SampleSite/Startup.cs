@@ -25,7 +25,7 @@ namespace Noggin.SampleSite
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<AuthConfigSection>(Configuration.GetSection("NogginNetAuth"));
+            //services.Configure<AuthConfigSection>(Configuration.GetSection("NogginNetAuth"));
             services.AddNogginNetCoreAuth(Configuration);
 
             services
@@ -61,14 +61,13 @@ namespace Noggin.SampleSite
             app.UseStaticFiles();
             app.UseSession();
 
-
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
 
-                routes.MapNogginNetAuthRoutes(Configuration.GetSection("NogginNetAuth"));
+                routes.MapNogginNetAuthRoutes(app.ApplicationServices);
             });
         }
     }

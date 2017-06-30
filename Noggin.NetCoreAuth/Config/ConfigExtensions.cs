@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Noggin.NetCoreAuth.Exceptions;
 using Noggin.NetCoreAuth.Providers;
+using System;
 
 namespace Noggin.NetCoreAuth.Config
 {
@@ -16,45 +17,29 @@ namespace Noggin.NetCoreAuth.Config
             return services;
         }
 
-        public static IRouteBuilder MapNogginNetAuthRoutes(this IRouteBuilder routes, IConfigurationSection configSection)
+        public static IRouteBuilder MapNogginNetAuthRoutes(this IRouteBuilder routes, IServiceProvider services)
         {
-            var config = configSection.Get<AuthConfigSection>();
-            var defaultRedirectTemplate = SetDefaultTemplate(config.DefaultRedirectTemplate, "auth/redirect/{provider}");
-            var defaultCallbackTemplate = SetDefaultTemplate(config.DefaultCallbackTemplate, "auth/callbackback/{provider}");
+            var providerFactory = services.GetRequiredService<IProviderFactory>();
 
-            foreach(var provider in config.Providers)
+            
+
+            foreach(var provider in providerFactory.Providers)
             {
                 // Todo: Check provider is supported
                 // Can I set a type or class as a default
                 routes.MapRoute(
                     name: $"NogginAuth_Redirect_{provider.Name}",
-                    template: SetTemplate(provider.Name, provider.RedirectTemplate, defaultRedirectTemplate),
+                    template: provider.RedirectTemplate,
                     defaults: new { controller = "NogginNetCoreAuth", action = "RedirectToProvider", provider = provider.Name });
 
                 routes.MapRoute(
                     name: $"NogginAuth_Callback_{provider.Name}",
-                    template: SetTemplate(provider.Name, provider.CallbackTemplate, defaultCallbackTemplate),
-                    defaults: new { controller = "NogginNetCoreAuth", action = "RedirectToProvider", provider = provider.Name });
+                    template: provider.CallbackTemplate,
+                    defaults: new { controller = "NogginNetCoreAuth", action = "ProviderCallback", provider = provider.Name });
             }
             
 
             return routes;
-        }
-
-        private static string SetDefaultTemplate(string template1, string template2)
-        {
-            if (string.IsNullOrEmpty(template1)) return template2;
-
-            if (template1.Contains("{provider}")) return template1;
-
-            throw new NogginNetCoreAuthException("Default Url Templates must contain '{provider}' for the provider name.");
-        }
-
-        private static string SetTemplate(string providerName, string template1, string templateTemplate)
-        {
-            if (!string.IsNullOrEmpty(template1)) return template1;
-
-            return template1.Replace("{provider}", providerName);
         }
     }
 }

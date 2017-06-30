@@ -22,9 +22,7 @@ namespace Noggin.NetCoreAuth.Mvc
         public async Task<IActionResult> RedirectToProvider(string provider)
         {
             var authProvider = _providerFactory.Get(provider);
-
-            // Todo: Don't send secret bit
-            var redirectSettings = await authProvider.GenerateStartRequestUrl();
+            var redirectSettings = await authProvider.GenerateStartRequestUrl(Request.Host.Value, Request.IsHttps);
 
             // Store stuff so that we know we initiated this
             // Todo: Probably can't rely on session if we want this to be flexible
