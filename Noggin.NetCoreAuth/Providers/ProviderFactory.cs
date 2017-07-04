@@ -66,10 +66,22 @@ namespace Noggin.NetCoreAuth.Providers
 
             throw new NogginNetCoreAuthException("Default Url Templates must contain '{provider}' for the provider name.");
         }
+
+        public ILoginHandler LoginHandler
+        {
+            get
+            {
+                if (_loginHandler == null) throw new NogginNetCoreConfigException("You must register a Login Handler");
+                return _loginHandler;
+            }
+            set { _loginHandler = value; }
+        }
+        private ILoginHandler _loginHandler;
     }
 
     public interface IProviderFactory
     {
+        ILoginHandler LoginHandler { get; set; }
         Provider Get(string name);
         IList<Provider> Providers { get; }
     }
