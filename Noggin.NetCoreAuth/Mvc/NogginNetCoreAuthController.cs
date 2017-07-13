@@ -38,8 +38,12 @@ namespace Noggin.NetCoreAuth.Mvc
             var secret = HttpContext.Session.GetString("secret");
             var user = await authProvider.AuthenticateUser(Request.Query, secret, null);
 
-            // todo: Check login was successful
-            return _providerFactory.LoginHandler.SuccessfulLoginFrom(provider, user);
+            // todo: Check login was successful (** IMPORTANT **)
+            var loginSuccess = DateTime.Now.Hour > 4;
+
+            return (loginSuccess)
+                ? _providerFactory.LoginHandler.SuccessfulLoginFrom(provider, user)
+                : _providerFactory.LoginHandler.FailedLoginFrom(provider, user);
         }
     }
 }

@@ -15,8 +15,10 @@ namespace Noggin.NetCoreAuth.Providers
         private readonly string _defaultRedirectTemplate;
         private readonly string _defaultCallbackTemplate;
 
-        public ProviderFactory(IOptions<AuthConfigSection> config)
+        public ProviderFactory(IOptions<AuthConfigSection> config, ILoginHandler loginHandler)
         {
+            LoginHandler = loginHandler ?? throw new NogginNetCoreConfigException("A Login Handler (implementing ILoginHandler) has not been registered.");
+
             _providerConfigs = config.Value.Providers;
             _providers = new Dictionary<string, Provider>();
 
@@ -56,6 +58,11 @@ namespace Noggin.NetCoreAuth.Providers
             return provider;
         }
 
+        /// <summary>
+        /// A login handler provided by consumer of library to handle logins
+        /// </summary>
+        public ILoginHandler LoginHandler { get; }
+
         public IList<Provider> Providers { get; }
 
         private static string CreateDefaultTemplate(string template1, string template2)
@@ -67,22 +74,13 @@ namespace Noggin.NetCoreAuth.Providers
             throw new NogginNetCoreAuthException("Default Url Templates must contain '{provider}' for the provider name.");
         }
 
-        public ILoginHandler LoginHandler
-        {
-            get
-            {
-                if (_loginHandler == null) throw new NogginNetCoreConfigException("You must register a Login Handler");
-                return _loginHandler;
-            }
-            set { _loginHandler = value; }
-        }
-        private ILoginHandler _loginHandler;
+        
     }
 
     public interface IProviderFactory
     {
-        ILoginHandler LoginHandler { get; set; }
         Provider Get(string name);
+        ILoginHandler LoginHandler { get; }
         IList<Provider> Providers { get; }
     }
 }
