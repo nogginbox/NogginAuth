@@ -5,7 +5,7 @@ namespace Noggin.NetCoreAuth.Providers
 {
     public interface ILoginHandler
     {
-        RedirectResult SuccessfulLoginFrom(string provider, UserInformation user);
-        RedirectResult FailedLoginFrom(string provider, UserInformation user);
+        ActionResult SuccessfulLoginFrom(string provider, UserInformation user);
+        ActionResult FailedLoginFrom(string provider, UserInformation user);
     }
 }

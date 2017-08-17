@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Noggin.NetCoreAuth.Config;
+using Noggin.SampleSite.Data;
 using System;
 
 namespace Noggin.SampleSite
@@ -26,6 +27,7 @@ namespace Noggin.SampleSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddNogginNetCoreAuth<SampleLoginHandler>(Configuration);
+            services.AddScoped<ISimpleDbContext, SampleSimpleDbContext>();
 
             services
                 .AddMemoryCache()

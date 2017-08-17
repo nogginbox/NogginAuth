@@ -159,24 +159,18 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
             catch (Exception exception)
             {
                 var errorMessage = "Failed to retrieve VerifyCredentials json data from the Twitter Api. Error Messages: " + exception.Message;
-
                 throw new AuthenticationException(errorMessage, exception);
             }
 
-            if (response == null ||
-                response.StatusCode != HttpStatusCode.OK ||
-                response.Data == null)
+            if (response?.StatusCode != HttpStatusCode.OK)
             {
-                var errorMessage = string.Format(
-                    "Failed to obtain some VerifyCredentials json data from the Facebook api OR the the response was not an HTTP Status 200 OK. Response Status: {0}. Response Description: {1}. Error Message: {2}.",
-                    response == null ? "-- null response --" : response.StatusCode.ToString(),
-                    response == null ? string.Empty : response.StatusDescription,
-                    response == null
-                        ? string.Empty
-                        : response.ErrorException == null
-                              ? "--no error exception--"
-                              : response.ErrorException.Message);
+                var errorMessage = $"The Twitter API responded was not an HTTP Status {response?.StatusCode} : {response?.StatusDescription}. Error Message: {response?.ErrorException.Message}.";
+                throw new AuthenticationException(errorMessage);
+            }
 
+            if (response.Data == null)
+            {
+                var errorMessage = $"Could not create VerifyCredentials result from Twitter response";
                 throw new AuthenticationException(errorMessage);
             }
 
