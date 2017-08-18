@@ -7,6 +7,8 @@ using Microsoft.Extensions.Options;
 using System.Linq;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Providers;
+using Noggin.NetCoreAuth.Model;
+using System.Security.Authentication;
 
 namespace Noggin.NetCoreAuth.Mvc
 {
@@ -35,11 +37,20 @@ namespace Noggin.NetCoreAuth.Mvc
         {
             var authProvider = _providerFactory.Get(provider);
 
-            var secret = HttpContext.Session.GetString("secret");
-            var user = await authProvider.AuthenticateUser(Request.Query, secret, null);
 
-            // todo: Check login was successful (** IMPORTANT **)
-            var loginSuccess = DateTime.Now.Hour > 4;
+            UserInformation user;
+            try
+            {
+                var secret = HttpContext.Session.GetString("secret");
+                user = await authProvider.AuthenticateUser(Request.Query, secret, null);
+            }
+            catch(AuthenticationException e)
+            {
+                return _providerFactory.LoginHandler.FailedLoginFrom(provider, null);
+            }
+            
+            // todo: Check we have everything we need in user information (** IMPORTANT **)
+            var loginSuccess = DateTime.Now.Hour > 0;
 
             return (loginSuccess)
                 ? _providerFactory.LoginHandler.SuccessfulLoginFrom(provider, user)

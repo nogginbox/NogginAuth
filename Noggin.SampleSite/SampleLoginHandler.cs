@@ -18,8 +18,7 @@ namespace Noggin.SampleSite
 
         public ActionResult FailedLoginFrom(string provider, UserInformation userInfo)
         {
-            // Ignore for now
-            // You could log it
+            // Todo: Set Tempdata message and display message to user
             return new RedirectToActionResult("About", "Home", new { type = "failed" });
         }
 
