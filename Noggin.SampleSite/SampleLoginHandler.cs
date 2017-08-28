@@ -24,13 +24,13 @@ namespace Noggin.SampleSite
 
         public ActionResult SuccessfulLoginFrom(string provider, UserInformation userInfo)
         {
-            var user = _dbContext.Users.FirstOrDefault(u => u.AuthAccounts.Any(a => a.Provider == provider && a.UserName == userInfo.UserName));
+            var user = _dbContext.Users.FirstOrDefault(u => u.AuthAccounts.Any(a => a.Provider == provider && a.Id == userInfo.Id));
             
             // Automatically create users we've not heard of before using details from their social login
             if (user == null)
             {
                 user = new User { Name = userInfo.Name };
-                user.AuthAccounts.Add(new UserAuthAccount { Provider = provider, UserName = userInfo.UserName });
+                user.AuthAccounts.Add(new UserAuthAccount { Id = userInfo.Id, Provider = provider, UserName = userInfo.UserName });
                 _dbContext.Users.Add(user);
                 _dbContext.SaveChanges();
             }

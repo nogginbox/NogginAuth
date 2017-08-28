@@ -25,11 +25,10 @@ namespace Noggin.SampleSite.Migrations
                 name: "UserAuthAccount",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Provider = table.Column<string>(nullable: true),
+                    Id = table.Column<string>(maxLength: 64, nullable: false),
+                    Provider = table.Column<string>(maxLength: 32, nullable: true),
                     UserId = table.Column<int>(nullable: true),
-                    UserName = table.Column<string>(nullable: true)
+                    UserName = table.Column<string>(maxLength: 32, nullable: true)
                 },
                 constraints: table =>
                 {

@@ -29,14 +29,17 @@ namespace Noggin.SampleSite.Migrations
 
             modelBuilder.Entity("Noggin.SampleSite.Data.UserAuthAccount", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(64);
 
-                    b.Property<string>("Provider");
+                    b.Property<string>("Provider")
+                        .HasMaxLength(32);
 
                     b.Property<int?>("UserId");
 
-                    b.Property<string>("UserName");
+                    b.Property<string>("UserName")
+                        .HasMaxLength(32);
 
                     b.HasKey("Id");
 
