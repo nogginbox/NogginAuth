@@ -2,22 +2,21 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Noggin.NetCoreAuth.Providers.Twitter;
-using Microsoft.Extensions.Options;
-using System.Linq;
-using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Providers;
 using Noggin.NetCoreAuth.Model;
 using System.Security.Authentication;
+using Noggin.NetCoreAuth.Exceptions;
 
 namespace Noggin.NetCoreAuth.Mvc
 {
     public class NogginNetCoreAuthController : Controller
     {
+        private readonly ILoginHandler _loginHandler;
         private readonly IProviderFactory _providerFactory;
 
-        public NogginNetCoreAuthController(IProviderFactory providerFactory)
+        public NogginNetCoreAuthController(ILoginHandler loginHandler, IProviderFactory providerFactory)
         {
+            _loginHandler = loginHandler ?? throw new NogginNetCoreConfigException("A Login Handler (implementing ILoginHandler) has not been registered."); ;
             _providerFactory = providerFactory;
         }
 
@@ -46,15 +45,15 @@ namespace Noggin.NetCoreAuth.Mvc
             }
             catch(AuthenticationException e)
             {
-                return _providerFactory.LoginHandler.FailedLoginFrom(provider, null);
+                return _loginHandler.FailedLoginFrom(provider, null, HttpContext);
             }
-            
-            // todo: Check we have everything we need in user information (** IMPORTANT **)
-            var loginSuccess = DateTime.Now.Hour > 0;
+
+            // todo: Do we need to check for user info, perhaps each provider should deal with this (** IMPORTANT **)
+            var loginSuccess = !string.IsNullOrEmpty(user.Id); 
 
             return (loginSuccess)
-                ? _providerFactory.LoginHandler.SuccessfulLoginFrom(provider, user)
-                : _providerFactory.LoginHandler.FailedLoginFrom(provider, user);
+                ? _loginHandler.SuccessfulLoginFrom(provider, user, HttpContext)
+                : _loginHandler.FailedLoginFrom(provider, user, HttpContext);
         }
     }
 }

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Noggin.SampleSite.Migrations
 {
@@ -12,9 +12,9 @@ namespace Noggin.SampleSite.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(nullable: true)
+                    Name = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -25,10 +25,10 @@ namespace Noggin.SampleSite.Migrations
                 name: "UserAuthAccount",
                 columns: table => new
                 {
-                    Id = table.Column<string>(maxLength: 64, nullable: false),
-                    Provider = table.Column<string>(maxLength: 32, nullable: true),
-                    UserId = table.Column<int>(nullable: true),
-                    UserName = table.Column<string>(maxLength: 32, nullable: true)
+                    Id = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
+                    Provider = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: true),
+                    UserName = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true)
                 },
                 constraints: table =>
                 {

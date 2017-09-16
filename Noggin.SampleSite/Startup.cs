@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -35,12 +37,26 @@ namespace Noggin.SampleSite
                 {
                     // Set a short timeout for easy testing.
                     options.IdleTimeout = TimeSpan.FromMinutes(5);
-                    options.CookieHttpOnly = true;
-                    options.CookieName = ".Font.Wtf.Session";
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.Name = ".Font.Wtf.Session";
                 });
 
             // Add framework services.
             services.AddMvc();
+            services.AddDbContext<SampleSimpleDbContext>();
+
+            //services.AddAuthorization();
+            services
+                .AddAuthentication(options =>
+                {
+                    options.DefaultScheme = "NogginSampleCookieScheme";
+                    options.DefaultChallengeScheme = "NogginSampleCookieScheme";
+                    options.DefaultAuthenticateScheme = "NogginSampleCookieScheme";
+                })
+                .AddCookie("NogginSampleCookieScheme", options => {
+                    options.AccessDeniedPath = "/";
+                    options.LoginPath = "/";
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -61,6 +77,9 @@ namespace Noggin.SampleSite
 
             app.UseStaticFiles();
             app.UseSession();
+
+            app.UseAuthentication();
+
 
             app.UseMvc(routes =>
             {
