@@ -26,7 +26,7 @@ namespace Noggin.SampleSite
             return new RedirectToActionResult("About", "Home", new { type = "failed" });
         }
 
-        public ActionResult SuccessfulLoginFrom(string provider, UserInformation userInfo, HttpContext context)
+        public ActionResult SuccessfulLoginFrom(string provider, UserInformation userInfo, HttpContext httpContext)
         {
             var user = _dbContext.Users.FirstOrDefault(u => u.AuthAccounts.Any(a => a.Provider == provider && a.Id == userInfo.Id));
             
@@ -50,7 +50,7 @@ namespace Noggin.SampleSite
             var policy = new OperationAuthorizationRequirement { Name = "All" };
 
             // https://stackoverflow.com/questions/46057109/why-doesnt-my-cookie-authentication-work-in-asp-net-core
-            context.SignInAsync("NogginSampleCookieScheme", principal);
+            httpContext.SignInAsync("NogginSampleCookieScheme", principal);
 
             return new RedirectToActionResult("Index", "Home", null);
         }

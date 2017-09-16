@@ -31,7 +31,15 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li><auth-link provider="twitter">Login with twitter</auth-link></li>
+                    @if (!User.Identity.IsAuthenticated)
+                    {
+                        <li><auth-link provider="twitter">Login with twitter</auth-link></li>
+                    }
+                    else
+                    {
+                        <li><a asp-controller="UserAdmin" asp-action="Index">User admin</a></li>
+                        <li><a asp-controller="Home" asp-action="Logout">Log out</a></li>
+                    }
                 </ul>
             </div>
         </div>

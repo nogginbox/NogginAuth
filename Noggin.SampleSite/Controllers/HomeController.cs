@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Noggin.SampleSite.Controllers
 {
@@ -13,18 +14,10 @@ namespace Noggin.SampleSite.Controllers
             return View();
         }
 
-        public IActionResult About()
+        public IActionResult Logout()
         {
-            ViewData["Message"] = "Your application description page.";
-
-            return View();
-        }
-
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
+            HttpContext.SignOutAsync("NogginSampleCookieScheme");
+            return RedirectToAction("Index");
         }
 
         public IActionResult Error()
