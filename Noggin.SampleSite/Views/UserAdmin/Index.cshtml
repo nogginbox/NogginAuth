@@ -1,0 +1,16 @@
+﻿@model Noggin.SampleSite.ViewModels.UserAdmin.IndexViewModel
+
+<h1>Registered Users</h1>
+<table class="data">
+    <tr>
+        <th>Username</th>
+        <th>Linked accounts</th>
+    </tr>
+    @foreach(var user in Model.Users)
+    {
+        <tr>
+            <td>@user.Name</td>
+            <td>@user.AuthAccountNames (@user.NumberOfAuthAccount)</td>
+        </tr>
+    }
+</table>

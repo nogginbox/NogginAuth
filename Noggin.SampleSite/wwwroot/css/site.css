@@ -35,3 +35,18 @@ textarea {
         display: none;
     }
 }
+
+table.data {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data td, .data th {
+    border: 1px solid #000;
+    padding: 5px;
+}
+
+.data th {
+    color: #eee;
+    background-color: #000;
+}

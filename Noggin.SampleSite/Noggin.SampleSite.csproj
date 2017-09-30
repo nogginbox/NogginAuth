@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Migrations\" />
+    <Folder Include="Views\UserAdmin\" />
   </ItemGroup>
 
 </Project>

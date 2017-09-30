@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Noggin.NetCoreAuth", "Noggin.NetCoreAuth\Noggin.NetCoreAuth.csproj", "{1B96BE9B-8AA5-4E2F-8F24-D32DFAFDDE67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Noggin.SampleSite", "Noggin.SampleSite\Noggin.SampleSite.csproj", "{C67E21A7-8007-4E22-A12B-DCB0DE66028B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Noggin.SampleSite", "Noggin.SampleSite\Noggin.SampleSite.csproj", "{C67E21A7-8007-4E22-A12B-DCB0DE66028B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +24,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {553E6B42-B273-4E33-B542-6C03821F2D6E}
 	EndGlobalSection
 EndGlobal
