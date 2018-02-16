@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using Microsoft.Extensions.Options;
+using Noggin.NetCoreAuth.Providers.Facebook;
 
 namespace Noggin.NetCoreAuth.Providers
 {
@@ -36,7 +37,9 @@ namespace Noggin.NetCoreAuth.Providers
         {
             switch(name.ToLower())
             {
-                case "twitter":
+				case "facebook":
+					return Get(name, (x) => new FacebookProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate));
+				case "twitter":
                     return Get(name, (x) => new TwitterProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate));
                 default:
                     throw new NogginNetCoreConfigException($"No provider called {name} found");

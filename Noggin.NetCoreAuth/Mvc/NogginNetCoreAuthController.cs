@@ -23,7 +23,7 @@ namespace Noggin.NetCoreAuth.Mvc
         public async Task<IActionResult> RedirectToProvider(string provider)
         {
             var authProvider = _providerFactory.Get(provider);
-            var redirectSettings = await authProvider.GenerateStartRequestUrl(Request.Host.Value, Request.IsHttps);
+            var redirectSettings = await authProvider.GenerateStartRequestUrl(Request);
 
             // Store stuff so that we know we initiated this
             // Todo: Probably can't rely on session if we want this to be flexible
@@ -41,7 +41,7 @@ namespace Noggin.NetCoreAuth.Mvc
             try
             {
                 var secret = HttpContext.Session.GetString("secret");
-                user = await authProvider.AuthenticateUser(Request.Query, secret, null);
+                user = await authProvider.AuthenticateUser(Request, secret);
             }
             catch(AuthenticationException e)
             {

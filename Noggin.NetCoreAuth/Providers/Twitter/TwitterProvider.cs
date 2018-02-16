@@ -27,21 +27,19 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
 
         internal TwitterProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
         {
-            _baseUrl = "https://api.twitter.com";
+			_baseUrl = "https://api.twitter.com";
 
-            // Todo: If not all methods need client, perhaps don't always init it
-            _restClient = new RestClient(_baseUrl);
+			// Todo: If not all methods need client, perhaps don't always init it
+			_restClient = new RestClient(_baseUrl);
 
             _apiDetails = config.Api;
         }
 
-        internal override async Task<(string url, string secret)> GenerateStartRequestUrl(string host, bool isHttps)
+        internal override async Task<(string url, string secret)> GenerateStartRequestUrl(HttpRequest request)
         {
-            // Work out callback URL
-            var protocal = isHttps ? "https" : "http";
-            var uri = $"{protocal}://{host}/{CallbackTemplate}";
+			var callback = CreateCallbackUrl(request);
 
-            _restClient.Authenticator = OAuth1Authenticator.ForRequestToken(_apiDetails.PublicKey, _apiDetails.PrivateKey, uri);
+            _restClient.Authenticator = OAuth1Authenticator.ForRequestToken(_apiDetails.PublicKey, _apiDetails.PrivateKey, callback);
             var restRequest = new RestRequest("oauth/request_token", Method.POST);
 
             var response = await _restClient.ExecuteAsync(restRequest);
@@ -55,10 +53,10 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
 
         }
 
-        internal override async Task<UserInformation> AuthenticateUser(IQueryCollection queryStringParameters, string state, Uri callbackUri)
+        internal override async Task<UserInformation> AuthenticateUser(HttpRequest request, string state)
         {
             // Retrieve the OAuth Verifier.
-            var oAuthVerifier = RetrieveOAuthVerifier(queryStringParameters);
+            var oAuthVerifier = RetrieveOAuthVerifier(request.Query);
 
             // Convert the Request Token to an Access Token, now that we have a verifier.
             var oAuthAccessToken = await RetrieveAccessToken(oAuthVerifier);

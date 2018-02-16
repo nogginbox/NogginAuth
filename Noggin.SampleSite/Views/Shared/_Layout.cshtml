@@ -33,7 +33,9 @@
                     <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
                     @if (!User.Identity.IsAuthenticated)
                     {
-                        <li><auth-link provider="twitter">Login with twitter</auth-link></li>
+                        <li>Login with:</li>
+                        <li><auth-link provider="twitter">Twitter</auth-link></li>
+                        <li><auth-link provider="facebook">Facebook</auth-link></li>
                     }
                     else
                     {
