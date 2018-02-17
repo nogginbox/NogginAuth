@@ -6,14 +6,20 @@
 
   <PropertyGroup>
     <!-- summary is not migrated from project.json, but you can use the <Description> property for that if needed. -->
-    <PackageTags>machine learning;framework</PackageTags>
-    <PackageReleaseNotes>Version 0.9.12-beta</PackageReleaseNotes>
+    <PackageTags>auth</PackageTags>
+    <PackageReleaseNotes>Almost ready for the bigtime</PackageReleaseNotes>
     <PackageIconUrl>http://numl.net/images/ico.png</PackageIconUrl>
-    <PackageProjectUrl>http://numl.net</PackageProjectUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/sethjuarez/numl/master/LICENSE.md</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/NogginBox/NogginAuth</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/NogginBox/NogginAuth/blob/master/LICENSE.md</PackageLicenseUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://raw.githubusercontent.com/sethjuarez/numl</RepositoryUrl>
+    <RepositoryUrl>https://github.com/NogginBox/NogginAuth</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.1.0</Version>
+    <Authors>Richard Garside</Authors>
+    <Company>Garsonix</Company>
+    <Product>NogginAuth Core</Product>
+    <Copyright>© 2018 Richard Garside</Copyright>
     <!-- owners is not supported in MSBuild -->
   </PropertyGroup>
 
