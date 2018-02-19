@@ -1,28 +1,23 @@
-﻿using System;
-using System.Net;
-using System.Security.Authentication;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebUtilities;
-using Noggin.NetCoreAuth.Model;
-using Noggin.NetCoreAuth.Providers.Twitter.Model;
-using RestSharp;
-using RestSharp.Authenticators;
-using RestSharp.Extensions.MonoHttp;
+﻿using Microsoft.AspNetCore.Http;
 using Noggin.NetCoreAuth.Config;
-using System.Linq;
 using Noggin.NetCoreAuth.Exceptions;
+using Noggin.NetCoreAuth.Model;
 using Noggin.NetCoreAuth.Providers.Facebook.Model;
+using RestSharp;
+using System;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Noggin.NetCoreAuth.Providers.Facebook
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <remarks>
-    /// Reference: https://developers.facebook.com/docs/facebook-login/login-flow-for-web-no-jssdk/
-    /// </remarks>
-    internal class FacebookProvider : Provider
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <remarks>
+	/// Reference: https://developers.facebook.com/docs/facebook-login/login-flow-for-web-no-jssdk/
+	/// </remarks>
+	internal class FacebookProvider : Provider
     {
         private readonly string _baseUrl;
         private readonly IRestClient _restClient;

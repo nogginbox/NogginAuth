@@ -8,8 +8,8 @@ using Noggin.NetCoreAuth.Model;
 using Noggin.NetCoreAuth.Providers.Twitter.Model;
 using RestSharp;
 using RestSharp.Authenticators;
-using RestSharp.Extensions.MonoHttp;
 using Noggin.NetCoreAuth.Config;
+using System.Web;
 
 namespace Noggin.NetCoreAuth.Providers.Twitter
 {
