@@ -15,13 +15,18 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/NogginBox/NogginAuth</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>Richard Garside</Authors>
     <Company>Garsonix</Company>
     <Product>NogginAuth Core</Product>
     <Copyright>© 2018 Richard Garside</Copyright>
     <!-- owners is not supported in MSBuild -->
   </PropertyGroup>
+
+
+  <ItemGroup>
+    <None Include="readme.txt" Pack="true" PackagePath="." />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="Config\ProviderConfig.cs" />
