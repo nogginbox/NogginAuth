@@ -6,7 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Noggin.NetCoreAuth.Model;
 using Noggin.NetCoreAuth.Providers;
 using Noggin.SampleSite.Data;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 
 namespace Noggin.SampleSite
 {
@@ -20,7 +23,23 @@ namespace Noggin.SampleSite
             _dbContext = dbContext;
         }
 
-        public ActionResult FailedLoginFrom(string provider, UserInformation userInfo, HttpContext context)
+		/// <summary>
+		/// Create a principal to login with containing claims with info about the user
+		/// </summary>
+		private ClaimsPrincipal CreatePrincipal(User user, string provider)
+		{
+			var claims = new List<Claim>
+			{
+				new Claim("UserId", user.Id.ToString()),
+				new Claim("UserName", user.Name),
+				new Claim("LoginProvider", provider)
+			};
+			var principal = new ClaimsPrincipal();
+			principal.AddIdentity(new ClaimsIdentity(claims, "NogginSampleCookieScheme"));
+			return principal;
+		}
+
+		public ActionResult FailedLoginFrom(string provider, UserInformation userInfo, HttpContext context)
         {
             // Todo: Set Tempdata message and display message to user
             return new RedirectToActionResult("About", "Home", new { type = "failed" });
@@ -39,14 +58,14 @@ namespace Noggin.SampleSite
                 _dbContext.SaveChanges();
             }
 
-            // Using Cookie Authentication without ASP.NET Core Identity
-            // https://docs.microsoft.com/en-us/aspnet/core/security/authorization/
-            // https://docs.microsoft.com/en-us/aspnet/core/security/authentication/cookie?tabs=aspnetcore2x
+			// Using Cookie Authentication without ASP.NET Core Identity
+			// https://docs.microsoft.com/en-us/aspnet/core/security/authorization/
+			// https://docs.microsoft.com/en-us/aspnet/core/security/authentication/cookie?tabs=aspnetcore2x
 
-            // Todo:
-            // * Is it okay to create an empty principal in this simple case
-            // * Is this simple policy okay, create as constant in class perhaps
-            var principal = new SampleUserPrincipal(user);
+			// Todo:
+			// * Is it okay to create an empty principal in this simple case
+			// * Is this simple policy okay, create as constant in class perhaps
+			var principal = CreatePrincipal(user, provider);
             var policy = new OperationAuthorizationRequirement { Name = "All" };
 
             // https://stackoverflow.com/questions/46057109/why-doesnt-my-cookie-authentication-work-in-asp-net-core
@@ -54,5 +73,5 @@ namespace Noggin.SampleSite
 
             return new RedirectToActionResult("Index", "Home", null);
         }
-    }
+	}
 }
