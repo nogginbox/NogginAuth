@@ -1,16 +1,23 @@
 ﻿@model Noggin.SampleSite.ViewModels.UserAdmin.IndexViewModel
 
-<h1>Registered Users</h1>
-<table class="data">
-    <tr>
-        <th>Username</th>
-        <th>Linked accounts</th>
-    </tr>
-    @foreach(var user in Model.Users)
-    {
+<section>
+    <h1>Your account</h1>
+    <p><strong>Name: @Model.User.Name</strong>
+</section>
+
+<section>
+    <h1>All registered users</h1>
+    <table class="data">
         <tr>
-            <td>@user.Name</td>
-            <td>@user.AuthAccountNames (@user.NumberOfAuthAccount)</td>
+            <th>Username</th>
+            <th>Linked accounts</th>
         </tr>
-    }
-</table>
+        @foreach(var user in Model.AllUsers)
+        {
+            <tr>
+                <td>@user.Name</td>
+                <td>@user.AuthAccountNames (@user.NumberOfAuthAccount)</td>
+            </tr>
+        }
+    </table>
+</section>

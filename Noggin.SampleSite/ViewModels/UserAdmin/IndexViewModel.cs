@@ -4,6 +4,7 @@ namespace Noggin.SampleSite.ViewModels.UserAdmin
 {
     public class IndexViewModel
     {
-        public IList<UserViewModel> Users { get; set; }
+		public UserViewModel User { get; set; }
+		public IList<UserViewModel> AllUsers { get; set; }
     }
 }
