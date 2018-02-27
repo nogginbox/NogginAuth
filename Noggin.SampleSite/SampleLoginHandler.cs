@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Noggin.NetCoreAuth.Model;
 using Noggin.NetCoreAuth.Providers;
 using Noggin.SampleSite.Data;
@@ -47,17 +48,73 @@ namespace Noggin.SampleSite
 
         public ActionResult SuccessfulLoginFrom(string provider, UserInformation userInfo, HttpContext httpContext)
         {
-            var user = _dbContext.Users.FirstOrDefault(u => u.AuthAccounts.Any(a => a.Provider == provider && a.Id == userInfo.Id));
+			var loginUser = _dbContext.Users
+				.Include(u => u.AuthAccounts)
+				.FindUserWithProvider(userInfo.Id, provider);
             
-            // Automatically create users we've not heard of before using details from their social login
-            if (user == null)
+			// User is already logged in
+			if (httpContext.User.Identity.IsAuthenticated)
+			{
+				var loggedInUserProvider = httpContext.User.Claims.FindStringClaimValue("LoginProvider");
+				if(loggedInUserProvider == provider)
+				{
+					// User has tried to log in twice with same provider
+					return new RedirectToActionResult("Index", "Home", null);
+				}
+
+				// Modify logged in user with info from new provider login
+
+				var loggedInUserId = httpContext.User.Claims.FindIntClaimValue("UserId");
+				if(loginUser != null && loggedInUserId == loginUser.Id)
+				{
+					// User has tried to log in twice with two of their registered providers
+					return new RedirectToActionResult("Index", "Home", null);
+				}
+
+				var loggedInUser = _dbContext.Users
+					.Include(u => u.AuthAccounts)
+					.FirstOrDefault(u => u.Id == loggedInUserId);
+
+				// Add this auth account to existing user
+				if (loginUser == null)
+				{
+					// Add new auth account to logged in user
+					loggedInUser.AuthAccounts.Add(new UserAuthAccount { Id = userInfo.Id, Provider = provider, UserName = userInfo.UserName });
+				}
+				else
+				{
+					// Merge accounts (in this implementation the only useful stuff is the auth accounts)
+					var mergeAuthAccounts = loginUser.AuthAccounts.Except(loggedInUser.AuthAccounts).ToList();
+					loginUser.AuthAccounts.Clear();
+					foreach (var authAccount in mergeAuthAccounts)
+					{
+						loggedInUser.AuthAccounts.Add(authAccount);
+					}
+
+					// Remove old user we've grabbed stuff from (one from latest login)
+					_dbContext.Users.Remove(loginUser);
+				}
+				
+				_dbContext.SaveChanges();
+				return new RedirectToActionResult("Index", "Home", null);
+			}
+			// New login
+			else if (loginUser == null)
             {
-                user = new User { Name = userInfo.Name };
-                user.AuthAccounts.Add(new UserAuthAccount { Id = userInfo.Id, Provider = provider, UserName = userInfo.UserName });
-                _dbContext.Users.Add(user);
+                loginUser = new User { Name = userInfo.Name };
+                loginUser.AuthAccounts.Add(new UserAuthAccount { Id = userInfo.Id, Provider = provider, UserName = userInfo.UserName });
+                _dbContext.Users.Add(loginUser);
                 _dbContext.SaveChanges();
+
+				
             }
 
+			SignUserIn(loginUser, provider, httpContext);
+            return new RedirectToActionResult("Index", "Home", null);
+        }
+
+		private void SignUserIn(User user, string provider, HttpContext httpContext)
+		{
 			// Using Cookie Authentication without ASP.NET Core Identity
 			// https://docs.microsoft.com/en-us/aspnet/core/security/authorization/
 			// https://docs.microsoft.com/en-us/aspnet/core/security/authentication/cookie?tabs=aspnetcore2x
@@ -66,12 +123,10 @@ namespace Noggin.SampleSite
 			// * Is it okay to create an empty principal in this simple case
 			// * Is this simple policy okay, create as constant in class perhaps
 			var principal = CreatePrincipal(user, provider);
-            var policy = new OperationAuthorizationRequirement { Name = "All" };
+			var policy = new OperationAuthorizationRequirement { Name = "All" };
 
-            // https://stackoverflow.com/questions/46057109/why-doesnt-my-cookie-authentication-work-in-asp-net-core
-            httpContext.SignInAsync("NogginSampleCookieScheme", principal);
-
-            return new RedirectToActionResult("Index", "Home", null);
-        }
+			// https://stackoverflow.com/questions/46057109/why-doesnt-my-cookie-authentication-work-in-asp-net-core
+			httpContext.SignInAsync("NogginSampleCookieScheme", principal);
+		}
 	}
 }

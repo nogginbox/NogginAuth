@@ -3,6 +3,19 @@
 <section>
     <h1>Your account</h1>
     <p><strong>Name: @Model.User.Name</strong>
+    <p>Linked accounts: @Model.User.AuthAccountNames (@Model.User.NumberOfAuthAccount)</p>
+    @if (Model.UnlinkedProviders.Any())
+    {
+        <p>
+            Link new account:
+            <ul>
+                @foreach (var provider in Model.UnlinkedProviders)
+                {
+                    <auth-link provider="@provider">@provider</auth-link>
+                }
+                </ul>
+        </p>
+    }
 </section>
 
 <section>

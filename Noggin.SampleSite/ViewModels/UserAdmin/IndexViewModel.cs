@@ -6,5 +6,6 @@ namespace Noggin.SampleSite.ViewModels.UserAdmin
     {
 		public UserViewModel User { get; set; }
 		public IList<UserViewModel> AllUsers { get; set; }
-    }
+		public IEnumerable<string> UnlinkedProviders { get; internal set; }
+	}
 }

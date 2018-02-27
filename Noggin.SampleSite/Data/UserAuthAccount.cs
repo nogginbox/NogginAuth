@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Noggin.SampleSite.Data
 {
@@ -8,9 +9,9 @@ namespace Noggin.SampleSite.Data
         public string Id { get; set; }
 
         [StringLength(32)]
-        public string Provider { get; internal set; }
+        public string Provider { get; set; }
 
         [StringLength(32)]
-        public string UserName { get; internal set; }
-    }
+        public string UserName { get; set; }
+	}
 }
