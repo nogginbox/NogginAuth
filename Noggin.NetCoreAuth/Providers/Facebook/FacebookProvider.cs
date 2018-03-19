@@ -31,7 +31,7 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 
         internal FacebookProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
         {
-            _baseUrl = "https://graph.facebook.com";
+            _baseUrl = "https://graph.facebook.comv/2.12/";
 
             // Todo: If not all methods need client, perhaps don't always init it
             _restClient = new RestClient(_baseUrl);
@@ -44,7 +44,7 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 			var callback = CreateCallbackUrl(request);
             var secret = Guid.NewGuid().ToString();
 
-			var url = $"https://www.facebook.com/v2.4/dialog/oauth?client_id={_apiDetails.PublicKey}&scope=public_profile,email&state={secret}&redirect_uri={callback}";
+			var url = $"https://www.facebook.com/v2.12/dialog/oauth?client_id={_apiDetails.PublicKey}&scope=public_profile,email&state={secret}&redirect_uri={callback}";
 
 			// This implementation of method does not need to be async, so convert result to task
 			return Task.FromResult((url, secret));
@@ -99,7 +99,7 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 				throw new ArgumentNullException("redirectUri");
 			}*/
 
-			var restRequest = new RestRequest("v2.4/oauth/access_token");
+			var restRequest = new RestRequest("oauth/access_token");
 			restRequest.AddParameter("client_id", _apiDetails.PublicKey);
 			restRequest.AddParameter("client_secret", _apiDetails.PrivateKey);
 			restRequest.AddParameter("code", authorizationCode);
