@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using Microsoft.Extensions.Options;
 using Noggin.NetCoreAuth.Providers.Facebook;
+using Noggin.NetCoreAuth.Providers.Google;
 
 namespace Noggin.NetCoreAuth.Providers
 {
@@ -39,6 +40,8 @@ namespace Noggin.NetCoreAuth.Providers
             {
 				case "facebook":
 					return Get(name, (x) => new FacebookProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate));
+				case "google":
+					return Get(name, (x) => new GoogleProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate));
 				case "twitter":
                     return Get(name, (x) => new TwitterProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate));
                 default:

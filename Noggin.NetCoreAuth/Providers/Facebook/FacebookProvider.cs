@@ -19,7 +19,7 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 	/// </remarks>
 	internal class FacebookProvider : Provider
     {
-        private readonly string _baseUrl;
+        private const string _baseUrl = "https://graph.facebook.comv/2.12/";
         private readonly IRestClient _restClient;
 
         private readonly ApiConfig _apiDetails;
@@ -31,8 +31,6 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 
         internal FacebookProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
         {
-            _baseUrl = "https://graph.facebook.comv/2.12/";
-
             // Todo: If not all methods need client, perhaps don't always init it
             _restClient = new RestClient(_baseUrl);
 
@@ -52,8 +50,8 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 
         internal override async Task<UserInformation> AuthenticateUser(HttpRequest request, string state)
         {
-			var callback = CreateCallbackUrl(request);
 			var code = GetCode(request.Query);
+			var callback = CreateCallbackUrl(request);
             var accessToken = await RetrieveAccessToken(code, callback);
             var userInfo = await RetrieveUserInformationAsync(accessToken);
 
