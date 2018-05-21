@@ -1,52 +1,87 @@
-﻿body {
-    padding-top: 50px;
-    padding-bottom: 20px;
+﻿* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
 }
 
-/* Wrapping element */
-/* Set some basic padding to keep content from hitting the edges */
-.body-content {
-    padding-left: 15px;
-    padding-right: 15px;
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #eee;
 }
 
-/* Set widths on the form inputs since otherwise they're 100% wide */
-input,
-select,
-textarea {
-    max-width: 280px;
+li {
+    margin: 0 0 0.5em 1em;
 }
 
-/* Carousel */
-.carousel-caption p {
-    font-size: 20px;
-    line-height: 1.4;
+p {
+    margin: 0 0 1em 0;
 }
 
-/* Make .svg files in the carousel display properly in older browsers */
-.carousel-inner .item img[src$=".svg"] {
-    width: 100%;
-}
-
-/* Hide/rearrange for smaller screens */
-@media screen and (max-width: 767px) {
-    /* Hide captions */
-    .carousel-caption {
-        display: none;
-    }
-}
-
-table.data {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.data td, .data th {
-    border: 1px solid #000;
-    padding: 5px;
-}
-
-.data th {
-    color: #eee;
+header {
     background-color: #000;
+    color: #fff;
+}
+
+    header a {
+        color: #fff;
+        text-decoration: none;
+    }
+
+    header h1 {
+        display: inline-block;
+        vertical-align: central;
+        width: 29%;
+        padding: 10px;
+    }
+
+    header nav {
+        display: inline-block;
+        vertical-align: middle;
+        width: 70%;
+    }
+
+nav {
+    font-size: 1.5em;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    vertical-align: middle;
+}
+
+nav li {
+    display: inline;
+    margin: 5px;
+}
+
+nav li a {
+    padding: 10px;
+}
+
+nav li a:hover {
+    background-color: #111;
+}
+
+section.col2 {
+    display: inline-block;
+    width: 45%;
+    margin: 1em;
+}
+
+section.setup, section.intro {
+    margin: 10px 5em;
+    padding: 1em;
+    background-color: #fff;
+}
+
+pre.code {
+    background-color: #000;
+    color: #fff;
+    padding: 10px;
+    margin: 10px;
+}
+
+.code {
+    font-family: Courier New, Courier, monospace;
 }
