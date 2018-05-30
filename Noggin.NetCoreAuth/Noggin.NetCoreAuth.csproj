@@ -7,19 +7,22 @@
   <PropertyGroup>
     <!-- summary is not migrated from project.json, but you can use the <Description> property for that if needed. -->
     <PackageTags>auth</PackageTags>
-    <PackageReleaseNotes>Almost ready for the bigtime</PackageReleaseNotes>
+    <PackageReleaseNotes>This project is still in beta. Looking for feedback and bug finders.</PackageReleaseNotes>
     <PackageIconUrl>http://numl.net/images/ico.png</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/NogginBox/NogginAuth</PackageProjectUrl>
+    <PackageProjectUrl>http://coreauth.nogginbox.co.uk</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/NogginBox/NogginAuth/blob/master/LICENSE.md</PackageLicenseUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/NogginBox/NogginAuth</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.2</Version>
+    <Version>0.1.2-beta</Version>
     <Authors>Richard Garside</Authors>
-    <Company>Garsonix</Company>
-    <Product>NogginAuth Core</Product>
+    <Company></Company>
+    <Product>Noggin .NetCore Auth</Product>
     <Copyright>© 2018 Richard Garside</Copyright>
+    <Description>A simple library for doing social logins in .NET Core MVC. Authenticates that people are who they say they are, but does not authorise them and has no opinion on how you store details about your users.
+
+See the project site for instructions and the sample site implementation for a working example.</Description>
     <!-- owners is not supported in MSBuild -->
   </PropertyGroup>
 

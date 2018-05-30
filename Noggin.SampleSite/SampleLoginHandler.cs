@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Noggin.NetCoreAuth.Model;
 using Noggin.NetCoreAuth.Providers;
 using Noggin.SampleSite.Data;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -16,7 +15,6 @@ namespace Noggin.SampleSite
 {
     public class SampleLoginHandler : ILoginHandler
     {
-        private readonly IAuthorizationService _authService;
         private readonly ISimpleDbContext _dbContext;
 
         public SampleLoginHandler(ISimpleDbContext dbContext)
