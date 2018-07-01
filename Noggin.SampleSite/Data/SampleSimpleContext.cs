@@ -13,6 +13,11 @@ namespace Noggin.SampleSite.Data
     /// </remarks>
     public class SampleSimpleDbContext: DbContext, ISimpleDbContext
     {
+		public SampleSimpleDbContext()
+		{
+
+		}
+
         public DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -20,7 +25,7 @@ namespace Noggin.SampleSite.Data
             if (!optionsBuilder.IsConfigured)
             {
                 // #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlite("Data Source=noggin.db");
+                optionsBuilder.UseSqlite("Data Source=DataContent/noggin.db");
             }
         }
     }

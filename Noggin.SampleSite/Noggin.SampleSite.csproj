@@ -4,12 +4,11 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="noggin.db" />
-  </ItemGroup>
 
   <ItemGroup>
-    <Content Include="noggin.db" />
+    <Content Include="DataContent\noggin.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

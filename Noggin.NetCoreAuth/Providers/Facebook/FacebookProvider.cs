@@ -19,7 +19,7 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 	/// </remarks>
 	internal class FacebookProvider : Provider
     {
-        private const string _baseUrl = "https://graph.facebook.comv/2.12/";
+        private const string _baseUrl = "https://graph.facebook.com/2.12/";
         private readonly IRestClient _restClient;
 
         private readonly ApiConfig _apiDetails;
