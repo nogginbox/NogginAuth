@@ -19,7 +19,7 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 	/// </remarks>
 	internal class FacebookProvider : Provider
     {
-        private const string _baseUrl = "https://graph.facebook.com/2.12/";
+        private const string _baseUrl = "https://graph.facebook.com/v2.12/";
         private readonly IRestClient _restClient;
 
         private readonly ApiConfig _apiDetails;
@@ -107,18 +107,25 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 			restRequest.AddHeader("Content-Type", "application/json");
 			restRequest.AddParameter("format", "json");
 
-			try
-			{
-				var token = await _restClient.ExecuteAsync<AccessTokenResult>(restRequest);
+            IRestResponse<AccessTokenResult> tokenResponse;
 
-				// Todo: Check for null data
-				return token.Data.access_token;
+            try
+			{
+				tokenResponse = await _restClient.ExecuteAsync<AccessTokenResult>(restRequest);
 			}
 			catch(Exception ex)
 			{
 				throw new NogginNetCoreAuthException("Failed to get access token from Facebook", ex);
 			}
-		}
+
+            if(!tokenResponse.IsSuccessful)
+            {
+                var errorMessage = tokenResponse.Data.Error?.Message ?? "Failed to get access token from Facebook";
+                throw new NogginNetCoreAuthException(errorMessage);
+            }
+
+            return tokenResponse.Data.AccessToken;
+        }
 
 		protected async Task<UserInformation> RetrieveUserInformationAsync(string authToken)
 		{
@@ -126,7 +133,7 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 
 			try
 			{
-				var restRequest = new RestRequest("v2.5/me");
+				var restRequest = new RestRequest("me");
 				restRequest.AddParameter("access_token", authToken);
 				restRequest.AddParameter("fields", "name,email,first_name,last_name,locale,gender,link");
 

@@ -43,7 +43,7 @@ namespace Noggin.NetCoreAuth.Mvc
                 var secret = HttpContext.Session.GetString("secret");
                 user = await authProvider.AuthenticateUser(Request, secret);
             }
-            catch(AuthenticationException e)
+            catch(AuthenticationException ex)
             {
                 return _loginHandler.FailedLoginFrom(provider, null, HttpContext);
             }
