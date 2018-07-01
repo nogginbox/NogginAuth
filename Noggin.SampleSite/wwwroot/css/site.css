@@ -63,11 +63,23 @@ nav li a:hover {
     background-color: #111;
 }
 
-section.col2 {
-    display: inline-block;
-    width: 45%;
-    margin: 1em;
+table.data {
+    width: 100%;
+    border: 1px solid black;
+    border-collapse: collapse;
 }
+
+    table.data td, table.data td {
+        border: 1px solid black;
+        
+        padding: 4px;
+    }
+
+    section.col2 {
+        display: inline-block;
+        width: 45%;
+        margin: 1em;
+    }
 
 section.setup, section.intro {
     margin: 10px 5em;

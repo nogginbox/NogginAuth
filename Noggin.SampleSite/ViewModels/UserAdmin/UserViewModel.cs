@@ -5,9 +5,9 @@ namespace Noggin.SampleSite.ViewModels.UserAdmin
 {
     public class UserViewModel
     {
-        public UserViewModel(User user)
+        public UserViewModel(string username, User user)
         {
-            Name = user.Name;
+            Name = username;
             AuthAccountNames = string.Join(", ", user.AuthAccounts.Select(a => a.Provider));
             NumberOfAuthAccount = user.AuthAccounts.Count;
         }

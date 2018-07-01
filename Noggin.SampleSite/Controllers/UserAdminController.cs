@@ -28,8 +28,8 @@ namespace Noggin.SampleSite.Controllers
 		{
 			var users = _dbContext.Users
 				.Include(u => u.AuthAccounts)
-				//.OrderBy(u => u.Registered)
-				.Take(50);
+				.OrderByDescending(u => u.Id)
+				.Take(25);
 
 			var userId = User.Claims.FindIntClaimValue("UserId");
 			var currentUser = (userId != null)
@@ -45,12 +45,32 @@ namespace Noggin.SampleSite.Controllers
 
 			var viewModel = new IndexViewModel
             {
-				AllUsers = users.Select(u => new UserViewModel(u)).ToList(),
-				User = new UserViewModel(currentUser),
+				AllUsers = users.Select(u => 
+                        new UserViewModel(GetDisplayUserName(u, u.Id == currentUser.Id), u)
+                    ).ToList(),
+				User = new UserViewModel(currentUser.Name, currentUser),
 				UnlinkedProviders = unlinkedProviders
 			};
 
 			return View(viewModel);
 		}
-	}
+
+        /// <summary>
+        /// Gets a user name to show in the admin, for privacy purposes only shows current user's full name
+        /// </summary>
+        private string GetDisplayUserName(User user, bool showRealName)
+        {
+            if(showRealName)
+            {
+                return user.Name;
+            }
+
+            if(!(user.Name?.Length > 0))
+            {
+                return "*******";
+            }
+
+            return user.Name.Substring(0, 1) + "******";
+        }
+    }
 }
