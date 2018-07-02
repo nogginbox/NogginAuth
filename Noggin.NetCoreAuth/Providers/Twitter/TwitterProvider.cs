@@ -10,6 +10,9 @@ using RestSharp;
 using RestSharp.Authenticators;
 using Noggin.NetCoreAuth.Config;
 using System.Web;
+using Noggin.NetCoreAuth.Exceptions;
+using System.Linq;
+using Noggin.NetCoreAuth.Providers.Serializers;
 
 namespace Noggin.NetCoreAuth.Providers.Twitter
 {
@@ -31,6 +34,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
 
 			// Todo: If not all methods need client, perhaps don't always init it
 			_restClient = new RestClient(_baseUrl);
+            _restClient.AddHandler("text/html", TwitterHtmlTextSerializer.CreateDefault());
 
             _apiDetails = config.Api;
         }
@@ -42,15 +46,26 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
             _restClient.Authenticator = OAuth1Authenticator.ForRequestToken(_apiDetails.PublicKey, _apiDetails.PrivateKey, callback);
             var restRequest = new RestRequest("oauth/request_token", Method.POST);
 
-            var response = await _restClient.ExecuteAsync(restRequest);
+            var response = await _restClient.ExecuteAsync<TokenResult>(restRequest);
 
-            var query = QueryHelpers.ParseQuery(response.Content);
-            var token = query["oauth_token"];
+            // Grrrr, errors come back as json, correct response querystring like thing
 
-            return ($"https://api.twitter.com/oauth/authenticate?oauth_token={token}", query["oauth_token_secret"]);
 
-            // Todo: Catch exceptions
+            if(!response.IsSuccessful)
+            {
+                var error = response.Data?.Errors.FirstOrDefault();
+                var errorMessage = error != null
+                    ? $"Twitter Error {error.Code}: {error.Message}"
+                    : "There was an issue starting a login request with Twitter";
+                throw new NogginNetCoreAuthException(errorMessage);
+            }
 
+            if (response.Data.OauthToken == null || response.Data.OauthTokenSecret == null)
+            {
+                throw new NogginNetCoreAuthException("Missing token or secret from Twitter");
+            }
+
+            return ($"https://api.twitter.com/oauth/authenticate?oauth_token={response.Data.OauthToken}", response.Data.OauthTokenSecret);
         }
 
         internal override async Task<UserInformation> AuthenticateUser(HttpRequest request, string state)
