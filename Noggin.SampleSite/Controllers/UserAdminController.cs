@@ -28,7 +28,7 @@ namespace Noggin.SampleSite.Controllers
 		{
 			var users = _dbContext.Users
 				.Include(u => u.AuthAccounts)
-				.OrderByDescending(u => u.Id)
+				.OrderByDescending(u => u.LastLoggedIn)
 				.Take(25);
 
 			var userId = User.Claims.FindIntClaimValue("UserId");

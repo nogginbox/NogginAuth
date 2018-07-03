@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Noggin.NetCoreAuth.Model;
 using Noggin.NetCoreAuth.Providers;
 using Noggin.SampleSite.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -49,7 +50,7 @@ namespace Noggin.SampleSite
 			var loginUser = _dbContext.Users
 				.Include(u => u.AuthAccounts)
 				.FindUserWithProvider(userInfo.Id, provider);
-            
+
 			// User is already logged in
 			if (httpContext.User.Identity.IsAuthenticated)
 			{
@@ -72,6 +73,8 @@ namespace Noggin.SampleSite
 				var loggedInUser = _dbContext.Users
 					.Include(u => u.AuthAccounts)
 					.FirstOrDefault(u => u.Id == loggedInUserId);
+
+                loggedInUser.LastLoggedIn = DateTime.Now;
 
 				// Add this auth account to existing user
 				if (loginUser == null)
@@ -102,12 +105,13 @@ namespace Noggin.SampleSite
                 loginUser = new User { Name = userInfo.Name };
                 loginUser.AuthAccounts.Add(new UserAuthAccount { Id = userInfo.Id, Provider = provider, UserName = userInfo.UserName });
                 _dbContext.Users.Add(loginUser);
-                _dbContext.SaveChanges();
-
-				
+                
             }
 
-			SignUserIn(loginUser, provider, httpContext);
+            loginUser.LastLoggedIn = DateTime.Now;
+            _dbContext.SaveChanges();
+
+            SignUserIn(loginUser, provider, httpContext);
             return new RedirectToActionResult("Index", "Home", null);
         }
 

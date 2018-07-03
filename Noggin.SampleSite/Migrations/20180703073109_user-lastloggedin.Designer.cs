@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Noggin.SampleSite.Data;
 
 namespace Noggin.SampleSite.Migrations
 {
     [DbContext(typeof(SampleSimpleDbContext))]
-    partial class SampleSimpleDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180703073109_user-lastloggedin")]
+    partial class userlastloggedin
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
