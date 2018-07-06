@@ -4,7 +4,7 @@
 
 <section class="intro">
 	<h1>Noggin .NetCore Auth</h1>
-    <p><stromg>Noggin .NetCore Auth</strong> is a simple library for doing social logins in .NET Core MVC. Does the authentication part, but has no opinion on how you store details about your users.</p>
+    <p><strong>Noggin .NetCore Auth</strong> is a simple library for doing social authentication in .NET Core MVC. It authenticates that people are who they say they are, but does not authorise them and has no opinion on how you store details about your users. You're free to do that however you want and in whatever way works best for your application.</p>
 	<p>The source code is available at the <a href="https://github.com/NogginBox/NogginAuth">Noggin .NetCore Git Repo</a>.</p>
 	<p>For a working example download a <a href="https://github.com/NogginBox/NogginAuth/archive/master.zip">zip of the source code including the sample site</a>.
 </section>
@@ -50,12 +50,12 @@
 
 <section class="setup" id="ILoginHandler">
     <h3>2) Implement ILoginHandler</h3>
-    <p>This is the step that requires most though and the one that gives you the most power and freedom. Noggin.NetCoreAuth.Providers.ILoginHandler has two methods. One is called if the user successfully authenticates with their chosen social login provider, the other is called if they fail. We send you the information we've been able to glean about them from the provider, but you need to log them in (or not) to your site and save anything you need to.</p>
+    <p>This is the step that requires most thought and the one that gives you the most power and freedom. Noggin.NetCoreAuth.Providers.ILoginHandler has two methods. One is called if the user successfully authenticates with their chosen social login provider, the other is called if they fail. We send you the information we've been able to glean about them from the provider, but you need to log them in (or not) to your site and save anything you need to.</p>
 <pre class="code">
 ActionResult SuccessfulLoginFrom(string provider, UserInformation user, HttpContext context);
 ActionResult FailedLoginFrom(string provider, UserInformation user, HttpContext context);
 </pre>
-    <p>See <span>SampleLoginHandler</span> in the sample site for an example of one. The important part is that we don't have any opinion on how to store your user, or even if you need to. We just tell you who they are.</p>
+    <p>See <a class="code" href="https://github.com/NogginBox/NogginAuth/blob/master/Noggin.SampleSite/SampleLoginHandler.cs">SampleLoginHandler</a> in the sample site for an example of one. The important part is that we don't have any opinion on how to store your user, or even if you need to. We just tell you who they are.</p>
 </section>
 
 <section class="setup" id="startupcs">
