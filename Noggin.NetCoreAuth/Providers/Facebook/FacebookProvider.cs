@@ -29,10 +29,10 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
         private const string OAuthTokenSecretKey = "oauth_token_secret";
         private const string OAuthVerifierKey = "oauth_verifier";
 
-        internal FacebookProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
+        internal FacebookProvider(ProviderConfig config, IRestClientFactory restClientFactory, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
         {
             // Todo: If not all methods need client, perhaps don't always init it
-            _restClient = new RestClient(_baseUrl);
+            _restClient = restClientFactory.Create(_baseUrl);
 
             _apiDetails = config.Api;
         }

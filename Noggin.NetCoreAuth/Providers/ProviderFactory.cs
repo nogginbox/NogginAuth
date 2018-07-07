@@ -10,17 +10,19 @@ using Noggin.NetCoreAuth.Providers.Google;
 
 namespace Noggin.NetCoreAuth.Providers
 {
-    public class ProviderFactory : IProviderFactory
+    internal class ProviderFactory : IProviderFactory
     {
         private readonly IList<ProviderConfig> _providerConfigs;
         private readonly IDictionary<string, Provider> _providers;
+        private readonly IRestClientFactory _restClientFactory;
         private readonly string _defaultRedirectTemplate;
         private readonly string _defaultCallbackTemplate;
 
-        public ProviderFactory(IOptions<AuthConfigSection> config)
+        public ProviderFactory(IOptions<AuthConfigSection> config, IRestClientFactory restClientFactory)
         {
             _providerConfigs = config.Value.Providers;
             _providers = new Dictionary<string, Provider>();
+            _restClientFactory = restClientFactory;
 
             _defaultRedirectTemplate = CreateDefaultTemplate(config.Value.DefaultRedirectTemplate, "auth/redirect/{provider}");
             _defaultCallbackTemplate = CreateDefaultTemplate(config.Value.DefaultCallbackTemplate, "auth/callbackback/{provider}");
@@ -39,11 +41,11 @@ namespace Noggin.NetCoreAuth.Providers
             switch(name.ToLower())
             {
 				case "facebook":
-					return Get(name, (x) => new FacebookProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate));
+					return Get(name, (x) => new FacebookProvider(x, _restClientFactory, _defaultRedirectTemplate, _defaultCallbackTemplate));
 				case "google":
-					return Get(name, (x) => new GoogleProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate));
+					return Get(name, (x) => new GoogleProvider(x, _restClientFactory, _defaultRedirectTemplate, _defaultCallbackTemplate));
 				case "twitter":
-                    return Get(name, (x) => new TwitterProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate));
+                    return Get(name, (x) => new TwitterProvider(x, _restClientFactory, _defaultRedirectTemplate, _defaultCallbackTemplate));
                 default:
                     throw new NogginNetCoreConfigException($"No provider called {name} found");
             }

@@ -18,11 +18,13 @@ namespace Noggin.NetCoreAuth.Providers.Google
 	internal class GoogleProvider : Provider
 	{
 		private ApiConfig _apiDetails;
+        private readonly IRestClientFactory _restClientFactory;
 
-		internal GoogleProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
+        internal GoogleProvider(ProviderConfig config, IRestClientFactory restClientFactory, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
 		{
 			_apiDetails = config.Api;
-		}
+            _restClientFactory = restClientFactory;
+        }
 
 		internal async override Task<UserInformation> AuthenticateUser(HttpRequest request, string state)
 		{
@@ -95,7 +97,7 @@ namespace Noggin.NetCoreAuth.Providers.Google
 			restRequest.AddParameter("code", authorizationCode);
 			restRequest.AddParameter("grant_type", "authorization_code");
 
-			var restClient = new RestClient("https://accounts.google.com");
+			var restClient = _restClientFactory.Create("https://accounts.google.com");
 
 			try
 			{
@@ -120,8 +122,6 @@ namespace Noggin.NetCoreAuth.Providers.Google
 				throw new ArgumentNullException("accessToken");
 			}
 
-
-
 			IRestResponse<UserInfoResult> response;
 
 			try
@@ -129,7 +129,7 @@ namespace Noggin.NetCoreAuth.Providers.Google
 				var restRequest = new RestRequest("/plus/v1/people/me", Method.GET);
 				restRequest.AddParameter("access_token", accessToken);
 
-				var restClient = new RestClient("https://www.googleapis.com");
+				var restClient = _restClientFactory.Create("https://www.googleapis.com");
 
 
 				response = await restClient.ExecuteAsync<UserInfoResult>(restRequest);

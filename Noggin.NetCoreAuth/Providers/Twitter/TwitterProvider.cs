@@ -1,18 +1,17 @@
-﻿using System;
-using System.Net;
-using System.Security.Authentication;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebUtilities;
+﻿using Microsoft.AspNetCore.Http;
+using Noggin.NetCoreAuth.Config;
+using Noggin.NetCoreAuth.Exceptions;
 using Noggin.NetCoreAuth.Model;
+using Noggin.NetCoreAuth.Providers.Serializers;
 using Noggin.NetCoreAuth.Providers.Twitter.Model;
 using RestSharp;
 using RestSharp.Authenticators;
-using Noggin.NetCoreAuth.Config;
-using System.Web;
-using Noggin.NetCoreAuth.Exceptions;
+using System;
 using System.Linq;
-using Noggin.NetCoreAuth.Providers.Serializers;
+using System.Net;
+using System.Security.Authentication;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace Noggin.NetCoreAuth.Providers.Twitter
 {
@@ -23,17 +22,17 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
 
         private readonly ApiConfig _apiDetails;
 
-        private const string DeniedKey = "denied";
-        private const string OAuthTokenKey = "oauth_token";
-        private const string OAuthTokenSecretKey = "oauth_token_secret";
-        private const string OAuthVerifierKey = "oauth_verifier";
+        internal const string DeniedKey = "denied";
+        internal const string OAuthTokenKey = "oauth_token";
+        internal const string OAuthTokenSecretKey = "oauth_token_secret";
+        internal const string OAuthVerifierKey = "oauth_verifier";
 
-        internal TwitterProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
+        internal TwitterProvider(ProviderConfig config, IRestClientFactory restClientFactory, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
         {
 			_baseUrl = "https://api.twitter.com";
 
 			// Todo: If not all methods need client, perhaps don't always init it
-			_restClient = new RestClient(_baseUrl);
+			_restClient = restClientFactory.Create(_baseUrl);
             _restClient.AddHandler("text/html", TwitterHtmlTextSerializer.CreateDefault());
 
             _apiDetails = config.Api;
@@ -46,12 +45,12 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
             _restClient.Authenticator = OAuth1Authenticator.ForRequestToken(_apiDetails.PublicKey, _apiDetails.PrivateKey, callback);
             var restRequest = new RestRequest("oauth/request_token", Method.POST);
 
-            var response = await _restClient.ExecuteAsync<TokenResult>(restRequest);
+            var response = await _restClient.ExecuteTaskAsync<TokenResult>(restRequest);
 
             // Grrrr, errors come back as json, correct response querystring like thing
 
 
-            if(!response.IsSuccessful)
+            if(response?.IsSuccessful != true)
             {
                 var error = response.Data?.Errors.FirstOrDefault();
                 var errorMessage = error != null
@@ -95,7 +94,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
             var denied = queryStringParameters[DeniedKey];
             if (!string.IsNullOrEmpty(denied))
             {
-                throw new AuthenticationException(
+                throw new NogginNetCoreAuthException(
                     "Failed to accept the Twitter App Authorization. Therefore, authentication didn't proceed.");
             }
 
@@ -105,7 +104,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
 
             if (string.IsNullOrEmpty(oAuthToken) || string.IsNullOrEmpty(oAuthVerifier))
             {
-                throw new AuthenticationException(
+                throw new NogginNetCoreAuthException(
                     "Failed to retrieve an oauth_token and an oauth_token_secret after the client has signed and approved via Twitter.");
             }
 
@@ -122,16 +121,15 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
                                                                               verifierResult.oAuthToken,
                                                                               null,
                                                                               verifierResult.oAuthVerifier);
-                response = await _restClient.ExecuteAsync(restRequest);
+                response = await _restClient.ExecuteTaskAsync(restRequest);
             }
             catch (Exception exception)
             {
                 var errorMessage = "Failed to retrieve an oauth access token from Twitter.";
-                throw new AuthenticationException(errorMessage, exception);
+                throw new NogginNetCoreAuthException(errorMessage, exception);
             }
 
-            if (response == null ||
-                response.StatusCode != HttpStatusCode.OK)
+            if (response?.IsSuccessful != true || response.StatusCode != HttpStatusCode.OK)
             {
                 var errorMessage = string.Format(
                     "Failed to obtain an Access Token from Twitter OR the the response was not an HTTP Status 200 OK. Response Status: {0}. Response Description: {1}. Error Content: {2}. Error Message: {3}.",
@@ -145,7 +143,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
                               : response.ErrorException.Message);
 
 
-                throw new AuthenticationException(errorMessage);
+                throw new NogginNetCoreAuthException(errorMessage);
             }
 
             var querystringParameters = HttpUtility.ParseQueryString(response.Content);
@@ -160,31 +158,29 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
             IRestResponse<VerifyCredentialsResult> response;
             try
             {
-
                 _restClient.Authenticator = OAuth1Authenticator.ForProtectedResource(_apiDetails.PublicKey, _apiDetails.PrivateKey,
                                                                                     accessTokenResult.PublicToken,
                                                                                     accessTokenResult.SecretToken);
                 var restRequest = new RestRequest("1.1/account/verify_credentials.json");
-
 
                 response = await _restClient.ExecuteAsync<VerifyCredentialsResult>(restRequest);
             }
             catch (Exception exception)
             {
                 var errorMessage = "Failed to retrieve VerifyCredentials json data from the Twitter Api. Error Messages: " + exception.Message;
-                throw new AuthenticationException(errorMessage, exception);
+                throw new NogginNetCoreAuthException(errorMessage, exception);
             }
 
             if (response?.StatusCode != HttpStatusCode.OK)
             {
                 var errorMessage = $"The Twitter API responded was not an HTTP Status {response?.StatusCode} : {response?.StatusDescription}. Error Message: {response?.ErrorException.Message}.";
-                throw new AuthenticationException(errorMessage);
+                throw new NogginNetCoreAuthException(errorMessage);
             }
 
             if (response.Data == null)
             {
                 var errorMessage = $"Could not create VerifyCredentials result from Twitter response";
-                throw new AuthenticationException(errorMessage);
+                throw new NogginNetCoreAuthException(errorMessage);
             }
 
             return response.Data;
