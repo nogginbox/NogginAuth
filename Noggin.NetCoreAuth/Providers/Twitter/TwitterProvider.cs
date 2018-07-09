@@ -113,7 +113,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
 
         private async Task<AccessToken> RetrieveAccessToken((string oAuthToken, string oAuthVerifier) verifierResult)
         {
-            IRestResponse response;
+            IRestResponse<TokenResult> response;
             try
             {
                 var restRequest = new RestRequest("oauth/access_token", Method.POST);
@@ -121,7 +121,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
                                                                               verifierResult.oAuthToken,
                                                                               null,
                                                                               verifierResult.oAuthVerifier);
-                response = await _restClient.ExecuteTaskAsync(restRequest);
+                response = await _restClient.ExecuteTaskAsync<TokenResult>(restRequest);
             }
             catch (Exception exception)
             {
@@ -146,11 +146,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
                 throw new NogginNetCoreAuthException(errorMessage);
             }
 
-            var querystringParameters = HttpUtility.ParseQueryString(response.Content);
-
-
-
-            return new AccessToken(querystringParameters[OAuthTokenKey], querystringParameters[OAuthTokenSecretKey]);
+            return new AccessToken(response.Data.OauthToken, response.Data.OauthTokenSecret);
         }
 
         private async Task<VerifyCredentialsResult> VerifyCredentials(AccessToken accessTokenResult)
@@ -163,7 +159,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
                                                                                     accessTokenResult.SecretToken);
                 var restRequest = new RestRequest("1.1/account/verify_credentials.json");
 
-                response = await _restClient.ExecuteAsync<VerifyCredentialsResult>(restRequest);
+                response = await _restClient.ExecuteTaskAsync<VerifyCredentialsResult>(restRequest);
             }
             catch (Exception exception)
             {
