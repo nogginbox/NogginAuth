@@ -20,18 +20,15 @@ namespace Noggin.NetCoreAuth.Providers
 
         public ProviderFactory(IOptions<AuthConfigSection> config, IRestClientFactory restClientFactory)
         {
-            _providerConfigs = config.Value.Providers;
+            _providerConfigs = config.Value?.Providers;
             _providers = new Dictionary<string, Provider>();
             _restClientFactory = restClientFactory;
 
             _defaultRedirectTemplate = CreateDefaultTemplate(config.Value.DefaultRedirectTemplate, "auth/redirect/{provider}");
             _defaultCallbackTemplate = CreateDefaultTemplate(config.Value.DefaultCallbackTemplate, "auth/callbackback/{provider}");
 
-            Providers = new List<Provider>();
-            foreach(var provider in config.Value.Providers)
-            {
-                Providers.Add(Get(provider.Name));
-            }
+            // Allow null/empty provider list at this stage, do not throw config error till app tries to use login
+            Providers = _providerConfigs?.Select(p => Get(p.Name)).ToList() ?? new List<Provider>();
 
             // Thought: Lazy Dictionary, or simplyfy getting providers as all pre initted
         }
@@ -58,7 +55,12 @@ namespace Noggin.NetCoreAuth.Providers
                 return _providers[name];
             }
 
-            var config = _providerConfigs.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+            var config = _providerConfigs?.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (config == null)
+            {
+                throw new NogginNetCoreConfigException($"No provider config section found for {name}");
+            }
+
             var provider = createProvider(config);
             _providers[name] = provider;
             return provider;

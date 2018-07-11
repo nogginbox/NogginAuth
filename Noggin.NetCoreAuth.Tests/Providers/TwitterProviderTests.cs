@@ -12,7 +12,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Noggin.NetCoreAuth.Tests
+namespace Noggin.NetCoreAuth.Tests.Providers
 {
     public class TwitterProviderTests : BaseForProviderTests
     {
