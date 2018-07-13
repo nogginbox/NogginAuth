@@ -101,7 +101,7 @@ namespace Noggin.NetCoreAuth.Providers.Google
 
 			try
 			{
-				var token = await restClient.ExecuteAsync<AccessTokenResult>(restRequest);
+				var token = await restClient.ExecuteTaskAsync<AccessTokenResult>(restRequest);
 
 				if (token.Data.AccessToken == null)
 				{
@@ -132,7 +132,7 @@ namespace Noggin.NetCoreAuth.Providers.Google
 				var restClient = _restClientFactory.Create("https://www.googleapis.com");
 
 
-				response = await restClient.ExecuteAsync<UserInfoResult>(restRequest);
+				response = await restClient.ExecuteTaskAsync<UserInfoResult>(restRequest);
 			}
 			catch (Exception ex)
 			{
