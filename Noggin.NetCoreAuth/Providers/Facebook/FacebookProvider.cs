@@ -111,7 +111,7 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 
             try
 			{
-				tokenResponse = await _restClient.ExecuteAsync<AccessTokenResult>(restRequest);
+				tokenResponse = await _restClient.ExecuteTaskAsync<AccessTokenResult>(restRequest);
 			}
 			catch(Exception ex)
 			{
@@ -137,8 +137,7 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 				restRequest.AddParameter("access_token", authToken);
 				restRequest.AddParameter("fields", "name,email,first_name,last_name,locale,gender,link");
 
-
-				response = await _restClient.ExecuteAsync<MeResult>(restRequest);
+				response = await _restClient.ExecuteTaskAsync<MeResult>(restRequest);
 			}
 			catch (Exception ex)
 			{
@@ -162,17 +161,11 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 			}
 
 			var id = response.Data.Id < 0 ? 0 : response.Data.Id;
-			var name = (string.IsNullOrEmpty(response.Data.FirstName)
-							? string.Empty
-							: response.Data.FirstName) + " " +
-					   (string.IsNullOrEmpty(response.Data.LastName)
-							? string.Empty
-							: response.Data.LastName).Trim();
 
 			var userInformation = new UserInformation
 			{
 				Id = id.ToString(),
-				Name = name,
+				Name = response.Data.Name,
 				Email = response.Data.Email,
 				Locale = response.Data.Locale,
 				UserName = response.Data.Username,

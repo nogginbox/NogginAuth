@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
-using Noggin.NetCoreAuth.Providers.Google;
-using Noggin.NetCoreAuth.Providers.Google.Model;
+using Noggin.NetCoreAuth.Providers.Facebook;
+using Noggin.NetCoreAuth.Providers.Facebook.Model;
 using NSubstitute;
 using RestSharp;
 using System;
@@ -15,16 +15,16 @@ using Xunit;
 
 namespace Noggin.NetCoreAuth.Tests.Providers
 {
-    public class GoogleProviderTests : BaseForProviderTests
+    public class FacebookProviderTests : BaseForProviderTests
     {
         [Fact]
-        public async Task GenerateStartRequestDoesNotCallGoogleApi()
+        public async Task GenerateStartRequestDoesNotCallFacebookApi()
         {
             // Arrange
             var config = CreateProviderConfig();
             var (restClientFactory, restClient) = CreateRestClientAndFactory();
 
-            var provider = new GoogleProvider(config, restClientFactory, "url1", "url2");
+            var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
 
             var http = Substitute.For<HttpRequest>();
 
@@ -42,9 +42,9 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             var config = CreateProviderConfig();
             var (restClientFactory, restClient) = CreateRestClientAndFactory();
 
-            // Arrange - Calling Google API succeeds
+            // Arrange - Calling Facebook API succeeds
 
-            var provider = new GoogleProvider(config, restClientFactory, "url1", "url2");
+            var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
 
             var http = Substitute.For<HttpRequest>();
 
@@ -58,26 +58,26 @@ namespace Noggin.NetCoreAuth.Tests.Providers
         }
 
         [Fact]
-        public async Task AuthenticateUserThrowsExceptionIfGoogleApiFails()
+        public async Task AuthenticateUserThrowsExceptionIfFacebookApiFails()
         {
             // Arrange
             var config = CreateProviderConfig();
             var (restClientFactory, restClient) = CreateRestClientAndFactory();
 
-            // Arrnage - Calling Google API for token succeeds
+            // Arrnage - Calling Facebook API for token succeeds
             SetupTokenResultSuccess(restClient, "token", "secret");
 
-            // Arrange - Calling Google API fails
+            // Arrange - Calling Facebook API fails
             var response = Substitute.For<IRestResponse<AccessTokenResult>>();
             response.IsSuccessful.Returns(false);
             restClient.ExecuteTaskAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
 
-            var provider = new GoogleProvider(config, restClientFactory, "url1", "url2");
+            var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
 
             var http = Substitute.For<HttpRequest>();
             http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
-                { "state", new StringValues("TestState") },
-                { "code", new StringValues("TestCode") },
+                { "FacebookProvider.OAuthTokenKey", new StringValues("TestTokenKey") },
+                { "FacebookProvider.OAuthVerifierKey", new StringValues("TestVerifierKey") },
             }));
 
             // Act / Assert
@@ -92,24 +92,23 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             var (restClientFactory, restClient) = CreateRestClientAndFactory();
 
 
-            // Arrange - Calling Google API for token
+            // Arrange - Calling Facebook API for token
             SetupTokenResultSuccess(restClient, "token", "secret");
 
-            // Arrange - Calling Google for user details
-            var googleResponse = Substitute.For<IRestResponse<UserInfoResult>>();
-            googleResponse.IsSuccessful.Returns(true);
-            googleResponse.StatusCode.Returns(HttpStatusCode.OK);
-            googleResponse.Data.Returns(new UserInfoResult
+            // Arrange - Calling Facebook for user details
+            var facebookResponse = Substitute.For<IRestResponse<MeResult>>();
+            facebookResponse.IsSuccessful.Returns(true);
+            facebookResponse.StatusCode.Returns(HttpStatusCode.OK);
+            facebookResponse.Data.Returns(new MeResult
             {
-                Id = "TestId",
-                DisplayName = "RichardG2268",
-                Name = new Name { FamilyName = "Garside", GivenName = "Richard" },
-                Language = "en-GB",
-                Image = new Image { Url = "hotdang.jpg" }
+                Id = 2268,
+                Username = "RichardG2268",
+                Name = "Richard Garside",
+                Locale = "en-GB"
             });
-            restClient.ExecuteTaskAsync<UserInfoResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(googleResponse));
+            restClient.ExecuteTaskAsync<MeResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(facebookResponse));
 
-            var provider = new GoogleProvider(config, restClientFactory, "url1", "url2");
+            var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
 
             var http = Substitute.For<HttpRequest>();
             http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
@@ -123,14 +122,14 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             // Assert
             Assert.Equal("Richard Garside", authenticatedUser.Name);
             Assert.Equal("RichardG2268", authenticatedUser.UserName);
-            Assert.Equal("hotdang.jpg", authenticatedUser.Picture);
+            Assert.Equal("https://graph.facebook.com/2268/picture", authenticatedUser.Picture);
         }
 
         private ProviderConfig CreateProviderConfig()
         {
             return new ProviderConfig
             {
-                Name = "Google",
+                Name = "Facebook",
                 Api = new ApiConfig
                 {
                     PrivateKey = "privateKey",
@@ -141,11 +140,11 @@ namespace Noggin.NetCoreAuth.Tests.Providers
 
         private void SetupTokenResultSuccess(IRestClient restClient, string token, string secret)
         {
-            var googleResponse = Substitute.For<IRestResponse<AccessTokenResult>>();
-            googleResponse.IsSuccessful.Returns(true);
-            googleResponse.StatusCode.Returns(HttpStatusCode.OK);
-            googleResponse.Data.Returns(new AccessTokenResult { AccessToken = token });
-            restClient.ExecuteTaskAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(googleResponse));
+            var facebookResponse = Substitute.For<IRestResponse<AccessTokenResult>>();
+            facebookResponse.IsSuccessful.Returns(true);
+            facebookResponse.StatusCode.Returns(HttpStatusCode.OK);
+            facebookResponse.Data.Returns(new AccessTokenResult { AccessToken = token });
+            restClient.ExecuteTaskAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(facebookResponse));
         }
     }
 }
