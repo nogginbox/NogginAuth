@@ -120,7 +120,9 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 
             if(!tokenResponse.IsSuccessful)
             {
-                var errorMessage = tokenResponse.Data.Error?.Message ?? "Failed to get access token from Facebook";
+                var errorMessage = "Facebook: Failed to get access token";
+                if (tokenResponse.Data?.Error?.Message != null) errorMessage += " - " + tokenResponse.Data.Error.Message;
+
                 throw new NogginNetCoreAuthException(errorMessage);
             }
 

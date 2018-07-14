@@ -3,11 +3,10 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
-using Noggin.NetCoreAuth.Providers.Facebook;
-using Noggin.NetCoreAuth.Providers.Facebook.Model;
+using Noggin.NetCoreAuth.Providers.GitHub;
+using Noggin.NetCoreAuth.Providers.GitHub.Model;
 using NSubstitute;
 using RestSharp;
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -15,16 +14,16 @@ using Xunit;
 
 namespace Noggin.NetCoreAuth.Tests.Providers
 {
-    public class FacebookProviderTests : BaseForProviderTests
+    public class GitHubProviderTests : BaseForProviderTests
     {
         [Fact]
-        public async Task GenerateStartRequestDoesNotCallFacebookApi()
+        public async Task GenerateStartRequestDoesNotCallGitHubApi()
         {
             // Arrange
             var config = CreateProviderConfig();
             var (restClientFactory, restClient) = CreateRestClientAndFactory();
 
-            var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
+            var provider = new GitHubProvider(config, restClientFactory, "url1", "url2");
 
             var http = Substitute.For<HttpRequest>();
 
@@ -42,9 +41,9 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             var config = CreateProviderConfig();
             var (restClientFactory, restClient) = CreateRestClientAndFactory();
 
-            // Arrange - Calling Facebook API succeeds
+            // Arrange - Calling GitHub API succeeds
 
-            var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
+            var provider = new GitHubProvider(config, restClientFactory, "url1", "url2");
 
             var http = Substitute.For<HttpRequest>();
 
@@ -53,35 +52,32 @@ namespace Noggin.NetCoreAuth.Tests.Providers
 
             // Assert
             Assert.NotNull(result.url);
-            Assert.NotNull(result.secret);
-            Assert.True(Guid.TryParse(result.secret, out var guidSecret));
         }
 
         [Fact]
-        public async Task AuthenticateUserThrowsExceptionIfFacebookApiFails()
+        public async Task AuthenticateUserThrowsExceptionIfGitHubApiFails()
         {
             // Arrange
             var config = CreateProviderConfig();
             var (restClientFactory, restClient) = CreateRestClientAndFactory();
 
-            // Arrnage - Calling Facebook API for token succeeds
+            // Arrnage - Calling GitHub API for token succeeds
             SetupTokenResultSuccess(restClient, "token");
 
-            // Arrange - Calling Facebook API fails
-            var response = Substitute.For<IRestResponse<MeResult>>();
+            // Arrange - Calling GitHub API to get user fails
+            var response = Substitute.For<IRestResponse<UserResult>>();
             response.IsSuccessful.Returns(false);
-            restClient.ExecuteTaskAsync<MeResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
+            restClient.ExecuteTaskAsync<UserResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
 
-            var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
+            var provider = new GitHubProvider(config, restClientFactory, "url1", "url2");
 
             var http = Substitute.For<HttpRequest>();
             http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
-                { "state", new StringValues("TestState") },
-                { "code", new StringValues("TestCode") },
+                { "code", new StringValues("TestCode") }
             }));
 
             // Act / Assert
-            await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "secret"));
+            await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, ""));
         }
 
         [Fact]
@@ -91,28 +87,26 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             var config = CreateProviderConfig();
             var (restClientFactory, restClient) = CreateRestClientAndFactory();
 
-
-            // Arrange - Calling Facebook API for token
+            // Arrange - Calling GitHub API for token
             SetupTokenResultSuccess(restClient, "token");
 
-            // Arrange - Calling Facebook for user details
-            var facebookResponse = Substitute.For<IRestResponse<MeResult>>();
-            facebookResponse.IsSuccessful.Returns(true);
-            facebookResponse.StatusCode.Returns(HttpStatusCode.OK);
-            facebookResponse.Data.Returns(new MeResult
+            // Arrange - Calling GitHub for user details
+            var gitHubResponse = Substitute.For<IRestResponse<UserResult>>();
+            gitHubResponse.IsSuccessful.Returns(true);
+            gitHubResponse.StatusCode.Returns(HttpStatusCode.OK);
+            gitHubResponse.Data.Returns(new UserResult
             {
                 Id = 2268,
-                Username = "RichardG2268",
+                Login = "NogginBox",
                 Name = "Richard Garside",
-                Locale = "en-GB"
+                AvatarUrl = "lookingood.jpg"
             });
-            restClient.ExecuteTaskAsync<MeResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(facebookResponse));
+            restClient.ExecuteTaskAsync<UserResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(gitHubResponse));
 
-            var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
+            var provider = new GitHubProvider(config, restClientFactory, "url1", "url2");
 
             var http = Substitute.For<HttpRequest>();
             http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
-                { "state", new StringValues("TestState") },
                 { "code", new StringValues("TestCode") },
             }));
 
@@ -121,15 +115,15 @@ namespace Noggin.NetCoreAuth.Tests.Providers
 
             // Assert
             Assert.Equal("Richard Garside", authenticatedUser.Name);
-            Assert.Equal("RichardG2268", authenticatedUser.UserName);
-            Assert.Equal("https://graph.facebook.com/2268/picture", authenticatedUser.Picture);
+            Assert.Equal("NogginBox", authenticatedUser.UserName);
+            Assert.Equal("lookingood.jpg", authenticatedUser.Picture);
         }
 
         private ProviderConfig CreateProviderConfig()
         {
             return new ProviderConfig
             {
-                Name = "Facebook",
+                Name = "GitHub",
                 Api = new ApiConfig
                 {
                     PrivateKey = "privateKey",
@@ -140,11 +134,11 @@ namespace Noggin.NetCoreAuth.Tests.Providers
 
         private void SetupTokenResultSuccess(IRestClient restClient, string token)
         {
-            var facebookResponse = Substitute.For<IRestResponse<AccessTokenResult>>();
-            facebookResponse.IsSuccessful.Returns(true);
-            facebookResponse.StatusCode.Returns(HttpStatusCode.OK);
-            facebookResponse.Data.Returns(new AccessTokenResult { AccessToken = token });
-            restClient.ExecuteTaskAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(facebookResponse));
+            var gitHubResponse = Substitute.For<IRestResponse<AccessTokenResult>>();
+            gitHubResponse.IsSuccessful.Returns(true);
+            gitHubResponse.StatusCode.Returns(HttpStatusCode.OK);
+            gitHubResponse.Data.Returns(new AccessTokenResult { AccessToken = token });
+            restClient.ExecuteTaskAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(gitHubResponse));
         }
     }
 }

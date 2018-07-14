@@ -1,12 +1,13 @@
-﻿using Noggin.NetCoreAuth.Config;
+﻿using Microsoft.Extensions.Options;
+using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
-using Noggin.NetCoreAuth.Providers.Twitter;
-using System.Collections.Generic;
-using System;
-using System.Linq;
-using Microsoft.Extensions.Options;
 using Noggin.NetCoreAuth.Providers.Facebook;
+using Noggin.NetCoreAuth.Providers.GitHub;
 using Noggin.NetCoreAuth.Providers.Google;
+using Noggin.NetCoreAuth.Providers.Twitter;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Noggin.NetCoreAuth.Providers
 {
@@ -39,7 +40,9 @@ namespace Noggin.NetCoreAuth.Providers
             {
 				case "facebook":
 					return Get(name, (x) => new FacebookProvider(x, _restClientFactory, _defaultRedirectTemplate, _defaultCallbackTemplate));
-				case "google":
+                case "github":
+                    return Get(name, (x) => new GitHubProvider(x, _restClientFactory, _defaultRedirectTemplate, _defaultCallbackTemplate));
+                case "google":
 					return Get(name, (x) => new GoogleProvider(x, _restClientFactory, _defaultRedirectTemplate, _defaultCallbackTemplate));
 				case "twitter":
                     return Get(name, (x) => new TwitterProvider(x, _restClientFactory, _defaultRedirectTemplate, _defaultCallbackTemplate));

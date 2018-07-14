@@ -26,7 +26,6 @@ namespace Noggin.NetCoreAuth.Providers
 		/// </summary>
 		public bool? CallbacksUseHttps { get; }
         public string RedirectTemplate { get; }
-		
 
         internal abstract Task<UserInformation> AuthenticateUser(HttpRequest request, string state);
         internal abstract Task<(string url, string secret)> GenerateStartRequestUrl(HttpRequest request);
@@ -35,7 +34,7 @@ namespace Noggin.NetCoreAuth.Providers
         {
             if (!string.IsNullOrEmpty(template1)) return template1;
 
-            return templateTemplate.Replace("{provider}", providerName);
+            return templateTemplate.Replace("{provider}", providerName.ToLower());
         }
 
 		protected string CreateCallbackUrl(HttpRequest request)
