@@ -10,7 +10,7 @@ namespace Noggin.NetCoreAuth.Config
     public static class ConfigExtensions
     {
         public static IServiceCollection AddNogginNetCoreAuth<TLoginHandler>(this IServiceCollection services,
-            IConfigurationRoot configuration,
+            IConfiguration configuration,
             string configSectionName = "NogginNetAuth") where TLoginHandler:class,ILoginHandler
         {
             services.Configure<AuthConfigSection>(configuration.GetSection(configSectionName));

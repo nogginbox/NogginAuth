@@ -63,7 +63,7 @@ ActionResult FailedLoginFrom(string provider, UserInformation user, HttpContext 
     <h3>3) Add some bits to Startup.cs</h3>
     <p>You'll need the following using statement:</p>
     <pre class="code">using Noggin.NetCoreAuth.Config;</pre>
-    <p>In <strong class="code">ConfigureServices(...)</strong> you'll need to register NoggginNetCoreAuth, tell it what type your implentation of <span class="code">ILoginHandler</span> is and pass it an instance of <span class="code">IConfigurationRoot</span> so it can get settings from <span class="code">appsettings.json</span>.</p>
+    <p>In <strong class="code">ConfigureServices(...)</strong> you'll need to register NoggginNetCoreAuth, tell it what type your implentation of <span class="code">ILoginHandler</span> is and pass it an instance of <span class="code">IConfiguration</span> so it can get settings from <span class="code">appsettings.json</span>.</p>
 
 <pre class="code">
 public void ConfigureServices(IServiceCollection services)
