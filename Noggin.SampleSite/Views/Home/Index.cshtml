@@ -63,21 +63,45 @@ ActionResult FailedLoginFrom(string provider, UserInformation user, HttpContext 
     <h3>3) Add some bits to Startup.cs</h3>
     <p>You'll need the following using statement:</p>
     <pre class="code">using Noggin.NetCoreAuth.Config;</pre>
-    <p>In <strong class="code">ConfigureServices(...)</strong> you'll need to register NoggginNetCoreAuth, tell it what type your implentation of <span class="code">ILoginHandler</span> is and pass it an instance of <span class="code">IConfiguration</span> so it can get settings from <span class="code">appsettings.json</span>.</p>
 
-<pre class="code">
+    <p>In <strong class="code">ConfigureServices(...)</strong></p>
+    <ul>
+        <li>Register NoggginNetCoreAuth, tell it what type your implentation of
+            <span class="code">ILoginHandler</span> is and pass it an instance of
+            <span class="code">IConfiguration</span> so it can get settings from
+            <span class="code">appsettings.json</span>.</li>
+        <li>Configure session.</li>
+    </ul>
+    <pre class="code">
 public void ConfigureServices(IServiceCollection services)
 {
+    // Point NogginAuth at you Login Handler
     services.AddNogginNetCoreAuth&lt;YourFunkyLoginHandler&gt;(Configuration);
+
+    // Configure session. Noggin Auth requires session to persists details between first and second call to login providers
+    services.AddSession(options =>
+    {
+        options.IdleTimeout = TimeSpan.FromMinutes(25);
+        options.Cookie.HttpOnly = true;
+        options.Cookie.Name = ".What.ever.you.want.to.call.your.cookie";
+    });
     // ...
 }
 </pre>
 
-    <p>Where you register your routes you'll need to register the authentication routes. These can be modified in appsettings</p>
-<pre class="code">
+    <p>In <strong class="code">Configure(...)</strong></p>
+    <ul>
+        <li>Where you register your routes you'll need to register the authentication routes. These can be modified in appsettings.</li>
+        <li>Enable session.</li>
+    </ul>
+    <pre class="code">
 public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
 {
-    ..//
+    // ...
+
+    app.UseSession();
+    
+    // ...
 
     app.UseMvc(routes =>
     {
@@ -126,6 +150,13 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
 	"DefaultCallbackTemplate": "auth/callback/{provider}"
 }
 </pre>
+    <p>You will need to register an app with each provider to be able to use them to login. You can register here to get API Keys:</p>
+    <ul>
+        <li><a href="https://developers.facebook.com/">Facebook Developer Site</a></li>
+        <li><a href="https://github.com/settings/developers">Github Developer Settings</a></li>
+        <li><a href="https://console.developers.google.com/apis/credentials">Google API Credentials</a></li>
+        <li><a href="https://apps.twitter.com/">Twitter API and App Management</a></li>
+    </ul>
 </section>
 
 <section class="setup" id="logginButton">

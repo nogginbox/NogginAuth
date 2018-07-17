@@ -33,8 +33,7 @@ namespace Noggin.SampleSite
                 .AddMemoryCache()
                 .AddSession(options =>
                 {
-                    // Set a short timeout for easy testing.
-                    options.IdleTimeout = TimeSpan.FromMinutes(5);
+                    options.IdleTimeout = TimeSpan.FromMinutes(25);
                     options.Cookie.HttpOnly = true;
                     options.Cookie.Name = ".Font.Wtf.Session";
                 });
