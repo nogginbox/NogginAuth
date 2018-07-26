@@ -46,11 +46,11 @@ namespace Noggin.SampleSite
             services
                 .AddAuthentication(options =>
                 {
-                    options.DefaultScheme = "NogginSampleCookieScheme";
-                    options.DefaultChallengeScheme = "NogginSampleCookieScheme";
-                    options.DefaultAuthenticateScheme = "NogginSampleCookieScheme";
+                    options.DefaultScheme = SampleLoginHandler.CookieSchemeName;
+                    options.DefaultChallengeScheme = SampleLoginHandler.CookieSchemeName;
+                    options.DefaultAuthenticateScheme = SampleLoginHandler.CookieSchemeName;
                 })
-                .AddCookie("NogginSampleCookieScheme", options => {
+                .AddCookie(SampleLoginHandler.CookieSchemeName, options => {
                     options.AccessDeniedPath = "/";
                     options.LoginPath = "/";
                 });

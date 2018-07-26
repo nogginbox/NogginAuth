@@ -12,7 +12,7 @@ namespace Noggin.SampleSite.Controllers
 
         public IActionResult Logout()
         {
-            HttpContext.SignOutAsync("NogginSampleCookieScheme");
+            HttpContext.SignOutAsync(SampleLoginHandler.CookieSchemeName);
             return RedirectToAction("Index");
         }
 
