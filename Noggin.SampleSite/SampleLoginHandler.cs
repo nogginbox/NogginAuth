@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Noggin.NetCoreAuth.Exceptions;
 using Noggin.NetCoreAuth.Model;
 using Noggin.NetCoreAuth.Providers;
 using Noggin.SampleSite.Data;
@@ -39,9 +40,15 @@ namespace Noggin.SampleSite
 			return principal;
 		}
 
-		public ActionResult FailedLoginFrom(string provider, UserInformation userInfo, HttpContext context)
+		public ActionResult FailedLoginFrom(string provider, UserInformation userInfo, HttpContext context, AuthenticationFailInformation failInfo)
         {
             // Todo: Set Tempdata message and display message to user
+            if (failInfo != null)
+            {
+                // Just throw exception for now
+                throw new NogginNetCoreAuthException(failInfo.Reason);
+            }
+         
             return new RedirectToActionResult("About", "Home", new { type = "failed" });
         }
 

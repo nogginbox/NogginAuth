@@ -36,24 +36,30 @@ namespace Noggin.NetCoreAuth.Mvc
         {
             var authProvider = _providerFactory.Get(provider);
 
-
             UserInformation user;
             try
             {
                 var secret = HttpContext.Session.GetString("secret");
                 user = await authProvider.AuthenticateUser(Request, secret);
             }
-            catch(AuthenticationException ex)
+            catch(Exception ex) when (!(ex is NogginNetCoreConfigException))
             {
-                return _loginHandler.FailedLoginFrom(provider, null, HttpContext);
+                var failInfo = new AuthenticationFailInformation(ex);
+                return _loginHandler.FailedLoginFrom(provider, null, HttpContext, failInfo);
             }
 
-            // todo: Do we need to check for user info, perhaps each provider should deal with this (** IMPORTANT **)
-            var loginSuccess = !string.IsNullOrEmpty(user.Id); 
+            var loginSuccess = !string.IsNullOrEmpty(user.Id);
 
-            return (loginSuccess)
-                ? _loginHandler.SuccessfulLoginFrom(provider, user, HttpContext)
-                : _loginHandler.FailedLoginFrom(provider, user, HttpContext);
+            if (loginSuccess)
+            {
+                return _loginHandler.SuccessfulLoginFrom(provider, user, HttpContext);
+            }
+            else
+            {
+                // todo: Get better fail info from provider
+                var failInfo = new AuthenticationFailInformation("Could not authenticate");
+                return _loginHandler.FailedLoginFrom(provider, user, HttpContext, failInfo);
+            }
         }
     }
 }
