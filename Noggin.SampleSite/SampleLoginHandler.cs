@@ -40,7 +40,7 @@ namespace Noggin.SampleSite
 			return principal;
 		}
 
-		public ActionResult FailedLoginFrom(string provider, UserInformation userInfo, HttpContext context, AuthenticationFailInformation failInfo)
+		public ActionResult FailedLoginFrom(string provider, AuthenticationFailInformation failInfo, HttpContext context)
         {
             // Todo: Set Tempdata message and display message to user
             if (failInfo != null)

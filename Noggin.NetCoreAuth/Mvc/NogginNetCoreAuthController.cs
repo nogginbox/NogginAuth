@@ -45,7 +45,7 @@ namespace Noggin.NetCoreAuth.Mvc
             catch(Exception ex) when (!(ex is NogginNetCoreConfigException))
             {
                 var failInfo = new AuthenticationFailInformation(ex);
-                return _loginHandler.FailedLoginFrom(provider, null, HttpContext, failInfo);
+                return _loginHandler.FailedLoginFrom(provider, failInfo, HttpContext);
             }
 
             var loginSuccess = !string.IsNullOrEmpty(user.Id);
@@ -57,8 +57,8 @@ namespace Noggin.NetCoreAuth.Mvc
             else
             {
                 // todo: Get better fail info from provider
-                var failInfo = new AuthenticationFailInformation("Could not authenticate");
-                return _loginHandler.FailedLoginFrom(provider, user, HttpContext, failInfo);
+                var failInfo = new AuthenticationFailInformation("Could not authenticate", user);
+                return _loginHandler.FailedLoginFrom(provider, failInfo, HttpContext);
             }
         }
     }
