@@ -54,7 +54,7 @@
     <p>This is the step that requires most thought and the one that gives you the most power and freedom. Noggin.NetCoreAuth.Providers.ILoginHandler has two methods. One is called if the user successfully authenticates with their chosen social login provider, the other is called if they fail. We send you the information we've been able to glean about them from the provider, but you need to log them in (or not) to your site and save anything you need to.</p>
 <pre class="code">
 ActionResult SuccessfulLoginFrom(string provider, UserInformation user, HttpContext context);
-ActionResult FailedLoginFrom(string provider, UserInformation user, HttpContext context);
+ActionResult FailedLoginFrom(string provider, AuthenticationFailInformation failInfo, HttpContext context);
 </pre>
     <p>See <a class="code" href="https://github.com/NogginBox/NogginAuth/blob/master/Noggin.SampleSite/SampleLoginHandler.cs">SampleLoginHandler</a> in the sample site for an example of one. The important part is that we don't have any opinion on how to store your user, or even if you need to. We just tell you who they are.</p>
 </section>
