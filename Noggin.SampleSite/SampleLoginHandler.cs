@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Noggin.SampleSite
 {
@@ -40,7 +41,7 @@ namespace Noggin.SampleSite
 			return principal;
 		}
 
-		public ActionResult FailedLoginFrom(string provider, AuthenticationFailInformation failInfo, HttpContext context)
+		public Task<IActionResult> FailedLoginFrom(string provider, AuthenticationFailInformation failInfo, HttpContext context)
         {
             // Todo: Set Tempdata message and display message to user
             if (failInfo != null)
@@ -49,10 +50,11 @@ namespace Noggin.SampleSite
                 throw new NogginNetCoreAuthException(failInfo.Reason);
             }
          
-            return new RedirectToActionResult("About", "Home", new { type = "failed" });
+            // Nothing to await so just returning a task of our result
+            return Task.FromResult(new RedirectToActionResult("About", "Home", new { type = "failed" }) as IActionResult);
         }
 
-        public ActionResult SuccessfulLoginFrom(string provider, UserInformation userInfo, HttpContext httpContext)
+        public async Task<IActionResult> SuccessfulLoginFrom(string provider, UserInformation userInfo, HttpContext httpContext)
         {
 			var loginUser = _dbContext.Users
 				.Include(u => u.AuthAccounts)
@@ -103,7 +105,7 @@ namespace Noggin.SampleSite
 					_dbContext.Users.Remove(loginUser);
 				}
 				
-				_dbContext.SaveChanges();
+				await _dbContext.SaveChangesAsync();
 				return new RedirectToActionResult("Index", "Home", null);
 			}
 			// New login
@@ -116,7 +118,7 @@ namespace Noggin.SampleSite
             }
 
             loginUser.LastLoggedIn = DateTime.Now;
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
 
             SignUserIn(loginUser, provider, httpContext);
             return new RedirectToActionResult("Index", "Home", null);

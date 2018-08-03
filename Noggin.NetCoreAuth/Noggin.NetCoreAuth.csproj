@@ -5,9 +5,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <Title>Noggin .NetCore Auth</Title>
     <!-- summary is not migrated from project.json, but you can use the <Description> property for that if needed. -->
-    <PackageTags>auth</PackageTags>
-    <PackageReleaseNotes>This is the first non beta release of Noggin .NetCore Auth. Please add feature requests and bug reports to the project's GitHub issue page.</PackageReleaseNotes>
+    <PackageTags>auth, authentication, login, facebook, google, github, twitter</PackageTags>
+    <PackageReleaseNotes>Made ILoginHandler async. This is the 2nd non beta release of Noggin .NetCore Auth. Please add feature requests and bug reports to the project's GitHub issue page.</PackageReleaseNotes>
     <PackageIconUrl>https://avatars1.githubusercontent.com/u/729381?s=460&amp;v=4</PackageIconUrl>
     <PackageProjectUrl>http://coreauth.nogginbox.co.uk</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/NogginBox/NogginAuth/blob/master/LICENSE.md</PackageLicenseUrl>
@@ -15,7 +16,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/NogginBox/NogginAuth</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.4.0</Version>
+    <Version>0.5.0</Version>
     <Authors>Richard Garside</Authors>
     <Company>Garsonix Ltd</Company>
     <Product>Noggin .NetCore Auth</Product>
@@ -25,7 +26,7 @@
 Includes login providers for GitHub, Google, Facebook and Twitter.
 
 See the project site for instructions and the sample site implementation on for a working example.</Description>
-    <AssemblyVersion>0.4.0.0</AssemblyVersion>
+    <AssemblyVersion>0.5.0.0</AssemblyVersion>
     <!-- owners is not supported in MSBuild -->
   </PropertyGroup>
 

@@ -33,7 +33,7 @@
 
 <section class="setup">
     <h2>How to set up</h2>
-    <p>For an example site of NogginNetCoreAuth in action, this site is available in the source code at ...</p>
+    <p>For an example site of NogginNetCoreAuth in action, the <a href="https://github.com/NogginBox/NogginAuth/tree/master/Noggin.SampleSite">source code for this site is available GitHub</a>.</p>
     <p>The important steps are:</p>
     <ol>
         <li><a href="#nuget">Install the nuget package</a></li>
@@ -52,9 +52,10 @@
 <section class="setup" id="ILoginHandler">
     <h3>2) Implement ILoginHandler</h3>
     <p>This is the step that requires most thought and the one that gives you the most power and freedom. Noggin.NetCoreAuth.Providers.ILoginHandler has two methods. One is called if the user successfully authenticates with their chosen social login provider, the other is called if they fail. We send you the information we've been able to glean about them from the provider, but you need to log them in (or not) to your site and save anything you need to.</p>
-<pre class="code">
-ActionResult SuccessfulLoginFrom(string provider, UserInformation user, HttpContext context);
-ActionResult FailedLoginFrom(string provider, AuthenticationFailInformation failInfo, HttpContext context);
+    <p>Once you're done you can return a view or redirect the user to a page of your choice.</p>
+    <pre class="code">
+    Task&lt;IActionResult&gt; SuccessfulLoginFrom(string provider, UserInformation user, HttpContext context);
+    Task&lt;IActionResult&gt; FailedLoginFrom(string provider, AuthenticationFailInformation failInfo, HttpContext context);
 </pre>
     <p>See <a class="code" href="https://github.com/NogginBox/NogginAuth/blob/master/Noggin.SampleSite/SampleLoginHandler.cs">SampleLoginHandler</a> in the sample site for an example of one. The important part is that we don't have any opinion on how to store your user, or even if you need to. We just tell you who they are.</p>
 </section>

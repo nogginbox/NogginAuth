@@ -1,11 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Noggin.NetCoreAuth.Providers;
-using Noggin.NetCoreAuth.Model;
-using System.Security.Authentication;
 using Noggin.NetCoreAuth.Exceptions;
+using Noggin.NetCoreAuth.Model;
+using Noggin.NetCoreAuth.Providers;
+using System;
+using System.Threading.Tasks;
 
 namespace Noggin.NetCoreAuth.Mvc
 {
@@ -45,20 +44,20 @@ namespace Noggin.NetCoreAuth.Mvc
             catch(Exception ex) when (!(ex is NogginNetCoreConfigException))
             {
                 var failInfo = new AuthenticationFailInformation(ex);
-                return _loginHandler.FailedLoginFrom(provider, failInfo, HttpContext);
+                return await _loginHandler.FailedLoginFrom(provider, failInfo, HttpContext);
             }
 
             var loginSuccess = !string.IsNullOrEmpty(user.Id);
 
             if (loginSuccess)
             {
-                return _loginHandler.SuccessfulLoginFrom(provider, user, HttpContext);
+                return await _loginHandler.SuccessfulLoginFrom(provider, user, HttpContext);
             }
             else
             {
                 // todo: Get better fail info from provider
                 var failInfo = new AuthenticationFailInformation("Could not authenticate", user);
-                return _loginHandler.FailedLoginFrom(provider, failInfo, HttpContext);
+                return await _loginHandler.FailedLoginFrom(provider, failInfo, HttpContext);
             }
         }
     }

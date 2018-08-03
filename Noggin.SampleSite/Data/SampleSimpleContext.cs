@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Threading;
 
 namespace Noggin.SampleSite.Data
 {
@@ -15,7 +16,6 @@ namespace Noggin.SampleSite.Data
     {
 		public SampleSimpleDbContext()
 		{
-
 		}
 
         public DbSet<User> Users { get; set; }
