@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Noggin.NetCoreAuth.Config;
 using Noggin.SampleSite.Data;
 using System;
+using System.IO;
 
 namespace Noggin.SampleSite
 {
@@ -65,14 +68,24 @@ namespace Noggin.SampleSite
             //if (env.IsDevelopment())
             //{
                 app.UseDeveloperExceptionPage();
-                //app.UseBrowserLink();
+            //app.UseBrowserLink();
             /*}
             else
             {
                 app.UseExceptionHandler("/Home/Error");
             }*/
 
+            // Static files (in wwwroot)
             app.UseStaticFiles();
+            // Static files (in wwwroot/.well-known/acme-challenge) for SSL Cert Auth check
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.WebRootPath, @".well-known", "acme-challenge")),
+                RequestPath = "/.well-known/acme-challenge",
+                ServeUnknownFileTypes = true,
+                DefaultContentType = "text/json"
+            });
+
             app.UseSession();
 
             app.UseAuthentication();
