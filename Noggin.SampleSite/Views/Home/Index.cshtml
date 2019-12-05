@@ -168,3 +168,8 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
     <pre class="code">&lt;auth-link provider=&quot;twitter&quot;&gt;Twitter&lt;/auth-link&gt;</pre>
     <p>This will render an &lt;a&gt; tag with a link to correct place to kick off authentication. You can set <span class="code">provider</span> to be any of your configured providers.</p>
 </section>
+
+<section class="setup" id="ssl">
+    <h4>6) Optional - Install SSL on your server</h4>
+    <p>Some providers will only work if you have SSL and if your users need to login to your site then chances are that you'd be better off with an SSL cert installed on your site. If you've not already got SSL setup then read my post on <a href="http://www.nogginbox.co.uk/blog/installing-a-free-ssl-cert-on-your-iis-net-core-mvc-website">setting up a free SSL cert on IIS</a>.</p>
+</section>
