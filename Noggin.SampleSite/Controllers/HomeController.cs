@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Noggin.SampleSite.Controllers
 {
@@ -12,7 +13,7 @@ namespace Noggin.SampleSite.Controllers
 
         public IActionResult Logout()
         {
-            HttpContext.SignOutAsync(SampleLoginHandler.CookieSchemeName);
+            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index");
         }
 

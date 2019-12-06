@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,6 @@ namespace Noggin.SampleSite
     public class SampleLoginHandler : ILoginHandler
     {
         private readonly ISimpleDbContext _dbContext;
-        public static readonly string CookieSchemeName = "NogginSampleCookieScheme";
 
         public SampleLoginHandler(ISimpleDbContext dbContext)
         {
@@ -37,7 +37,7 @@ namespace Noggin.SampleSite
 				new Claim("LoginProvider", provider)
 			};
 			var principal = new ClaimsPrincipal();
-			principal.AddIdentity(new ClaimsIdentity(claims, CookieSchemeName));
+			principal.AddIdentity(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
 			return principal;
 		}
 
@@ -137,7 +137,7 @@ namespace Noggin.SampleSite
 			var policy = new OperationAuthorizationRequirement { Name = "All" };
 
 			// https://stackoverflow.com/questions/46057109/why-doesnt-my-cookie-authentication-work-in-asp-net-core
-			httpContext.SignInAsync(CookieSchemeName, principal);
+			httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 		}
 	}
 }

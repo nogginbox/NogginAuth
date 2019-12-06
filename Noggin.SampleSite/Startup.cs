@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
@@ -46,17 +47,13 @@ namespace Noggin.SampleSite
             services.AddDbContext<SampleSimpleDbContext>();
 
             //services.AddAuthorization();
-            services
-                .AddAuthentication(options =>
-                {
-                    options.DefaultScheme = SampleLoginHandler.CookieSchemeName;
-                    options.DefaultChallengeScheme = SampleLoginHandler.CookieSchemeName;
-                    options.DefaultAuthenticateScheme = SampleLoginHandler.CookieSchemeName;
-                })
-                .AddCookie(SampleLoginHandler.CookieSchemeName, options => {
-                    options.AccessDeniedPath = "/";
-                    options.LoginPath = "/";
-                });
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
+                    options =>
+                    {
+                        options.AccessDeniedPath = "/";
+                        options.LoginPath = "/";
+                    });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -17,7 +17,7 @@ namespace Noggin.NetCoreAuth.Providers.Google
 	/// <remarks> Reference: https://developers.google.com/accounts/docs/OAuth2Login</remarks>
 	internal class GoogleProvider : Provider
 	{
-		private ApiConfig _apiDetails;
+		private readonly ApiConfig _apiDetails;
         private readonly IRestClientFactory _restClientFactory;
 
         internal GoogleProvider(ProviderConfig config, IRestClientFactory restClientFactory, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
