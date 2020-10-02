@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
