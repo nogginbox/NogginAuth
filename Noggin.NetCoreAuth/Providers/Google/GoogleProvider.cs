@@ -59,7 +59,7 @@ namespace Noggin.NetCoreAuth.Providers.Google
 		{
 			if (queryStringParameters == null || !queryStringParameters.Any())
 			{
-				throw new ArgumentOutOfRangeException("queryStringParameters");
+				throw new ArgumentOutOfRangeException(nameof(queryStringParameters));
 			}
 
 			// Maybe we have an error?
@@ -119,7 +119,7 @@ namespace Noggin.NetCoreAuth.Providers.Google
 		{
 			if (accessToken == null)
 			{
-				throw new ArgumentNullException("accessToken");
+				throw new ArgumentNullException(nameof(accessToken));
 			}
 
 			IRestResponse<UserInfoResult> response;

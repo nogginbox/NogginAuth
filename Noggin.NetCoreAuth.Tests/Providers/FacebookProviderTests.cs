@@ -124,7 +124,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             Assert.Equal("https://graph.facebook.com/2268/picture", authenticatedUser.Picture);
         }
 
-        private ProviderConfig CreateProviderConfig()
+        private static ProviderConfig CreateProviderConfig()
         {
             return new ProviderConfig
             {
@@ -137,7 +137,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             };
         }
 
-        private void SetupTokenResultSuccess(IRestClient restClient, string token)
+        private static void SetupTokenResultSuccess(IRestClient restClient, string token)
         {
             var facebookResponse = Substitute.For<IRestResponse<AccessTokenResult>>();
             facebookResponse.IsSuccessful.Returns(true);

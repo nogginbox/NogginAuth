@@ -54,7 +54,7 @@ namespace Noggin.NetCoreAuth.Providers.GitHub
         {
 			if (queryStringParameters == null || !queryStringParameters.Any())
 			{
-				throw new ArgumentOutOfRangeException("queryStringParameters");
+				throw new ArgumentOutOfRangeException(nameof(queryStringParameters));
 			}
 
 			// Maybe we have an error?
@@ -77,7 +77,7 @@ namespace Noggin.NetCoreAuth.Providers.GitHub
 		{
 			if (string.IsNullOrEmpty(authorizationCode))
 			{
-				throw new ArgumentNullException("authorizationCode");
+				throw new ArgumentNullException(nameof(authorizationCode));
 			}
 
             var restClient = _restClientFactory.Create(_oauthStartUrl);

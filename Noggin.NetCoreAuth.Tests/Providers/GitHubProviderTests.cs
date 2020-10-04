@@ -118,7 +118,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             Assert.Equal("lookingood.jpg", authenticatedUser.Picture);
         }
 
-        private ProviderConfig CreateProviderConfig()
+        private static ProviderConfig CreateProviderConfig()
         {
             return new ProviderConfig
             {
@@ -131,7 +131,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             };
         }
 
-        private void SetupTokenResultSuccess(IRestClient restClient, string token)
+        private static void SetupTokenResultSuccess(IRestClient restClient, string token)
         {
             var gitHubResponse = Substitute.For<IRestResponse<AccessTokenResult>>();
             gitHubResponse.IsSuccessful.Returns(true);

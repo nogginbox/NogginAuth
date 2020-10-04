@@ -125,7 +125,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             Assert.Equal("hotdang.jpg", authenticatedUser.Picture);
         }
 
-        private ProviderConfig CreateProviderConfig()
+        private static ProviderConfig CreateProviderConfig()
         {
             return new ProviderConfig
             {
@@ -138,7 +138,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             };
         }
 
-        private void SetupTokenResultSuccess(IRestClient restClient, string token, string secret)
+        private static void SetupTokenResultSuccess(IRestClient restClient, string token, string secret)
         {
             var googleResponse = Substitute.For<IRestResponse<AccessTokenResult>>();
             googleResponse.IsSuccessful.Returns(true);

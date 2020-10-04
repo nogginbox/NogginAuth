@@ -58,7 +58,7 @@ namespace Noggin.SampleSite.Controllers
         /// <summary>
         /// Gets a user name to show in the admin, for privacy purposes only shows current user's full name
         /// </summary>
-        private string GetDisplayUserName(User user, bool showRealName)
+        private static string GetDisplayUserName(User user, bool showRealName)
         {
             if(showRealName)
             {

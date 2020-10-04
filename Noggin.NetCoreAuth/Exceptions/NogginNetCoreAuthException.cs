@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace Noggin.NetCoreAuth.Exceptions
 {
@@ -14,6 +15,10 @@ namespace Noggin.NetCoreAuth.Exceptions
         }
 
         public NogginNetCoreAuthException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected NogginNetCoreAuthException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(serializationInfo, streamingContext)
         {
         }
     }
