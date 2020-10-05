@@ -20,7 +20,7 @@ namespace Noggin.NetCoreAuth.Extensions
 
             foreach (var item in source)
             {
-                var propertyName = item.Key.Replace("_", "");
+                var propertyName = item.Key.Replace("_", "", StringComparison.OrdinalIgnoreCase);
                 var property = someObjectType.GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
                 if (property == null) continue;
 
@@ -29,7 +29,7 @@ namespace Noggin.NetCoreAuth.Extensions
                     var itemValue = Convert.ChangeType(item.Value.ToString(), property.PropertyType);
                     property.SetValue(someObject, itemValue, null);
                 }
-                catch(Exception ex)
+                catch(Exception)
                 {
 
                 }

@@ -28,7 +28,7 @@ namespace Noggin.SampleSite
 		/// <summary>
 		/// Create a principal to login with containing claims with info about the user
 		/// </summary>
-		private ClaimsPrincipal CreatePrincipal(User user, string provider)
+		private static ClaimsPrincipal CreatePrincipal(User user, string provider)
 		{
 			var claims = new List<Claim>
 			{

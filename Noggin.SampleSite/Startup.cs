@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Noggin.NetCoreAuth.Config;
 using Noggin.SampleSite.Data;
@@ -15,7 +16,7 @@ namespace Noggin.SampleSite
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IWebHostEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -57,11 +58,8 @@ namespace Noggin.SampleSite
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
             //if (env.IsDevelopment())
             //{
                 app.UseDeveloperExceptionPage();
@@ -83,18 +81,20 @@ namespace Noggin.SampleSite
                 DefaultContentType = "text/json"
             });
 
+            app.UseRouting();
+
             app.UseSession();
 
             app.UseAuthentication();
 
 
-            app.UseMvc(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
 
-                routes.MapNogginNetAuthRoutes(app.ApplicationServices);
+                endpoints.MapNogginNetAuthRoutes(app.ApplicationServices);
             });
         }
     }

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
@@ -54,7 +53,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             var result = await provider.GenerateStartRequestUrl(http);
 
             // Assert
-            Assert.Contains("=TestToken", result.url);
+            Assert.Contains("=TestToken", result.url, System.StringComparison.Ordinal);
             Assert.Equal("TestSecret", result.secret);
         }
 
@@ -125,7 +124,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             Assert.Equal("hotdang.jpg", authenticatedUser.Picture);
         }
 
-        private ProviderConfig CreateProviderConfig()
+        private static ProviderConfig CreateProviderConfig()
         {
             return new ProviderConfig
             {
@@ -138,7 +137,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             };
         }
 
-        private void SetupTokenResultSuccess(IRestClient restClient, string token, string secret)
+        private static void SetupTokenResultSuccess(IRestClient restClient, string token, string secret)
         {
             var twitterResponse = Substitute.For<IRestResponse<TokenResult>>();
             twitterResponse.IsSuccessful.Returns(true);

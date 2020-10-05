@@ -20,22 +20,24 @@ namespace Noggin.NetCoreAuth.Config
             return services;
         }
 
-        public static IRouteBuilder MapNogginNetAuthRoutes(this IRouteBuilder routes, IServiceProvider services)
+
+
+        public static IEndpointRouteBuilder MapNogginNetAuthRoutes(this IEndpointRouteBuilder routes, IServiceProvider services)
         {
             var providerFactory = services.GetRequiredService<IProviderFactory>();
 
-            foreach(var provider in providerFactory.Providers)
+            foreach (var provider in providerFactory.Providers)
             {
                 // Todo: Check provider is supported
                 // Can I set a type or class as a default
-                routes.MapRoute(
+                routes.MapControllerRoute(
                     name: $"NogginAuth_Redirect_{provider.Name}",
-                    template: provider.RedirectTemplate,
+                    pattern: provider.RedirectTemplate,
                     defaults: new { controller = "NogginNetCoreAuth", action = "RedirectToProvider", provider = provider.Name });
 
-                routes.MapRoute(
+                routes.MapControllerRoute(
                     name: $"NogginAuth_Callback_{provider.Name}",
-                    template: provider.CallbackTemplate,
+                    pattern: provider.CallbackTemplate,
                     defaults: new { controller = "NogginNetCoreAuth", action = "ProviderCallback", provider = provider.Name });
             }
 
