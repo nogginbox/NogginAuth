@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
     <Title>Noggin .NetCore Auth</Title>
     <!-- summary is not migrated from project.json, but you can use the <Description> property for that if needed. -->
     <PackageTags>auth, authentication, login, facebook, google, github, twitter</PackageTags>
-    <PackageReleaseNotes>Made ILoginHandler async. This is the 2nd non beta release of Noggin .NetCore Auth. Please add feature requests and bug reports to the project's GitHub issue page.</PackageReleaseNotes>
+    <PackageReleaseNotes>Made ILoginHandler async. This is the 3rd non beta release of Noggin .NetCore Auth. Please add feature requests and bug reports to the project's GitHub issue page.</PackageReleaseNotes>
     <PackageIconUrl>https://avatars1.githubusercontent.com/u/729381?s=460&amp;v=4</PackageIconUrl>
     <PackageProjectUrl>http://coreauth.nogginbox.co.uk</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/NogginBox/NogginAuth/blob/master/LICENSE.md</PackageLicenseUrl>
@@ -16,11 +16,11 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/NogginBox/NogginAuth</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.0-beta</Version>
+    <Version>1.1.0-beta</Version>
     <Authors>Richard Garside</Authors>
     <Company>Garsonix Ltd</Company>
     <Product>Noggin .NetCore Auth</Product>
-    <Copyright>© 2020 Garsonix Ltd</Copyright>
+    <Copyright>© 2021 Garsonix Ltd</Copyright>
     <Description>A simple library for doing social authentication in .NET Core MVC. It authenticates that people are who they say they are, but does not authorise them and has no opinion on how you store details about your users.
 
 Includes login providers for GitHub, Google, Facebook and Twitter.
@@ -40,13 +40,9 @@ See the project site for instructions and the sample site implementation on for 
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.1.8" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.8" />
-    <PackageReference Include="RestSharp" Version="106.6.7" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
+    <PackageReference Include="RestSharp" Version="106.11.7" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
