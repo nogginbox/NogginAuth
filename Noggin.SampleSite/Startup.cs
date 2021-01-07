@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
@@ -40,14 +41,13 @@ namespace Noggin.SampleSite
                 {
                     options.IdleTimeout = TimeSpan.FromMinutes(25);
                     options.Cookie.HttpOnly = true;
-                    options.Cookie.Name = ".Font.Wtf.Session";
+                    options.Cookie.Name = ".Noggin.NetCoreAuth.Session";
                 });
 
             // Add framework services.
             services.AddMvc();
             services.AddDbContext<SampleSimpleDbContext>();
 
-            //services.AddAuthorization();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
                     options =>
@@ -55,6 +55,8 @@ namespace Noggin.SampleSite
                         options.AccessDeniedPath = "/";
                         options.LoginPath = "/";
                     });
+
+            services.AddAuthorization();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -85,8 +87,9 @@ namespace Noggin.SampleSite
 
             app.UseSession();
 
+            // Order here is important (authorization must be after authentication as it needs an authenticated user to check)
             app.UseAuthentication();
-
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
