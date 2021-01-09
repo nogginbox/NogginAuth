@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Noggin.NetCoreAuth.Config;
 using Noggin.SampleSite.Data;
@@ -15,7 +17,7 @@ namespace Noggin.SampleSite
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IWebHostEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -39,14 +41,13 @@ namespace Noggin.SampleSite
                 {
                     options.IdleTimeout = TimeSpan.FromMinutes(25);
                     options.Cookie.HttpOnly = true;
-                    options.Cookie.Name = ".Font.Wtf.Session";
+                    options.Cookie.Name = ".Noggin.NetCoreAuth.Session";
                 });
 
             // Add framework services.
             services.AddMvc();
             services.AddDbContext<SampleSimpleDbContext>();
 
-            //services.AddAuthorization();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
                     options =>
@@ -54,14 +55,13 @@ namespace Noggin.SampleSite
                         options.AccessDeniedPath = "/";
                         options.LoginPath = "/";
                     });
+
+            services.AddAuthorization();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
             //if (env.IsDevelopment())
             //{
                 app.UseDeveloperExceptionPage();
@@ -83,18 +83,21 @@ namespace Noggin.SampleSite
                 DefaultContentType = "text/json"
             });
 
+            app.UseRouting();
+
             app.UseSession();
 
+            // Order here is important (authorization must be after authentication as it needs an authenticated user to check)
             app.UseAuthentication();
+            app.UseAuthorization();
 
-
-            app.UseMvc(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
 
-                routes.MapNogginNetAuthRoutes(app.ApplicationServices);
+                endpoints.MapNogginNetAuthRoutes(app.ApplicationServices);
             });
         }
     }

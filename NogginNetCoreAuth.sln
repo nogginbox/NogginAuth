@@ -16,7 +16,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Noggin.NetCoreAuth.Tests", "Noggin.NetCoreAuth.Tests\Noggin.NetCoreAuth.Tests.csproj", "{7F2D581D-9663-4EA3-9DF8-0354E33865E3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github actions", "Github actions", "{A86A6EBA-F4B1-495A-8CD1-F2A473034E47}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{A86A6EBA-F4B1-495A-8CD1-F2A473034E47}"
+	ProjectSection(SolutionItems) = preProject
+		azure-pipelines.yml = azure-pipelines.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{F8D62D59-993D-4D8B-BE32-3B3FAA182B2B}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\develop-build-test.yml = .github\workflows\develop-build-test.yml
 		.github\workflows\master-build-test.yml = .github\workflows\master-build-test.yml
@@ -46,6 +51,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A86A6EBA-F4B1-495A-8CD1-F2A473034E47} = {D113DC17-CBD4-412F-B29B-3DB1A39DC6AE}
+		{F8D62D59-993D-4D8B-BE32-3B3FAA182B2B} = {A86A6EBA-F4B1-495A-8CD1-F2A473034E47}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {553E6B42-B273-4E33-B542-6C03821F2D6E}
