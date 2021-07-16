@@ -31,7 +31,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             var result = await provider.GenerateStartRequestUrl(http);
 
             // Assert
-            await restClient.DidNotReceive().ExecuteTaskAsync<AccessTokenResult>(Arg.Any<IRestRequest>());
+            await restClient.DidNotReceive().ExecuteAsync<AccessTokenResult>(Arg.Any<IRestRequest>());
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             // Arrange - Calling Facebook API fails
             var response = Substitute.For<IRestResponse<MeResult>>();
             response.IsSuccessful.Returns(false);
-            restClient.ExecuteTaskAsync<MeResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
+            restClient.ExecuteAsync<MeResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
 
             var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
 
@@ -105,7 +105,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
                 Name = "Richard Garside",
                 Locale = "en-GB"
             });
-            restClient.ExecuteTaskAsync<MeResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(facebookResponse));
+            restClient.ExecuteAsync<MeResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(facebookResponse));
 
             var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
 
@@ -143,7 +143,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             facebookResponse.IsSuccessful.Returns(true);
             facebookResponse.StatusCode.Returns(HttpStatusCode.OK);
             facebookResponse.Data.Returns(new AccessTokenResult { AccessToken = token });
-            restClient.ExecuteTaskAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(facebookResponse));
+            restClient.ExecuteAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(facebookResponse));
         }
     }
 }

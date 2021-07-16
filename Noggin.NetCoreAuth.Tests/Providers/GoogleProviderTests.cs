@@ -31,7 +31,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             var result = await provider.GenerateStartRequestUrl(http);
 
             // Assert
-            await restClient.DidNotReceive().ExecuteTaskAsync<AccessTokenResult>(Arg.Any<IRestRequest>());
+            await restClient.DidNotReceive().ExecuteAsync<AccessTokenResult>(Arg.Any<IRestRequest>());
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             // Arrange - Calling Google API fails
             var response = Substitute.For<IRestResponse<AccessTokenResult>>();
             response.IsSuccessful.Returns(false);
-            restClient.ExecuteTaskAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
+            restClient.ExecuteAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
 
             var provider = new GoogleProvider(config, restClientFactory, "url1", "url2");
 
@@ -106,7 +106,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
                 Language = "en-GB",
                 Image = new Image { Url = "hotdang.jpg" }
             });
-            restClient.ExecuteTaskAsync<UserInfoResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(googleResponse));
+            restClient.ExecuteAsync<UserInfoResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(googleResponse));
 
             var provider = new GoogleProvider(config, restClientFactory, "url1", "url2");
 
@@ -144,7 +144,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             googleResponse.IsSuccessful.Returns(true);
             googleResponse.StatusCode.Returns(HttpStatusCode.OK);
             googleResponse.Data.Returns(new AccessTokenResult { AccessToken = token });
-            restClient.ExecuteTaskAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(googleResponse));
+            restClient.ExecuteAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(googleResponse));
         }
     }
 }

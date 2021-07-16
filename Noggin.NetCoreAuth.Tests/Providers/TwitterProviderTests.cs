@@ -25,7 +25,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             // Arrange - Calling Twitter API fails
             var response = Substitute.For<IRestResponse<TokenResult>>();
             response.IsSuccessful.Returns(false);
-            restClient.ExecuteTaskAsync<TokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
+            restClient.ExecuteAsync<TokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
 
             var provider = new TwitterProvider(config, restClientFactory, "url1", "url2");
 
@@ -70,7 +70,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             // Arrange - Calling Twitter API fails
             var response = Substitute.For<IRestResponse<TokenResult>>();
             response.IsSuccessful.Returns(false);
-            restClient.ExecuteTaskAsync<TokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
+            restClient.ExecuteAsync<TokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
 
             var provider = new TwitterProvider(config, restClientFactory, "url1", "url2");
 
@@ -105,7 +105,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
                 ScreenName = "_richardg",
                 ProfileImageUrl = "hotdang.jpg"
             });
-            restClient.ExecuteTaskAsync<VerifyCredentialsResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(twitterResponse));
+            restClient.ExecuteAsync<VerifyCredentialsResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(twitterResponse));
 
             var provider = new TwitterProvider(config, restClientFactory, "url1", "url2");
 
@@ -143,7 +143,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             twitterResponse.IsSuccessful.Returns(true);
             twitterResponse.StatusCode.Returns(HttpStatusCode.OK);
             twitterResponse.Data.Returns(new TokenResult { OauthToken = token, OauthTokenSecret = secret });
-            restClient.ExecuteTaskAsync<TokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(twitterResponse));
+            restClient.ExecuteAsync<TokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(twitterResponse));
         }
     }
 }

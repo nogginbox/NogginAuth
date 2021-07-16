@@ -91,7 +91,7 @@ namespace Noggin.NetCoreAuth.Providers.GitHub
 
             try
 			{
-				tokenResponse = await restClient.ExecuteTaskAsync<AccessTokenResult>(restRequest);
+				tokenResponse = await restClient.ExecuteAsync<AccessTokenResult>(restRequest);
 			}
 			catch(Exception ex)
 			{
@@ -118,7 +118,7 @@ namespace Noggin.NetCoreAuth.Providers.GitHub
 
 			try
 			{
-                response = await restClient.ExecuteTaskAsync<UserResult>(restRequest);
+                response = await restClient.ExecuteAsync<UserResult>(restRequest);
 			}
 			catch (Exception ex)
 			{

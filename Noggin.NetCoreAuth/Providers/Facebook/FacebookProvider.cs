@@ -62,7 +62,7 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
         {
 			if (queryStringParameters == null || !queryStringParameters.Any())
 			{
-				throw new ArgumentOutOfRangeException("queryStringParameters");
+				throw new ArgumentOutOfRangeException(nameof(queryStringParameters));
 			}
 
 			// Maybe we have an error?
@@ -88,7 +88,7 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 		{
 			if (string.IsNullOrEmpty(authorizationCode))
 			{
-				throw new ArgumentNullException("authorizationCode");
+				throw new ArgumentNullException(nameof(authorizationCode));
 			}
 
 			/*if (redirectUri == null ||
@@ -111,7 +111,7 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 
             try
 			{
-				tokenResponse = await _restClient.ExecuteTaskAsync<AccessTokenResult>(restRequest);
+				tokenResponse = await _restClient.ExecuteAsync<AccessTokenResult>(restRequest);
 			}
 			catch(Exception ex)
 			{
@@ -139,7 +139,7 @@ namespace Noggin.NetCoreAuth.Providers.Facebook
 				restRequest.AddParameter("access_token", authToken);
 				restRequest.AddParameter("fields", "name,email,first_name,last_name,locale,gender,link");
 
-				response = await _restClient.ExecuteTaskAsync<MeResult>(restRequest);
+				response = await _restClient.ExecuteAsync<MeResult>(restRequest);
 			}
 			catch (Exception ex)
 			{
