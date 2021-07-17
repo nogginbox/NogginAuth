@@ -4,8 +4,8 @@ namespace Noggin.NetCoreAuth.Config
 {
     public class AuthConfigSection
     {
-        public string DefaultCallbackTemplate { get; set; }
-        public string DefaultRedirectTemplate { get; set; }
-        public IList<ProviderConfig> Providers { get; set; }
+        public string DefaultCallbackTemplate { get; init; }
+        public string DefaultRedirectTemplate { get; init; }
+        public IList<ProviderConfig> Providers { get; init; }
     }
 }
