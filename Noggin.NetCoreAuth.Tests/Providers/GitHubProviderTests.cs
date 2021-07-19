@@ -30,7 +30,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             var result = await provider.GenerateStartRequestUrl(http);
 
             // Assert
-            await restClient.DidNotReceive().ExecuteTaskAsync<AccessTokenResult>(Arg.Any<IRestRequest>());
+            await restClient.DidNotReceive().ExecuteAsync<AccessTokenResult>(Arg.Any<IRestRequest>());
         }
 
         [Fact]
@@ -66,7 +66,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             // Arrange - Calling GitHub API to get user fails
             var response = Substitute.For<IRestResponse<UserResult>>();
             response.IsSuccessful.Returns(false);
-            restClient.ExecuteTaskAsync<UserResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
+            restClient.ExecuteAsync<UserResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
 
             var provider = new GitHubProvider(config, restClientFactory, "url1", "url2");
 
@@ -100,7 +100,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
                 Name = "Richard Garside",
                 AvatarUrl = "lookingood.jpg"
             });
-            restClient.ExecuteTaskAsync<UserResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(gitHubResponse));
+            restClient.ExecuteAsync<UserResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(gitHubResponse));
 
             var provider = new GitHubProvider(config, restClientFactory, "url1", "url2");
 
@@ -137,7 +137,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             gitHubResponse.IsSuccessful.Returns(true);
             gitHubResponse.StatusCode.Returns(HttpStatusCode.OK);
             gitHubResponse.Data.Returns(new AccessTokenResult { AccessToken = token });
-            restClient.ExecuteTaskAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(gitHubResponse));
+            restClient.ExecuteAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(gitHubResponse));
         }
     }
 }

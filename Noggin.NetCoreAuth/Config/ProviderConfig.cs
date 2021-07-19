@@ -4,15 +4,15 @@ namespace Noggin.NetCoreAuth.Config
 {
 	public class ProviderConfig
 	{
-		public string Name { get; set; }
+		public string Name { get; init; }
 
-		public string RedirectTemplate { get; set; }
+		public string RedirectTemplate { get; init; }
 
-		public bool? CallbackIsHttps { get; set; }
+		public bool? CallbackIsHttps { get; init; }
 
-		public string CallbackTemplate { get; set; }
+		public string CallbackTemplate { get; init; }
 
-		public ApiConfig Api { get; set; }
+		public ApiConfig Api { get; init; }
 
 		internal void CheckIsValid()
 		{
