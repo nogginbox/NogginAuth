@@ -16,7 +16,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/NogginBox/NogginAuth</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Authors>Richard Garside</Authors>
     <Company>Garsonix Ltd</Company>
     <Product>Noggin .NetCore Auth</Product>
@@ -26,7 +26,7 @@
 Includes login providers for GitHub, Google, Facebook and Twitter.
 
 See the project site for instructions and the sample site implementation on for a working example.</Description>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.1.1.0</AssemblyVersion>
     <!-- owners is not supported in MSBuild -->
   </PropertyGroup>
 
