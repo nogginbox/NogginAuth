@@ -2,19 +2,19 @@
 {
     internal class AccessTokenResult
     {
-        public string AccessToken { get; set; }
+        public string AccessToken { get; init; }
 
-        public string Scope { get; set; }
+        public string Scope { get; init; }
 
-        public string TokenType { get; set; }
+        public string TokenType { get; init; }
 
         #region Error responses (null if everything is fine)
 
-        public string Error { get; set; }
+        public string Error { get; init; }
 
-        public string ErrorDescription { get; set; }
+        public string ErrorDescription { get; init; }
 
-        public string ErrorUri { get; set; }
+        public string ErrorUri { get; init; }
 
         #endregion
     }

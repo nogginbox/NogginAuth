@@ -2,20 +2,20 @@
 {
     public class UserInformation
     {
-        public string Id { get; set; }
+        public string Id { get; init; }
 
-		public AccessToken AccessToken { get; set; }
+		public AccessToken AccessToken { get; init; }
 
-		public string Email { get; set; }
+		public string Email { get; init; }
 
-		public string Gender { get; set; }
+		public string Gender { get; init; }
 
-		public string Name { get; set; }
+		public string Name { get; init; }
 
-		public string Locale { get; set; }
+		public string Locale { get; init; }
 		
-		public string Picture { get; set; }
+		public string Picture { get; init; }
 
-		public string UserName { get; set; }
+		public string UserName { get; init; }
 	}
 }

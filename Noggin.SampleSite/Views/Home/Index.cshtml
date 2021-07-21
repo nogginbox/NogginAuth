@@ -4,7 +4,7 @@
 
 <section class="intro">
 	<h1>Noggin .NetCore Auth</h1>
-    <p><strong>Noggin .NetCore Auth</strong> is a simple library for doing social authentication in .NET Core 5.0 MVC. It authenticates that people are who they say they are, but does not authorise them and has no opinion on how you store details about your users. You're free to do that however you want and in whatever way works best for your application.</p>
+    <p><strong>Noggin .NetCore Auth</strong> is a simple library for doing social authentication in ASP.NET Core MVC in .NET 5.0. It authenticates that people are who they say they are, but does not authorise them and has no opinion on how you store details about your users. You're free to do that however you want and in whatever way works best for your application.</p>
 	<p>The source code is available at the <a href="https://github.com/NogginBox/NogginAuth">Noggin .NetCore Git Repo</a>.</p>
 	<p>For a working example download a <a href="https://github.com/NogginBox/NogginAuth/archive/master.zip">zip of the source code including the sample site</a>.
 </section>
@@ -100,17 +100,22 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
 {
     // ...
 
+    app.UseRouting();
     app.UseSession();
     
+    // Order here is important (authorization must be after authentication as it needs an authenticated user to check)
+    app.UseAuthentication();
+    app.UseAuthorization();
+
     // ...
 
-    app.UseMvc(routes =>
+    app.UseEndpoints(endpoints =>
     {
-        routes.MapRoute(
+        endpoints.MapControllerRoute(
             name: "default",
-            template: "{controller=Home}/{action=Index}/{id?}");
+            pattern: "{controller=Home}/{action=Index}/{id?}");
 
-        routes.MapNogginNetAuthRoutes(app.ApplicationServices);
+        endpoints.MapNogginNetAuthRoutes(app.ApplicationServices);
     });
 }
 </pre>

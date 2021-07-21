@@ -91,7 +91,7 @@ namespace Noggin.NetCoreAuth.Providers.GitHub
 
             try
 			{
-				tokenResponse = await restClient.ExecuteTaskAsync<AccessTokenResult>(restRequest);
+				tokenResponse = await restClient.ExecuteAsync<AccessTokenResult>(restRequest);
 			}
 			catch(Exception ex)
 			{
@@ -100,7 +100,7 @@ namespace Noggin.NetCoreAuth.Providers.GitHub
 
             if(!tokenResponse.IsSuccessful || tokenResponse?.Data.Error != null)
             {
-                var errorMessage = "Failed to get access token from GitHub";
+                var errorMessage = $"Failed to get access token from GitHub (Response {tokenResponse.StatusDescription})";
                 if (tokenResponse?.Data.Error != null) errorMessage += " - " + tokenResponse.Data.ErrorDescription;
                 throw new NogginNetCoreAuthException(errorMessage);
             }
@@ -114,11 +114,11 @@ namespace Noggin.NetCoreAuth.Providers.GitHub
 
             var restClient = _restClientFactory.Create(_apiUrl);
             var restRequest = new RestRequest("user");
-			restRequest.AddParameter("access_token", authToken);
+			restRequest.AddHeader("Authorization", $"token {authToken}");
 
 			try
 			{
-                response = await restClient.ExecuteTaskAsync<UserResult>(restRequest);
+                response = await restClient.ExecuteAsync<UserResult>(restRequest);
 			}
 			catch (Exception ex)
 			{

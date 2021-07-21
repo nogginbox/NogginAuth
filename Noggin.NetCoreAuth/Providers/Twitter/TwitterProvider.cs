@@ -33,7 +33,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
 
 			// Todo: If not all methods need client, perhaps don't always init it
 			_restClient = restClientFactory.Create(_baseUrl);
-            _restClient.AddHandler("text/html", TwitterHtmlTextSerializer.CreateDefault());
+            _restClient.AddHandler("text/html", TwitterHtmlTextSerializer.CreateDefault);
 
             _apiDetails = config.Api;
         }
@@ -45,7 +45,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
             _restClient.Authenticator = OAuth1Authenticator.ForRequestToken(_apiDetails.PublicKey, _apiDetails.PrivateKey, callback);
             var restRequest = new RestRequest("oauth/request_token", Method.POST);
 
-            var response = await _restClient.ExecuteTaskAsync<TokenResult>(restRequest);
+            var response = await _restClient.ExecuteAsync<TokenResult>(restRequest);
 
             // Grrrr, errors come back as json, correct response querystring like thing
 
@@ -121,7 +121,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
                                                                               verifierResult.oAuthToken,
                                                                               null,
                                                                               verifierResult.oAuthVerifier);
-                response = await _restClient.ExecuteTaskAsync<TokenResult>(restRequest);
+                response = await _restClient.ExecuteAsync<TokenResult>(restRequest);
             }
             catch (Exception exception)
             {
@@ -159,7 +159,7 @@ namespace Noggin.NetCoreAuth.Providers.Twitter
                                                                                     accessTokenResult.SecretToken);
                 var restRequest = new RestRequest("1.1/account/verify_credentials.json");
 
-                response = await _restClient.ExecuteTaskAsync<VerifyCredentialsResult>(restRequest);
+                response = await _restClient.ExecuteAsync<VerifyCredentialsResult>(restRequest);
             }
             catch (Exception exception)
             {
