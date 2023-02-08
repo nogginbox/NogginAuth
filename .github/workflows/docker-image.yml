@@ -21,13 +21,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: App Settings Variable Substitution
-        uses: microsoft/variable-substitution@v1
-        with:
-          files: 'Noggin.SampleSite/appsettings.json'
-        env:
-          ConnectionStrings.NogginAuthData: "Server=${{secrets.SQL_SERVER}},${{secrets.SQL_PORT}};Database=${{secrets.SQL_DATABASE}};User Id=${{secrets.SQL_USERNAME}};Password=${{secrets.SQL_PASSWORD}};"
-
       - name: Log in to the Container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
