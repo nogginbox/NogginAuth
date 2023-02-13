@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30523.141
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Noggin.NetCoreAuth", "Noggin.NetCoreAuth\Noggin.NetCoreAuth.csproj", "{1B96BE9B-8AA5-4E2F-8F24-D32DFAFDDE67}"
 EndProject
@@ -24,6 +24,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{F8D62D59-993D-4D8B-BE32-3B3FAA182B2B}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\develop-build-test.yml = .github\workflows\develop-build-test.yml
+		.github\workflows\docker-image.yml = .github\workflows\docker-image.yml
 		.github\workflows\master-build-test.yml = .github\workflows\master-build-test.yml
 	EndProjectSection
 EndProject
