@@ -63,7 +63,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             var config = CreateProviderConfig();
             var (restClientFactory, restClient) = CreateRestClientAndFactory();
 
-            // Arrnage - Calling Google API for token succeeds
+            // Arrange - Calling Google API for token succeeds
             SetupTokenResultSuccess(restClient, "token", "secret");
 
             // Arrange - Calling Google API fails
@@ -100,11 +100,13 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             googleResponse.StatusCode.Returns(HttpStatusCode.OK);
             googleResponse.Data.Returns(new UserInfoResult
             {
-                Id = "TestId",
-                DisplayName = "RichardG2268",
-                Name = new Name { FamilyName = "Garside", GivenName = "Richard" },
-                Language = "en-GB",
-                Image = new Image { Url = "hotdang.jpg" }
+                Sub = "TestId",
+                Email = "testemail@nogginbox.co.uk",
+                Name = "Richard Garside",
+                FamilyName = "Garside",
+                GivenName = "Richard",
+                Locale = "en-GB",
+                Picture = "hotdang.jpg"
             });
             restClient.ExecuteAsync<UserInfoResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(googleResponse));
 
@@ -121,7 +123,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
 
             // Assert
             Assert.Equal("Richard Garside", authenticatedUser.Name);
-            Assert.Equal("RichardG2268", authenticatedUser.UserName);
+            Assert.Equal("testemail@nogginbox.co.uk", authenticatedUser.UserName);
             Assert.Equal("hotdang.jpg", authenticatedUser.Picture);
         }
 

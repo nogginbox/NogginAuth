@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Data;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
+using Noggin.NetCoreAuth.Extensions;
 using Noggin.NetCoreAuth.Model;
 using Noggin.NetCoreAuth.Providers.Google.Model;
 using RestSharp;
@@ -111,7 +114,7 @@ namespace Noggin.NetCoreAuth.Providers.Google
 			}
 			catch (Exception ex)
 			{
-				throw new NogginNetCoreAuthException("Failed to get access token from Facebook", ex);
+				throw new NogginNetCoreAuthException("Failed to get access token from Google", ex);
 			}
 		}
 
@@ -126,7 +129,7 @@ namespace Noggin.NetCoreAuth.Providers.Google
 
 			try
 			{
-				var restRequest = new RestRequest("/plus/v1/people/me", Method.GET);
+				var restRequest = new RestRequest("/oauth2/v3/userinfo", Method.GET);
 				restRequest.AddParameter("access_token", accessToken);
 
 				var restClient = _restClientFactory.Create("https://www.googleapis.com");
@@ -136,27 +139,28 @@ namespace Noggin.NetCoreAuth.Providers.Google
 			}
 			catch (Exception ex)
 			{
-				throw new NogginNetCoreAuthException("Failed to retrieve any UserInfo data from the Google API", ex);
+				throw new NogginNetCoreAuthException("Failed to get UserInfo data from the Google API due to exception", ex);
 			}
 
-			if (response == null ||
-				response.StatusCode != HttpStatusCode.OK)
+			if (response == null)
 			{
-				var errorMessage = string.Format(
-					"Failed to obtain some UserInfo data from the Google Api OR the the response was not an HTTP Status 200 OK. Response Status: {0}. Response Description: {1}. Error Message: {2}.",
-					response == null ? "-- null response --" : response.StatusCode.ToString(),
-					response == null ? string.Empty : response.StatusDescription,
-					response == null
-						? string.Empty
-						: response.ErrorException == null
-							  ? "--no error exception--"
-							  : response.ErrorException.Message);
+				throw new NogginNetCoreAuthException("Null response from Google API");
+			}
+
+			if (response.StatusCode != HttpStatusCode.OK)
+			{
+				var error = JsonSerializerExtensions.TryDeserialize<GoogleApiError>(response.Content)?.Error;
+
+				const string errorStart = "Failed to get UserInfo data from the Google Api due to error.";
+				var errorMessage = error != null
+					? $"{errorStart} Code: {error.Code} ({error.Status}). Message: {error.Message}"
+					: $"{errorStart}. Response Status: {response.StatusCode}. Response Description: {response.StatusDescription}. Error Message: {response.ErrorException?.Message ?? "--no error exception--"}.";
 
 				throw new NogginNetCoreAuthException(errorMessage);
 			}
 
 			// Lets check to make sure we have some bare minimum data.
-			if (string.IsNullOrEmpty(response.Data.Id))
+			if (string.IsNullOrEmpty(response.Data.Sub))
 			{
 				const string errorMessage =
 					"We were unable to retrieve the User Id from Google API, the user may have denied the authorization.";
@@ -165,16 +169,12 @@ namespace Noggin.NetCoreAuth.Providers.Google
 
 			return new UserInformation
 			{
-				Id = response.Data.Id,
-				Gender = response.Data.Gender,
-				Name = response.Data.Name.ToString(),
-				Email = response.Data.Emails != null &&
-						response.Data.Emails.Any()
-					? response.Data.Emails.First().Value
-					: null,
-				Locale = response.Data.Language,
-				Picture = response.Data.Image?.Url,
-				UserName = response.Data.DisplayName
+				Id = response.Data.Sub,
+				Name = response.Data.Name,
+				Email = response.Data.Email,
+				Locale = response.Data.Locale,
+				Picture = response.Data.Picture,
+				UserName = response.Data.Email
 			};
 		}
 	}

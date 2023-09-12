@@ -71,14 +71,6 @@ namespace Noggin.SampleSite
 
             // Static files (in wwwroot)
             app.UseStaticFiles();
-            // Static files (in wwwroot/.well-known/acme-challenge) for SSL Cert Auth check
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(Path.Combine(env.WebRootPath, @".well-known", "acme-challenge")),
-                RequestPath = "/.well-known/acme-challenge",
-                ServeUnknownFileTypes = true,
-                DefaultContentType = "text/json"
-            });
 
             app.UseRouting();
 
