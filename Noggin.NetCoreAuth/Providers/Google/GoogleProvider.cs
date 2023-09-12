@@ -129,7 +129,7 @@ namespace Noggin.NetCoreAuth.Providers.Google
 
 			try
 			{
-				var restRequest = new RestRequest("/plus/v1/people/me", Method.GET);
+				var restRequest = new RestRequest("/oauth2/v3/userinfo", Method.GET);
 				restRequest.AddParameter("access_token", accessToken);
 
 				var restClient = _restClientFactory.Create("https://www.googleapis.com");
@@ -160,7 +160,7 @@ namespace Noggin.NetCoreAuth.Providers.Google
 			}
 
 			// Lets check to make sure we have some bare minimum data.
-			if (string.IsNullOrEmpty(response.Data.Id))
+			if (string.IsNullOrEmpty(response.Data.Sub))
 			{
 				const string errorMessage =
 					"We were unable to retrieve the User Id from Google API, the user may have denied the authorization.";
@@ -169,16 +169,12 @@ namespace Noggin.NetCoreAuth.Providers.Google
 
 			return new UserInformation
 			{
-				Id = response.Data.Id,
-				Gender = response.Data.Gender,
-				Name = response.Data.Name.ToString(),
-				Email = response.Data.Emails != null &&
-						response.Data.Emails.Any()
-					? response.Data.Emails.First().Value
-					: null,
-				Locale = response.Data.Language,
-				Picture = response.Data.Image?.Url,
-				UserName = response.Data.DisplayName
+				Id = response.Data.Sub,
+				Name = response.Data.Name,
+				Email = response.Data.Email,
+				Locale = response.Data.Locale,
+				Picture = response.Data.Picture,
+				UserName = response.Data.Email
 			};
 		}
 	}
