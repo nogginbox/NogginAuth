@@ -7,8 +7,8 @@
   <PropertyGroup>
     <Title>Noggin .NetCore Auth</Title>
     <!-- summary is not migrated from project.json, but you can use the <Description> property for that if needed. -->
-    <PackageTags>auth, authentication, login, facebook, google, github, twitter</PackageTags>
-    <PackageReleaseNotes>Updated to .NET 5.0. Please add feature requests and bug reports to the project's GitHub issue page.</PackageReleaseNotes>
+    <PackageTags>auth, authentication, login, facebook, google, github</PackageTags>
+    <PackageReleaseNotes>Updated to .NET 6.0. Please add feature requests and bug reports to the project's GitHub issue page.</PackageReleaseNotes>
     <PackageIconUrl>https://avatars1.githubusercontent.com/u/729381?s=460&amp;v=4</PackageIconUrl>
     <PackageProjectUrl>http://coreauth.nogginbox.co.uk</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/NogginBox/NogginAuth/blob/master/LICENSE.md</PackageLicenseUrl>
@@ -20,7 +20,7 @@
     <Authors>Richard Garside</Authors>
     <Company>Garsonix Ltd</Company>
     <Product>Noggin .NetCore Auth</Product>
-    <Copyright>© 2021 Garsonix Ltd</Copyright>
+    <Copyright>© 2023 Garsonix Ltd</Copyright>
     <Description>A simple library for doing social authentication in .NET Core MVC. It authenticates that people are who they say they are, but does not authorise them and has no opinion on how you store details about your users.
 
 Includes login providers for GitHub, Google, Facebook and Twitter.
