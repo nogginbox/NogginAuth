@@ -25,8 +25,8 @@
             <li>GitHub</li>
             <li>Google</li>
             <li>Facebook</li>
-            <li>Twitter</li>
-            <li>4... that's lots, right?</li>
+            <li><del>Twitter</del></li>
+            <li>3... not as many as it used to be. Working on Microsoft Account next</li>
         </ul>
     </section>
 </section>
@@ -129,21 +129,19 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
 "NogginNetAuth": {
 	"Providers": [
 		{
-			"Name": "Twitter",
-			"RedirectTemplate": "auth/twitter",
-			"CallbackTemplate": "auth/twitter/callback",
-			"Api": {
-				"PublicKey": "...",
-				"PrivateKey": "..."
-			}
-		},
-		{
 			"Name": "Facebook",
 			"Api": {
 				"PublicKey": "...",
 				"PrivateKey": "..."
 			}
 		},
+        {
+            "Name": "Github",
+              "Api": {
+                "PublicKey": "...",
+                "PrivateKey": "..."
+              }
+        },
 		{
 			"Name": "Google",
 			"Api": {
@@ -161,7 +159,6 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
         <li><a href="https://developers.facebook.com/">Facebook Developer Site</a></li>
         <li><a href="https://github.com/settings/developers">Github Developer Settings</a></li>
         <li><a href="https://console.developers.google.com/apis/credentials">Google API Credentials</a></li>
-        <li><a href="https://apps.twitter.com/">Twitter API and App Management</a></li>
     </ul>
 </section>
 
@@ -170,7 +167,7 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
     <p>So you can use Noggin Core Auth Tag helpers add the following to <span class="code">Views/_ViewImports.cshtml</span>.</p>
     <pre class="code">@@addTagHelper &quot;*, Noggin.NetCoreAuth&quot;</pre>
     <p>Once this is included all you need to do is add:</p>
-    <pre class="code">&lt;auth-link provider=&quot;twitter&quot;&gt;Twitter&lt;/auth-link&gt;</pre>
+    <pre class="code">&lt;auth-link provider=&quot;github&quot;&gt;Github&lt;/auth-link&gt;</pre>
     <p>This will render an &lt;a&gt; tag with a link to correct place to kick off authentication. You can set <span class="code">provider</span> to be any of your configured providers.</p>
 </section>
 

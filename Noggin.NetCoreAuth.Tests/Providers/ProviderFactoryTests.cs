@@ -51,7 +51,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             var factory = new ProviderFactory(options, _clientFactory);
 
             // Act / Assert
-            Assert.Throws<NogginNetCoreConfigException>(() => factory.Get("twitter"));
+            Assert.Throws<NogginNetCoreConfigException>(() => factory.Get("github"));
         }
 
         [Fact]
@@ -80,9 +80,9 @@ namespace Noggin.NetCoreAuth.Tests.Providers
                     {
                         new ProviderConfig
                         {
-                            Name = "twitter",
-                            CallbackTemplate = "specific-twitter-cb",
-                            RedirectTemplate = "specific-twitter-r",
+                            Name = "github",
+                            CallbackTemplate = "specific-github-cb",
+                            RedirectTemplate = "specific-github-r",
                             Api = new ApiConfig
                             {
                                 PrivateKey = "ssshhhhhhh",
@@ -95,12 +95,12 @@ namespace Noggin.NetCoreAuth.Tests.Providers
             var factory = new ProviderFactory(options, _clientFactory);
 
             // Act 
-            var provider = factory.Get("twitter");
+            var provider = factory.Get("github");
 
             // Assert
-            Assert.Equal("twitter", provider.Name);
-            Assert.Equal("specific-twitter-cb", provider.CallbackTemplate);
-            Assert.Equal("specific-twitter-r", provider.RedirectTemplate);
+            Assert.Equal("github", provider.Name);
+            Assert.Equal("specific-github-cb", provider.CallbackTemplate);
+            Assert.Equal("specific-github-r", provider.RedirectTemplate);
         }
 
         [Fact]
