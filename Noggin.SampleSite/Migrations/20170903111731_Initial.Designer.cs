@@ -7,58 +7,57 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Noggin.SampleSite.Data;
 using System;
 
-namespace Noggin.SampleSite.Migrations
+namespace Noggin.SampleSite.Migrations;
+
+[DbContext(typeof(SampleSimpleDbContext))]
+[Migration("20170903111731_Initial")]
+partial class Initial
 {
-    [DbContext(typeof(SampleSimpleDbContext))]
-    [Migration("20170903111731_Initial")]
-    partial class Initial
+    protected override void BuildTargetModel(ModelBuilder modelBuilder)
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
-        {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "2.0.0-rtm-26452");
+        modelBuilder
+            .HasAnnotation("ProductVersion", "2.0.0-rtm-26452");
 
-            modelBuilder.Entity("Noggin.SampleSite.Data.User", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+        modelBuilder.Entity("Noggin.SampleSite.Data.User", b =>
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Name");
+                b.Property<string>("Name");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("Users");
-                });
+                b.ToTable("Users");
+            });
 
-            modelBuilder.Entity("Noggin.SampleSite.Data.UserAuthAccount", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(64);
+        modelBuilder.Entity("Noggin.SampleSite.Data.UserAuthAccount", b =>
+            {
+                b.Property<string>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasMaxLength(64);
 
-                    b.Property<string>("Provider")
-                        .HasMaxLength(32);
+                b.Property<string>("Provider")
+                    .HasMaxLength(32);
 
-                    b.Property<int?>("UserId");
+                b.Property<int?>("UserId");
 
-                    b.Property<string>("UserName")
-                        .HasMaxLength(32);
+                b.Property<string>("UserName")
+                    .HasMaxLength(32);
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                b.HasIndex("UserId");
 
-                    b.ToTable("UserAuthAccount");
-                });
+                b.ToTable("UserAuthAccount");
+            });
 
-            modelBuilder.Entity("Noggin.SampleSite.Data.UserAuthAccount", b =>
-                {
-                    b.HasOne("Noggin.SampleSite.Data.User")
-                        .WithMany("AuthAccounts")
-                        .HasForeignKey("UserId");
-                });
+        modelBuilder.Entity("Noggin.SampleSite.Data.UserAuthAccount", b =>
+            {
+                b.HasOne("Noggin.SampleSite.Data.User")
+                    .WithMany("AuthAccounts")
+                    .HasForeignKey("UserId");
+            });
 #pragma warning restore 612, 618
-        }
     }
 }

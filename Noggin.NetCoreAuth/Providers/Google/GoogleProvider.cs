@@ -1,181 +1,178 @@
-﻿using System;
-using System.Data;
-using System.Linq;
-using System.Net;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
 using Noggin.NetCoreAuth.Extensions;
 using Noggin.NetCoreAuth.Model;
 using Noggin.NetCoreAuth.Providers.Google.Model;
 using RestSharp;
+using System;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
-namespace Noggin.NetCoreAuth.Providers.Google
+namespace Noggin.NetCoreAuth.Providers.Google;
+
+/// <summary>
+/// 
+/// </summary>
+/// <remarks> Reference: https://developers.google.com/accounts/docs/OAuth2Login</remarks>
+internal class GoogleProvider : Provider
 {
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <remarks> Reference: https://developers.google.com/accounts/docs/OAuth2Login</remarks>
-	internal class GoogleProvider : Provider
+	private readonly ApiConfig _apiDetails;
+    private readonly IRestClientFactory _restClientFactory;
+
+    internal GoogleProvider(ProviderConfig config, IRestClientFactory restClientFactory, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
 	{
-		private readonly ApiConfig _apiDetails;
-        private readonly IRestClientFactory _restClientFactory;
+		_apiDetails = config.Api;
+        _restClientFactory = restClientFactory;
+    }
 
-        internal GoogleProvider(ProviderConfig config, IRestClientFactory restClientFactory, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
+	internal async override Task<UserInformation> AuthenticateUser(HttpRequest request, string state)
+	{
+		var details = GetDetails(request.Query);
+		//var code = GetCode(request.Query);
+		var callback = CreateCallbackUrl(request);
+		var accessToken = await RetrieveAccessToken(details.code, callback);
+		var userInfo = await RetrieveUserInformationAsync(accessToken);
+
+		return userInfo;
+	}
+
+	internal override Task<(string url, string secret)> GenerateStartRequestUrl(HttpRequest request)
+	{
+		var callback = CreateCallbackUrl(request);
+		var secret = Guid.NewGuid().ToString();
+
+		// Todo: Find/make function to turn anonymous object into querystring
+		/* Example: "https://accounts.google.com/o/oauth2/auth?
+			* client_id=587140099194.apps.googleusercontent.com&
+			* redirect_uri=http://localhost:1337/authentication/authenticatecallback?providerkey=google
+			* &response_type=code&
+			* scope=profile email&
+			* state=7f7dbb76-412e-47a2-b6b3-f596565d089f" */
+		var url = $"https://accounts.google.com/o/oauth2/auth?client_id={_apiDetails.PublicKey}&scope=profile email&state={secret}&redirect_uri={callback}&response_type=code";
+
+		// This implementation of method does not need to be async, so convert result to task
+		return Task.FromResult((url, secret));
+	}
+
+	private static (string code, string state) GetDetails(IQueryCollection queryStringParameters)
+	{
+		if (queryStringParameters == null || !queryStringParameters.Any())
 		{
-			_apiDetails = config.Api;
-            _restClientFactory = restClientFactory;
-        }
-
-		internal async override Task<UserInformation> AuthenticateUser(HttpRequest request, string state)
-		{
-			var details = GetDetails(request.Query);
-			//var code = GetCode(request.Query);
-			var callback = CreateCallbackUrl(request);
-			var accessToken = await RetrieveAccessToken(details.code, callback);
-			var userInfo = await RetrieveUserInformationAsync(accessToken);
-
-			return userInfo;
+			throw new ArgumentOutOfRangeException(nameof(queryStringParameters));
 		}
 
-		internal override Task<(string url, string secret)> GenerateStartRequestUrl(HttpRequest request)
+		// Maybe we have an error?
+		if (queryStringParameters.ContainsKey("error"))
 		{
-			var callback = CreateCallbackUrl(request);
-			var secret = Guid.NewGuid().ToString();
+			var errorMessage = string.Format("Reason: {0}. Error: {1}. Description: {2}.",
+												queryStringParameters["error_reason"].ToString() ?? "-",
+												queryStringParameters["error"],
+												queryStringParameters["error_description"]);
 
-			// Todo: Find/make function to turn anonymous object into querystring
-			/* Example: "https://accounts.google.com/o/oauth2/auth?
-			 * client_id=587140099194.apps.googleusercontent.com&
-			 * redirect_uri=http://localhost:1337/authentication/authenticatecallback?providerkey=google
-			 * &response_type=code&
-			 * scope=profile email&
-			 * state=7f7dbb76-412e-47a2-b6b3-f596565d089f" */
-			var url = $"https://accounts.google.com/o/oauth2/auth?client_id={_apiDetails.PublicKey}&scope=profile email&state={secret}&redirect_uri={callback}&response_type=code";
-
-			// This implementation of method does not need to be async, so convert result to task
-			return Task.FromResult((url, secret));
+			throw new NogginNetCoreAuthException(errorMessage);
 		}
 
-		private static (string code, string state) GetDetails(IQueryCollection queryStringParameters)
+		if(!queryStringParameters.ContainsKey("state"))
 		{
-			if (queryStringParameters == null || !queryStringParameters.Any())
-			{
-				throw new ArgumentOutOfRangeException(nameof(queryStringParameters));
-			}
-
-			// Maybe we have an error?
-			if (queryStringParameters.ContainsKey("error"))
-			{
-				var errorMessage = string.Format("Reason: {0}. Error: {1}. Description: {2}.",
-												 queryStringParameters["error_reason"].ToString() ?? "-",
-												 queryStringParameters["error"],
-												 queryStringParameters["error_description"]);
-
-				throw new NogginNetCoreAuthException(errorMessage);
-			}
-
-			if(!queryStringParameters.ContainsKey("state"))
-			{
-				throw new NogginNetCoreAuthException("No state returned by Facebook");
-			}
-
-			if (!queryStringParameters.ContainsKey("code"))
-			{
-				throw new NogginNetCoreAuthException("No auth code returned by Facebook");
-			}
-
-			return 
-				(queryStringParameters["code"].ToString(),
-				queryStringParameters["state"].ToString());
+			throw new NogginNetCoreAuthException("No state returned by Facebook");
 		}
 
-		private async Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl)
+		if (!queryStringParameters.ContainsKey("code"))
 		{
-			var restRequest = new RestRequest("/o/oauth2/token", Method.POST);
-			restRequest.AddParameter("client_id", _apiDetails.PublicKey);
-			restRequest.AddParameter("client_secret", _apiDetails.PrivateKey);
-			restRequest.AddParameter("redirect_uri", callbackUrl);
-			restRequest.AddParameter("code", authorizationCode);
-			restRequest.AddParameter("grant_type", "authorization_code");
-
-			var restClient = _restClientFactory.Create("https://accounts.google.com");
-
-			try
-			{
-				var token = await restClient.ExecuteAsync<AccessTokenResult>(restRequest);
-
-				if (token.Data.AccessToken == null)
-				{
-					throw new NullReferenceException("(token.Data.AccessToken");
-				}
-				return token.Data.AccessToken;
-			}
-			catch (Exception ex)
-			{
-				throw new NogginNetCoreAuthException("Failed to get access token from Google", ex);
-			}
+			throw new NogginNetCoreAuthException("No auth code returned by Facebook");
 		}
 
-		private async Task<UserInformation> RetrieveUserInformationAsync(string accessToken)
+		return 
+			(queryStringParameters["code"].ToString(),
+			queryStringParameters["state"].ToString());
+	}
+
+	private async Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl)
+	{
+		var restRequest = new RestRequest("/o/oauth2/token", Method.POST);
+		restRequest.AddParameter("client_id", _apiDetails.PublicKey);
+		restRequest.AddParameter("client_secret", _apiDetails.PrivateKey);
+		restRequest.AddParameter("redirect_uri", callbackUrl);
+		restRequest.AddParameter("code", authorizationCode);
+		restRequest.AddParameter("grant_type", "authorization_code");
+
+		var restClient = _restClientFactory.Create("https://accounts.google.com");
+
+		try
 		{
-			if (accessToken == null)
+			var token = await restClient.ExecuteAsync<AccessTokenResult>(restRequest);
+
+			if (token.Data.AccessToken == null)
 			{
-				throw new ArgumentNullException(nameof(accessToken));
+				throw new NullReferenceException("(token.Data.AccessToken");
 			}
-
-			IRestResponse<UserInfoResult> response;
-
-			try
-			{
-				var restRequest = new RestRequest("/oauth2/v3/userinfo", Method.GET);
-				restRequest.AddParameter("access_token", accessToken);
-
-				var restClient = _restClientFactory.Create("https://www.googleapis.com");
-
-
-				response = await restClient.ExecuteAsync<UserInfoResult>(restRequest);
-			}
-			catch (Exception ex)
-			{
-				throw new NogginNetCoreAuthException("Failed to get UserInfo data from the Google API due to exception", ex);
-			}
-
-			if (response == null)
-			{
-				throw new NogginNetCoreAuthException("Null response from Google API");
-			}
-
-			if (response.StatusCode != HttpStatusCode.OK)
-			{
-				var error = JsonSerializerExtensions.TryDeserialize<GoogleApiError>(response.Content)?.Error;
-
-				const string errorStart = "Failed to get UserInfo data from the Google Api due to error.";
-				var errorMessage = error != null
-					? $"{errorStart} Code: {error.Code} ({error.Status}). Message: {error.Message}"
-					: $"{errorStart}. Response Status: {response.StatusCode}. Response Description: {response.StatusDescription}. Error Message: {response.ErrorException?.Message ?? "--no error exception--"}.";
-
-				throw new NogginNetCoreAuthException(errorMessage);
-			}
-
-			// Lets check to make sure we have some bare minimum data.
-			if (string.IsNullOrEmpty(response.Data.Sub))
-			{
-				const string errorMessage =
-					"We were unable to retrieve the User Id from Google API, the user may have denied the authorization.";
-				throw new NogginNetCoreAuthException(errorMessage);
-			}
-
-			return new UserInformation
-			{
-				Id = response.Data.Sub,
-				Name = response.Data.Name,
-				Email = response.Data.Email,
-				Locale = response.Data.Locale,
-				Picture = response.Data.Picture,
-				UserName = response.Data.Email
-			};
+			return token.Data.AccessToken;
 		}
+		catch (Exception ex)
+		{
+			throw new NogginNetCoreAuthException("Failed to get access token from Google", ex);
+		}
+	}
+
+	private async Task<UserInformation> RetrieveUserInformationAsync(string accessToken)
+	{
+		if (accessToken == null)
+		{
+			throw new ArgumentNullException(nameof(accessToken));
+		}
+
+		IRestResponse<UserInfoResult> response;
+
+		try
+		{
+			var restRequest = new RestRequest("/oauth2/v3/userinfo", Method.GET);
+			restRequest.AddParameter("access_token", accessToken);
+
+			var restClient = _restClientFactory.Create("https://www.googleapis.com");
+
+
+			response = await restClient.ExecuteAsync<UserInfoResult>(restRequest);
+		}
+		catch (Exception ex)
+		{
+			throw new NogginNetCoreAuthException("Failed to get UserInfo data from the Google API due to exception", ex);
+		}
+
+		if (response == null)
+		{
+			throw new NogginNetCoreAuthException("Null response from Google API");
+		}
+
+		if (response.StatusCode != HttpStatusCode.OK)
+		{
+			var error = JsonSerializerExtensions.TryDeserialize<GoogleApiError>(response.Content)?.Error;
+
+			const string errorStart = "Failed to get UserInfo data from the Google Api due to error.";
+			var errorMessage = error != null
+				? $"{errorStart} Code: {error.Code} ({error.Status}). Message: {error.Message}"
+				: $"{errorStart}. Response Status: {response.StatusCode}. Response Description: {response.StatusDescription}. Error Message: {response.ErrorException?.Message ?? "--no error exception--"}.";
+
+			throw new NogginNetCoreAuthException(errorMessage);
+		}
+
+		// Lets check to make sure we have some bare minimum data.
+		if (string.IsNullOrEmpty(response.Data.Sub))
+		{
+			const string errorMessage =
+				"We were unable to retrieve the User Id from Google API, the user may have denied the authorization.";
+			throw new NogginNetCoreAuthException(errorMessage);
+		}
+
+		return new UserInformation
+		{
+			Id = response.Data.Sub,
+			Name = response.Data.Name,
+			Email = response.Data.Email,
+			Locale = response.Data.Locale,
+			Picture = response.Data.Picture,
+			UserName = response.Data.Email
+		};
 	}
 }

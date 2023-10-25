@@ -1,9 +1,8 @@
 ﻿using RestSharp;
 
-namespace Noggin.NetCoreAuth.Providers
+namespace Noggin.NetCoreAuth.Providers;
+
+public interface IRestClientFactory
 {
-    public interface IRestClientFactory
-    {
-        IRestClient Create(string baseUrl);
-    }
+    IRestClient Create(string baseUrl);
 }
