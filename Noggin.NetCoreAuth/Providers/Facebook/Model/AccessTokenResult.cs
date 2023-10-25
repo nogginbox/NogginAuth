@@ -1,13 +1,12 @@
-﻿namespace Noggin.NetCoreAuth.Providers.Facebook.Model
+﻿namespace Noggin.NetCoreAuth.Providers.Facebook.Model;
+
+internal class AccessTokenResult
 {
-    internal class AccessTokenResult
-	{
-		public string AccessToken { get; init; }
+	public string AccessToken { get; init; }
 
-        public string TokenType { get; init; }
+    public string TokenType { get; init; }
 
-        public int ExpiresIn { get; init; }
+    public int ExpiresIn { get; init; }
 
-        public ErrorResult Error { get; init; }
-	}
+    public ErrorResult Error { get; init; }
 }

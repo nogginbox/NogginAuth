@@ -51,11 +51,8 @@ internal class ProviderFactory : IProviderFactory
             return _providers[name];
         }
 
-        var config = _providerConfigs?.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
-        if (config == null)
-        {
-            throw new NogginNetCoreConfigException($"No provider config section found for {name}");
-        }
+        var config = (_providerConfigs?.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)))
+            ?? throw new NogginNetCoreConfigException($"No provider config section found for {name}");
 
         var provider = createProvider(config);
         _providers[name] = provider;
