@@ -6,9 +6,7 @@ using Noggin.NetCoreAuth.Exceptions;
 using Noggin.NetCoreAuth.Providers.GitHub;
 using Noggin.NetCoreAuth.Providers.GitHub.Model;
 using NSubstitute;
-using RestSharp;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 

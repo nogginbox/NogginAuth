@@ -56,7 +56,6 @@ public class GoogleProviderTests : BaseForProviderTests
     {
         // Arrange
         var config = CreateProviderConfig();
-        var (restClientFactory, restClient) = CreateRestClientAndFactory();
 
         // Arrange - Calling Google API for token succeeds
         using var httpTest = new HttpTest();

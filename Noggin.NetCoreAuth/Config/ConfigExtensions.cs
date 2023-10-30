@@ -15,12 +15,9 @@ public static class ConfigExtensions
     {
         services.Configure<AuthConfigSection>(configuration.GetSection(configSectionName));
         services.AddSingleton<IProviderFactory, ProviderFactory>();
-        services.AddSingleton<IRestClientFactory, RestSharpClientFactory>();
         services.AddScoped<ILoginHandler, TLoginHandler>();
         return services;
     }
-
-
 
     public static IEndpointRouteBuilder MapNogginNetAuthRoutes(this IEndpointRouteBuilder routes, IServiceProvider services)
     {

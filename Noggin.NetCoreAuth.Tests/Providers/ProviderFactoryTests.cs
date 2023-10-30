@@ -11,12 +11,6 @@ namespace Noggin.NetCoreAuth.Tests.Providers;
 
 public class ProviderFactoryTests
 {
-    /// <summary>
-    /// Shared Rest Client factory, will produce a null client, but actual client ot required by these tests
-    /// </summary>
-    private readonly IRestClientFactory _clientFactory = Substitute.For<IRestClientFactory>();
-
-
     [Fact]
     public void ConfiguringNoneExistentProviderThrowsException()
     {
@@ -39,7 +33,7 @@ public class ProviderFactoryTests
         );
 
         // Act / Assert
-        Assert.Throws<NogginNetCoreConfigException>(() => new ProviderFactory(options, _clientFactory));
+        Assert.Throws<NogginNetCoreConfigException>(() => new ProviderFactory(options));
     }
 
     [Fact]
@@ -48,7 +42,7 @@ public class ProviderFactoryTests
         // Arrange
         var options = Substitute.For<IOptions<AuthConfigSection>>();
         options.Value.Returns(new AuthConfigSection());
-        var factory = new ProviderFactory(options, _clientFactory);
+        var factory = new ProviderFactory(options);
 
         // Act / Assert
         Assert.Throws<NogginNetCoreConfigException>(() => factory.Get("github"));
@@ -60,7 +54,7 @@ public class ProviderFactoryTests
         // Arrange
         var options = Substitute.For<IOptions<AuthConfigSection>>();
         options.Value.Returns(new AuthConfigSection());
-        var factory = new ProviderFactory(options, _clientFactory);
+        var factory = new ProviderFactory(options);
 
         // Act / Assert
         Assert.Throws<NogginNetCoreConfigException>(() => factory.Get("made-up"));
@@ -92,7 +86,7 @@ public class ProviderFactoryTests
                 }
             }
         );
-        var factory = new ProviderFactory(options, _clientFactory);
+        var factory = new ProviderFactory(options);
 
         // Act 
         var provider = factory.Get("github");
@@ -127,7 +121,7 @@ public class ProviderFactoryTests
                 }
             }
         );
-        var factory = new ProviderFactory(options, _clientFactory);
+        var factory = new ProviderFactory(options);
 
         // Act 
         var provider = factory.Get("facebook");

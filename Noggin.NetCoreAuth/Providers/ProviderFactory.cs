@@ -14,15 +14,18 @@ internal class ProviderFactory : IProviderFactory
 {
     private readonly IList<ProviderConfig> _providerConfigs;
     private readonly IDictionary<string, Provider> _providers;
-    private readonly IRestClientFactory _restClientFactory;
     private readonly string _defaultRedirectTemplate;
     private readonly string _defaultCallbackTemplate;
 
-    public ProviderFactory(IOptions<AuthConfigSection> config, IRestClientFactory restClientFactory)
+    public ProviderFactory(IOptions<AuthConfigSection> config)
     {
+        if (config == null)
+        {
+            throw new ArgumentNullException(nameof(config));
+        }
+
         _providerConfigs = config.Value?.Providers;
         _providers = new Dictionary<string, Provider>();
-        _restClientFactory = restClientFactory;
 
         _defaultRedirectTemplate = CreateDefaultTemplate(config.Value.DefaultRedirectTemplate, "auth/redirect/{provider}");
         _defaultCallbackTemplate = CreateDefaultTemplate(config.Value.DefaultCallbackTemplate, "auth/callback/{provider}");
@@ -71,10 +74,4 @@ internal class ProviderFactory : IProviderFactory
     }
 
     
-}
-
-public interface IProviderFactory
-{
-    Provider Get(string name);
-    IList<Provider> Providers { get; }
 }

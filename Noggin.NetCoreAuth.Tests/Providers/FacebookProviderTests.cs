@@ -38,7 +38,6 @@ public class FacebookProviderTests : BaseForProviderTests
     {
         // Arrange
         var config = CreateProviderConfig();
-        var (restClientFactory, restClient) = CreateRestClientAndFactory();
 
         // Arrange - Calling Facebook API succeeds
 
