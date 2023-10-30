@@ -37,7 +37,7 @@ internal class ProviderFactory : IProviderFactory
     {
         return name.ToLower() switch
         {
-            "facebook" => Get(name, (x) => new FacebookProvider(x, _restClientFactory, _defaultRedirectTemplate, _defaultCallbackTemplate)),
+            "facebook" => Get(name, (x) => new FacebookProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
             "github" => Get(name, (x) => new GitHubProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
             "google" => Get(name, (x) => new GoogleProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
             _ => throw new NogginNetCoreConfigException($"No provider called {name} found"),

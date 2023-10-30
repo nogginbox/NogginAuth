@@ -1,3 +1,4 @@
+using Flurl.Http.Testing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Noggin.NetCoreAuth.Config;
@@ -5,10 +6,8 @@ using Noggin.NetCoreAuth.Exceptions;
 using Noggin.NetCoreAuth.Providers.Facebook;
 using Noggin.NetCoreAuth.Providers.Facebook.Model;
 using NSubstitute;
-using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -21,17 +20,17 @@ public class FacebookProviderTests : BaseForProviderTests
     {
         // Arrange
         var config = CreateProviderConfig();
-        var (restClientFactory, restClient) = CreateRestClientAndFactory();
+        using var httpTest = new HttpTest();
 
-        var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
+        var provider = new FacebookProvider(config, "url1", "url2");
 
         var http = Substitute.For<HttpRequest>();
 
         // Act
-        var result = await provider.GenerateStartRequestUrl(http);
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
-        await restClient.DidNotReceive().ExecuteAsync<AccessTokenResult>(Arg.Any<IRestRequest>());
+        httpTest.ShouldNotHaveMadeACall();
     }
 
     [Fact]
@@ -43,7 +42,7 @@ public class FacebookProviderTests : BaseForProviderTests
 
         // Arrange - Calling Facebook API succeeds
 
-        var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
+        var provider = new FacebookProvider(config, "url1", "url2");
 
         var http = Substitute.For<HttpRequest>();
 
@@ -61,17 +60,23 @@ public class FacebookProviderTests : BaseForProviderTests
     {
         // Arrange
         var config = CreateProviderConfig();
-        var (restClientFactory, restClient) = CreateRestClientAndFactory();
+        using var httpTest = new HttpTest();
 
-        // Arrnage - Calling Facebook API for token succeeds
-        SetupTokenResultSuccess(restClient, "token");
+        // Arrange - Calling Facebook API for token succeeds
+        SetupTokenResultSuccess(httpTest, "token");
 
         // Arrange - Calling Facebook API fails
-        var response = Substitute.For<IRestResponse<MeResult>>();
-        response.IsSuccessful.Returns(false);
-        restClient.ExecuteAsync<MeResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
+        var response = new MeResult
+        {
+            Error = new ErrorResult
+            {
+                Code = 666
+            }
+        };
 
-        var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
+        httpTest.RespondWithJson(response, 500);
+
+        var provider = new FacebookProvider(config, "url1", "url2");
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
@@ -88,26 +93,23 @@ public class FacebookProviderTests : BaseForProviderTests
     {
         // Arrange
         var config = CreateProviderConfig();
-        var (restClientFactory, restClient) = CreateRestClientAndFactory();
+        using var httpTest = new HttpTest();
 
 
         // Arrange - Calling Facebook API for token
-        SetupTokenResultSuccess(restClient, "token");
+        SetupTokenResultSuccess(httpTest, "token");
 
         // Arrange - Calling Facebook for user details
-        var facebookResponse = Substitute.For<IRestResponse<MeResult>>();
-        facebookResponse.IsSuccessful.Returns(true);
-        facebookResponse.StatusCode.Returns(HttpStatusCode.OK);
-        facebookResponse.Data.Returns(new MeResult
+        var facebookResponse = new MeResult
         {
             Id = 2268,
             Username = "RichardG2268",
             Name = "Richard Garside",
             Locale = "en-GB"
-        });
-        restClient.ExecuteAsync<MeResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(facebookResponse));
+        };
+        httpTest.RespondWithJson(facebookResponse);
 
-        var provider = new FacebookProvider(config, restClientFactory, "url1", "url2");
+        var provider = new FacebookProvider(config, "url1", "url2");
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
@@ -137,12 +139,9 @@ public class FacebookProviderTests : BaseForProviderTests
         };
     }
 
-    private static void SetupTokenResultSuccess(IRestClient restClient, string token)
+    private static void SetupTokenResultSuccess(HttpTest httpTest, string token)
     {
-        var facebookResponse = Substitute.For<IRestResponse<AccessTokenResult>>();
-        facebookResponse.IsSuccessful.Returns(true);
-        facebookResponse.StatusCode.Returns(HttpStatusCode.OK);
-        facebookResponse.Data.Returns(new AccessTokenResult { AccessToken = token });
-        restClient.ExecuteAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(facebookResponse));
+        var facebookResponse = new AccessTokenResult { AccessToken = token };
+        httpTest.RespondWithJson(facebookResponse);
     }
 }
