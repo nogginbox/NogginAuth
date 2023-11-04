@@ -1,3 +1,4 @@
+using Flurl.Http.Testing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Noggin.NetCoreAuth.Config;
@@ -20,17 +21,17 @@ public class GitHubProviderTests : BaseForProviderTests
     {
         // Arrange
         var config = CreateProviderConfig();
-        var (restClientFactory, restClient) = CreateRestClientAndFactory();
+        using var httpTest = new HttpTest();
 
-        var provider = new GitHubProvider(config, restClientFactory, "url1", "url2");
+        var provider = new GitHubProvider(config, "url1", "url2");
 
         var http = Substitute.For<HttpRequest>();
 
         // Act
-        var result = await provider.GenerateStartRequestUrl(http);
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
-        await restClient.DidNotReceive().ExecuteAsync<AccessTokenResult>(Arg.Any<IRestRequest>());
+        httpTest.ShouldNotHaveMadeACall();
     }
 
     [Fact]
@@ -38,19 +39,19 @@ public class GitHubProviderTests : BaseForProviderTests
     {
         // Arrange
         var config = CreateProviderConfig();
-        var (restClientFactory, restClient) = CreateRestClientAndFactory();
+        using var httpTest = new HttpTest();
 
         // Arrange - Calling GitHub API succeeds
 
-        var provider = new GitHubProvider(config, restClientFactory, "url1", "url2");
+        var provider = new GitHubProvider(config, "url1", "url2");
 
         var http = Substitute.For<HttpRequest>();
 
         // Act 
-        var result = await provider.GenerateStartRequestUrl(http);
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
-        Assert.NotNull(result.url);
+        Assert.NotNull(url);
     }
 
     [Fact]
@@ -58,17 +59,16 @@ public class GitHubProviderTests : BaseForProviderTests
     {
         // Arrange
         var config = CreateProviderConfig();
-        var (restClientFactory, restClient) = CreateRestClientAndFactory();
+        using var httpTest = new HttpTest();
 
         // Arrange - Calling GitHub API for token succeeds
-        SetupTokenResultSuccess(restClient, "token");
+        SetupTokenResultSuccess(httpTest, "token");
 
         // Arrange - Calling GitHub API to get user fails
-        var response = Substitute.For<IRestResponse<UserResult>>();
-        response.IsSuccessful.Returns(false);
-        restClient.ExecuteAsync<UserResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(response));
+        var badUser = new UserResult { Message = "Failure for reason." };
+        httpTest.RespondWithJson(badUser, 400);
 
-        var provider = new GitHubProvider(config, restClientFactory, "url1", "url2");
+        var provider = new GitHubProvider(config, "url1", "url2");
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
@@ -84,25 +84,22 @@ public class GitHubProviderTests : BaseForProviderTests
     {
         // Arrange
         var config = CreateProviderConfig();
-        var (restClientFactory, restClient) = CreateRestClientAndFactory();
+        using var httpTest = new HttpTest();
 
         // Arrange - Calling GitHub API for token
-        SetupTokenResultSuccess(restClient, "token");
+        SetupTokenResultSuccess(httpTest, "token");
 
         // Arrange - Calling GitHub for user details
-        var gitHubResponse = Substitute.For<IRestResponse<UserResult>>();
-        gitHubResponse.IsSuccessful.Returns(true);
-        gitHubResponse.StatusCode.Returns(HttpStatusCode.OK);
-        gitHubResponse.Data.Returns(new UserResult
+        var gitHubUser = new UserResult
         {
             Id = 2268,
             Login = "NogginBox",
             Name = "Richard Garside",
             AvatarUrl = "lookingood.jpg"
-        });
-        restClient.ExecuteAsync<UserResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(gitHubResponse));
+        };
+        httpTest.RespondWithJson(gitHubUser);
 
-        var provider = new GitHubProvider(config, restClientFactory, "url1", "url2");
+        var provider = new GitHubProvider(config, "url1", "url2");
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
@@ -131,12 +128,10 @@ public class GitHubProviderTests : BaseForProviderTests
         };
     }
 
-    private static void SetupTokenResultSuccess(IRestClient restClient, string token)
+    private static void SetupTokenResultSuccess(HttpTest httpTest, string token)
     {
-        var gitHubResponse = Substitute.For<IRestResponse<AccessTokenResult>>();
-        gitHubResponse.IsSuccessful.Returns(true);
-        gitHubResponse.StatusCode.Returns(HttpStatusCode.OK);
-        gitHubResponse.Data.Returns(new AccessTokenResult { AccessToken = token });
-        restClient.ExecuteAsync<AccessTokenResult>(Arg.Any<RestRequest>()).Returns(Task.FromResult(gitHubResponse));
+        var gitHubResponse = new AccessTokenResult { AccessToken = token };
+        httpTest.RespondWithJson(gitHubResponse);
     }
+    
 }
