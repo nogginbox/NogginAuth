@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Noggin.NetCoreAuth.Providers.GitHub;
 
 /// <summary>
-/// GitHub Provider
+/// GitHub Login Provider
 /// </summary>
 /// <remarks>
 /// reference: https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
