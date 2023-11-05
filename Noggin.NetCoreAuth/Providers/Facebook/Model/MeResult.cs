@@ -1,4 +1,6 @@
-﻿namespace Noggin.NetCoreAuth.Providers.Facebook.Model;
+﻿using Newtonsoft.Json;
+
+namespace Noggin.NetCoreAuth.Providers.Facebook.Model;
 
 internal class MeResult
 {
@@ -6,25 +8,13 @@ internal class MeResult
 
     public string Name { get; init; }
 
+    [JsonProperty(PropertyName = "first_name")]
     public string FirstName { get; init; }
 
+    [JsonProperty(PropertyName = "last_name")]
     public string LastName { get; init; }
 
-    public string Link { get; init; }
-
-    public string Username { get; init; }
-
     public string Email { get; init; }
-
-    public long Timezone { get; init; }
-
-    public string Locale { get; init; }
-
-    public bool Verified { get; init; }
-
-    public string UpdatedTime { get; init; }
-
-    public string Gender { get; init; }
 
     public ErrorResult Error { get; init; }
 }

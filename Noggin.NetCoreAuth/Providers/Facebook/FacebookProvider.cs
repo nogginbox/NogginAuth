@@ -117,7 +117,7 @@ internal class FacebookProvider : Provider
 		}
 		catch(Exception ex)
 		{
-			throw new NogginNetCoreAuthException("Failed to get access token from Facebook", ex);
+			throw new NogginNetCoreAuthException($"Failed to get access token from Facebook - {ex.Message}", ex);
 		}
 
         /* Flurl always throws on non 200, move this into catch if possible
@@ -132,7 +132,7 @@ internal class FacebookProvider : Provider
         return token.AccessToken;
     }
 
-	protected async Task<UserInformation> RetrieveUserInformationAsync(string authToken)
+	protected static async Task<UserInformation> RetrieveUserInformationAsync(string authToken)
 	{
 		MeResult me;
 		
@@ -142,17 +142,18 @@ internal class FacebookProvider : Provider
 		var form = new
 		{
             access_token = authToken,
-            fields = "name,email,first_name,last_name,locale,link",
+            fields = "id,name,email,first_name,last_name",
         };
 
 		try
 		{
 			var response = await url.PostJsonAsync(form);
+			var content = await response.GetStringAsync();
 			me = await response.GetJsonAsync<MeResult>();
 		}
 		catch (Exception ex)
 		{
-			throw new NogginNetCoreAuthException("Failed to retrieve any Me data from the Facebook Api.", ex);
+			throw new NogginNetCoreAuthException($"Failed to retrieve any Me data from the Facebook Api - {ex.Message}", ex);
 		}
 
 		/*if (response?.StatusCode != HttpStatusCode.OK || response.Data == null)
@@ -177,8 +178,6 @@ internal class FacebookProvider : Provider
 			Id = id.ToString(),
 			Name = me.Name,
 			Email = me.Email,
-			Locale = me.Locale,
-			UserName = me.Username,
 			Picture = string.Format("https://graph.facebook.com/{0}/picture", id)
 		};
 

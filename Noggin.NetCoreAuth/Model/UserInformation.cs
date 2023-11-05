@@ -9,8 +9,6 @@ public class UserInformation
 		public string Email { get; init; }
 
 		public string Name { get; init; }
-
-		public string Locale { get; init; }
 		
 		public string Picture { get; init; }
 

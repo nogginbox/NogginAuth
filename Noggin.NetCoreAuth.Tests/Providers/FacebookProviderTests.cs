@@ -102,9 +102,8 @@ public class FacebookProviderTests : BaseForProviderTests
         var facebookResponse = new MeResult
         {
             Id = 2268,
-            Username = "RichardG2268",
             Name = "Richard Garside",
-            Locale = "en-GB"
+            Email = "code@nogginbox.co.uk"
         };
         httpTest.RespondWithJson(facebookResponse);
 
@@ -121,7 +120,7 @@ public class FacebookProviderTests : BaseForProviderTests
 
         // Assert
         Assert.Equal("Richard Garside", authenticatedUser.Name);
-        Assert.Equal("RichardG2268", authenticatedUser.UserName);
+        Assert.Equal("code@nogginbox.co.uk", authenticatedUser.Email);
         Assert.Equal("https://graph.facebook.com/2268/picture", authenticatedUser.Picture);
     }
 
