@@ -21,6 +21,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: App Settings Variable Substitution
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: 'Noggin.SampleSite/appsettings.json'
+        env:
+          NogginNetAuth.Providers.0.Api.PrivateKey: "${{secrets.NOGGINAUTH_SECRET_FACEBOOK}}"
+          NogginNetAuth.Providers.1.Api.PrivateKey: "${{secrets.NOGGINAUTH_SECRET_GITHUB}}"
+          NogginNetAuth.Providers.2.Api.PrivateKey: "${{secrets.NOGGINAUTH_SECRET_GOOGLE}}"
+
       - name: Log in to the Container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:

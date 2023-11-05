@@ -14,15 +14,18 @@ internal class ProviderFactory : IProviderFactory
 {
     private readonly IList<ProviderConfig> _providerConfigs;
     private readonly IDictionary<string, Provider> _providers;
-    private readonly IRestClientFactory _restClientFactory;
     private readonly string _defaultRedirectTemplate;
     private readonly string _defaultCallbackTemplate;
 
-    public ProviderFactory(IOptions<AuthConfigSection> config, IRestClientFactory restClientFactory)
+    public ProviderFactory(IOptions<AuthConfigSection> config)
     {
+        if (config == null)
+        {
+            throw new ArgumentNullException(nameof(config));
+        }
+
         _providerConfigs = config.Value?.Providers;
         _providers = new Dictionary<string, Provider>();
-        _restClientFactory = restClientFactory;
 
         _defaultRedirectTemplate = CreateDefaultTemplate(config.Value.DefaultRedirectTemplate, "auth/redirect/{provider}");
         _defaultCallbackTemplate = CreateDefaultTemplate(config.Value.DefaultCallbackTemplate, "auth/callback/{provider}");
@@ -37,9 +40,9 @@ internal class ProviderFactory : IProviderFactory
     {
         return name.ToLower() switch
         {
-            "facebook" => Get(name, (x) => new FacebookProvider(x, _restClientFactory, _defaultRedirectTemplate, _defaultCallbackTemplate)),
-            "github" => Get(name, (x) => new GitHubProvider(x, _restClientFactory, _defaultRedirectTemplate, _defaultCallbackTemplate)),
-            "google" => Get(name, (x) => new GoogleProvider(x, _restClientFactory, _defaultRedirectTemplate, _defaultCallbackTemplate)),
+            "facebook" => Get(name, (x) => new FacebookProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
+            "github" => Get(name, (x) => new GitHubProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
+            "google" => Get(name, (x) => new GoogleProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
             _ => throw new NogginNetCoreConfigException($"No provider called {name} found"),
         };
     }
@@ -71,10 +74,4 @@ internal class ProviderFactory : IProviderFactory
     }
 
     
-}
-
-public interface IProviderFactory
-{
-    Provider Get(string name);
-    IList<Provider> Providers { get; }
 }
