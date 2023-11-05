@@ -26,9 +26,9 @@ jobs:
         with:
           files: 'Noggin.SampleSite/appsettings.json'
         env:
-          NogginNetAuth.Providers.0: "${{secrets.NOGGIN_AUTH_SECRET_FACEBOOK}}"
-          NogginNetAuth.Providers.1: "${{secrets.NOGGIN_AUTH_SECRET_GITHUB}}"
-          NogginNetAuth.Providers.2: "${{secrets.NOGGIN_AUTH_SECRET_GOOGLE}}"
+          NogginNetAuth.Providers.0.PrivateKey: "${{secrets.NOGGIN_AUTH_SECRET_FACEBOOK}}"
+          NogginNetAuth.Providers.1.PrivateKey: "${{secrets.NOGGIN_AUTH_SECRET_GITHUB}}"
+          NogginNetAuth.Providers.2.PrivateKey: "${{secrets.NOGGIN_AUTH_SECRET_GOOGLE}}"
 
       - name: Log in to the Container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
