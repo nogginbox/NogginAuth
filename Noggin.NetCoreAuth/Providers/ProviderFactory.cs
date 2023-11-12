@@ -4,6 +4,7 @@ using Noggin.NetCoreAuth.Exceptions;
 using Noggin.NetCoreAuth.Providers.Facebook;
 using Noggin.NetCoreAuth.Providers.GitHub;
 using Noggin.NetCoreAuth.Providers.Google;
+using Noggin.NetCoreAuth.Providers.Microsoft;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,6 +44,7 @@ internal class ProviderFactory : IProviderFactory
             "facebook" => Get(name, (x) => new FacebookProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
             "github" => Get(name, (x) => new GitHubProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
             "google" => Get(name, (x) => new GoogleProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
+            "microsoft" => Get(name, (x) => new MicrosoftProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
             _ => throw new NogginNetCoreConfigException($"No provider called {name} found"),
         };
     }
@@ -72,6 +74,4 @@ internal class ProviderFactory : IProviderFactory
 
         throw new NogginNetCoreAuthException("Default Url Templates must contain '{provider}' for the provider name.");
     }
-
-    
 }

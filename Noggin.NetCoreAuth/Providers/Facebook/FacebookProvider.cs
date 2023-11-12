@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Noggin.NetCoreAuth.Providers.Facebook;
 
 /// <summary>
-/// 
+/// Facebook Login Provider
 /// </summary>
 /// <remarks>
 /// Reference: https://developers.facebook.com/docs/facebook-login/login-flow-for-web-no-jssdk/
