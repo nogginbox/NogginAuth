@@ -88,16 +88,15 @@ internal class FacebookProvider : Provider
 			throw new ArgumentNullException(nameof(authorizationCode));
 		}
 
-		/*if (redirectUri == null ||
-			string.IsNullOrEmpty(redirectUri.AbsoluteUri))
+		if (callbackUrl == null)
 		{
-			throw new ArgumentNullException("redirectUri");
-		}*/
-
+			throw new ArgumentNullException(nameof(callbackUrl));
+		}
 
 		var url = _facebookGraphUrl
 			.AppendPathSegments("oauth", "access_token")
-			.WithHeader("Content-Type", "application/json");
+            .WithHeader("User-Agent", NogginAuthUserAgentName)
+            .WithHeader("Content-Type", "application/json");
 
 		var form = new
 		{
@@ -115,19 +114,15 @@ internal class FacebookProvider : Provider
 			var tokenResponse = await url.PostJsonAsync(form);
 			token = await tokenResponse.GetJsonAsync<AccessTokenResult>();
 		}
-		catch(Exception ex)
+        catch (FlurlHttpException ex)
+        {
+            var error = (await ex.GetResponseJsonAsync<ErrorResult>())?.Error;
+            throw new NogginNetCoreAuthException($"Failed to get access token from Facebook: {ex.Message} - {error?.Code}: {error?.Message}", ex);
+        }
+        catch (Exception ex)
 		{
 			throw new NogginNetCoreAuthException($"Failed to get access token from Facebook - {ex.Message}", ex);
 		}
-
-        /* Flurl always throws on non 200, move this into catch if possible
-        if(!tokenResponse.IsSuccessful)
-        {
-            var errorMessage = "Facebook: Failed to get access token";
-            if (tokenResponse.Data?.Error?.Message != null) errorMessage += " - " + tokenResponse.Data.Error.Message;
-
-            throw new NogginNetCoreAuthException(errorMessage);
-        }*/
 
         return token.AccessToken;
     }
@@ -137,7 +132,8 @@ internal class FacebookProvider : Provider
 		MeResult me;
 		
 		var url = _facebookGraphUrl
-			.AppendPathSegment("me");
+            .AppendPathSegment("me")
+			.WithHeader("User-Agent", NogginAuthUserAgentName);
 
 		var form = new
 		{
@@ -151,25 +147,15 @@ internal class FacebookProvider : Provider
 			var content = await response.GetStringAsync();
 			me = await response.GetJsonAsync<MeResult>();
 		}
-		catch (Exception ex)
+        catch (FlurlHttpException ex)
+        {
+            var error = (await ex.GetResponseJsonAsync<ErrorResult>())?.Error;
+            throw new NogginNetCoreAuthException($"Failed to get access token from Facebook: {ex.Message} - {error?.Code}: {error?.Message}", ex);
+        }
+        catch (Exception ex)
 		{
 			throw new NogginNetCoreAuthException($"Failed to retrieve any Me data from the Facebook Api - {ex.Message}", ex);
 		}
-
-		/*if (response?.StatusCode != HttpStatusCode.OK || response.Data == null)
-		{
-			var errorMessage = string.Format(
-				"Failed to obtain some 'Me' data from the Facebook api OR the the response was not an HTTP Status 200 OK. Response Status: {0}. Response Description: {1}. Error Message: {2}.",
-				response == null ? "-- null response --" : response.StatusCode.ToString(),
-				response == null ? string.Empty : response.StatusDescription,
-				response == null
-					? string.Empty
-					: response.ErrorException == null
-							? "--no error exception--"
-							: response.ErrorException.Message);
-
-			throw new NogginNetCoreAuthException(errorMessage);
-		}*/
 
 		var id = me.Id < 0 ? 0 : me.Id;
 

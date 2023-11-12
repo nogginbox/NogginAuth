@@ -67,7 +67,7 @@ public class FacebookProviderTests : BaseForProviderTests
         // Arrange - Calling Facebook API fails
         var response = new MeResult
         {
-            Error = new ErrorResult
+            Error = new Error
             {
                 Code = 666
             }

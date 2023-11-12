@@ -13,5 +13,5 @@ internal class AccessTokenResult
     [JsonProperty(PropertyName = "expires_in")]
     public int ExpiresIn { get; init; }
 
-    public ErrorResult Error { get; init; }
+    public Error Error { get; init; }
 }

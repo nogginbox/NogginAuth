@@ -16,5 +16,5 @@ internal class MeResult
 
     public string Email { get; init; }
 
-    public ErrorResult Error { get; init; }
+    public Error Error { get; init; }
 }
