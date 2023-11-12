@@ -92,7 +92,7 @@ internal class GitHubProvider : Provider
 
 		var request = _githubOAuthUrl
 			.AppendPathSegment("access_token")
-            .WithHeader("User-Agent", "NogginAuth")
+            .WithHeader("User-Agent", NogginAuthUserAgentName)
             .WithHeader("accept", "application/json");
 
 		var form = new
@@ -128,9 +128,8 @@ internal class GitHubProvider : Provider
         var request = _githubApiUrl
 			.AppendPathSegment("user")
 			.WithOAuthBearerToken(authToken)
-			//.WithHeader("Authorization", $"Bearer {authToken}")
 			.WithHeader("Accept", "application/json")
-			.WithHeader("User-Agent", "NogginAuth")
+			.WithHeader("User-Agent", NogginAuthUserAgentName)
 			.WithHeader("X-GitHub-Api-Version", "2022-11-28");
 
 		try

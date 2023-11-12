@@ -7,6 +7,8 @@ namespace Noggin.NetCoreAuth.Providers;
 
 public abstract class Provider
 {
+	protected const string NogginAuthUserAgentName = "NogginAuth";
+
     protected Provider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate)
     {
         config.CheckIsValid();

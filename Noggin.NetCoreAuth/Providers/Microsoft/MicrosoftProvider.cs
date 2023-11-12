@@ -15,9 +15,8 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
     /// Microsoft Login Provider
     /// </summary>
     /// /// <remarks>
-    /// Reference: https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow
-    /// https://learn.microsoft.com/en-us/graph/migrate-azure-ad-graph-overview
-    /// https://developer.microsoft.com/en-us/graph/graph-explorer
+    /// OAuth Reference: https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow
+    /// Graph Explorer: https://developer.microsoft.com/en-us/graph/graph-explorer
     /// </remarks>
     internal class MicrosoftProvider : Provider
     {
@@ -88,7 +87,7 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
 
             var request = _msOAuthUrl
                 .AppendPathSegment("token")
-                .WithHeader("User-Agent", "NogginAuth")
+                .WithHeader("User-Agent", NogginAuthUserAgentName)
                 .WithHeader("accept", "application/json");
 
             var form = new
@@ -104,7 +103,6 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
             {
                 var tokenResponse = await request.PostUrlEncodedAsync(form);
                 var data = await tokenResponse.GetJsonAsync<AccessTokenResult>();
-                //CheckValid(data);
                 return data?.AccessToken ?? throw new Exception("No token returned from Microsoft");
             }
             catch (FlurlHttpException ex)
@@ -131,16 +129,13 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
             var request = _msGraphApiUrl
                 .AppendPathSegment("me")
                 .WithOAuthBearerToken(authToken)
-                //.WithHeader("Authorization", $"Bearer {authToken}")
                 .WithHeader("Accept", "application/json")
-                .WithHeader("User-Agent", "NogginAuth");
+                .WithHeader("User-Agent", NogginAuthUserAgentName);
 
             try
             {
                 var response = await request.GetAsync();
-                var stringContent = await response.GetStringAsync();
-                user = await response.GetJsonAsync<UserResult>();
-                //user = await request.GetJsonAsync<UserResult>();
+                user = await request.GetJsonAsync<UserResult>();
             }
             catch (FlurlHttpException ex)
             {
@@ -154,7 +149,7 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
 
             if (user == null)
             {
-                throw new NogginNetCoreAuthException("Failed to get user  from Microsoft");
+                throw new NogginNetCoreAuthException("Failed to get user from Microsoft. No user information returned.");
             }
 
             var userInformation = new UserInformation
@@ -167,6 +162,5 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
 
             return userInformation;
         }
-
     }
 }

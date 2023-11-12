@@ -23,7 +23,3 @@ internal class UserResult
 
     public object MobilePhone { get; init; }
 }
-
-/*
- {"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#users/$entity","userPrincipalName":"richard.garside@nogginbox.co.uk","id":"990fceb1639eb15a","displayName":"Richard Garside","surname":"Garside","givenName":"Richard","preferredLanguage":"en-GB","mail":"richard.garside@nogginbox.co.uk","mobilePhone":null,"jobTitle":null,"officeLocation":null,"businessPhones":[]}
-*/
