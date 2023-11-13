@@ -1,4 +1,4 @@
-﻿Readme
+﻿# Readme
 
 See http://coreauth.nogginbox.co.uk for full instructions on how to get going.
 
