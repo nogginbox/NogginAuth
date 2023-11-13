@@ -56,8 +56,5 @@ See the project site for instructions and the sample site implementation on for 
     <Message Text="Running after build" />
     <!--
     <Exec Command="dotnet pack - -no-build - -configuration %compile:Configuration%" />-->
-  </Target>
-  
-  
-  
+  </Target>  
 </Project>
