@@ -24,7 +24,6 @@ internal class GitHubProvider : Provider
 
     private readonly ApiConfig _apiDetails;
 
-
     internal GitHubProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
     {
         _apiDetails = config.Api;
@@ -109,7 +108,7 @@ internal class GitHubProvider : Provider
 			CheckValid(data);
 			return data?.AccessToken ?? throw new Exception(data?.ErrorDescription );
 		}
-		catch(Exception ex)
+        catch (Exception ex)
 		{
 			throw new NogginNetCoreAuthException($"Failed to get access token from GitHub: {ex.Message}", ex);
 		}
