@@ -1,10 +1,10 @@
 ﻿@{
-    ViewBag.Title = "Noggin .NetCore Auth";
+    ViewBag.Title = "Noggin Auth";
 }
 
 <section class="intro">
-	<h1>Noggin .NetCore Auth</h1>
-    <p><strong>Noggin .NetCore Auth</strong> is a simple library for doing social authentication in ASP.NET Core MVC in .NET 5.0. It authenticates that people are who they say they are, but does not authorise them and has no opinion on how you store details about your users. You're free to do that however you want and in whatever way works best for your application.</p>
+	<h1>Noggin Auth</h1>
+    <p><strong>Noggin Auth</strong> is a simple library for doing social authentication in ASP.NET Core MVC in .NET 7.0. It authenticates that people are who they say they are, but does not authorise them and has no opinion on how you store details about your users. You're free to do that however you want and in whatever way works best for your application.</p>
 	<p>The source code is available at the <a href="https://github.com/NogginBox/NogginAuth">Noggin .NetCore Git Repo</a>.</p>
 	<p>For a working example download a <a href="https://github.com/NogginBox/NogginAuth/archive/master.zip">zip of the source code including the sample site</a>.
 </section>
@@ -22,11 +22,12 @@
     <section class="col2">
         <h2>Lots of social login providers</h2>
         <ul>
+            <li>Facebook</li>
             <li>GitHub</li>
             <li>Google</li>
-            <li>Facebook</li>
-            <li>Twitter</li>
-            <li>4... that's lots, right?</li>
+            <li>Microsoft</li>
+            <li><del>Twitter</del> (removed due to new API pricing)</li>
+            <li>4... that's lots right. Working on Apple Account next</li>
         </ul>
     </section>
 </section>
@@ -129,21 +130,19 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
 "NogginNetAuth": {
 	"Providers": [
 		{
-			"Name": "Twitter",
-			"RedirectTemplate": "auth/twitter",
-			"CallbackTemplate": "auth/twitter/callback",
-			"Api": {
-				"PublicKey": "...",
-				"PrivateKey": "..."
-			}
-		},
-		{
 			"Name": "Facebook",
 			"Api": {
 				"PublicKey": "...",
 				"PrivateKey": "..."
 			}
 		},
+        {
+            "Name": "Github",
+              "Api": {
+                "PublicKey": "...",
+                "PrivateKey": "..."
+              }
+        },
 		{
 			"Name": "Google",
 			"Api": {
@@ -161,7 +160,6 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
         <li><a href="https://developers.facebook.com/">Facebook Developer Site</a></li>
         <li><a href="https://github.com/settings/developers">Github Developer Settings</a></li>
         <li><a href="https://console.developers.google.com/apis/credentials">Google API Credentials</a></li>
-        <li><a href="https://apps.twitter.com/">Twitter API and App Management</a></li>
     </ul>
 </section>
 
@@ -170,7 +168,7 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
     <p>So you can use Noggin Core Auth Tag helpers add the following to <span class="code">Views/_ViewImports.cshtml</span>.</p>
     <pre class="code">@@addTagHelper &quot;*, Noggin.NetCoreAuth&quot;</pre>
     <p>Once this is included all you need to do is add:</p>
-    <pre class="code">&lt;auth-link provider=&quot;twitter&quot;&gt;Twitter&lt;/auth-link&gt;</pre>
+    <pre class="code">&lt;auth-link provider=&quot;github&quot;&gt;Github&lt;/auth-link&gt;</pre>
     <p>This will render an &lt;a&gt; tag with a link to correct place to kick off authentication. You can set <span class="code">provider</span> to be any of your configured providers.</p>
 </section>
 

@@ -1,7 +1,7 @@
 using Noggin.NetCoreAuth.Exceptions;
 
-namespace Noggin.NetCoreAuth.Config
-{
+namespace Noggin.NetCoreAuth.Config;
+
 	public class ProviderConfig
 	{
 		public string Name { get; init; }
@@ -27,4 +27,3 @@ namespace Noggin.NetCoreAuth.Config
 			}
 		}
 	}
-}

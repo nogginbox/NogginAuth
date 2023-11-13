@@ -3,26 +3,25 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
-using Noggin.NetCoreAuth.Providers.Facebook;
-using Noggin.NetCoreAuth.Providers.Facebook.Model;
+using Noggin.NetCoreAuth.Providers.Microsoft;
+using Noggin.NetCoreAuth.Providers.Microsoft.Model;
 using NSubstitute;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Noggin.NetCoreAuth.Tests.Providers;
 
-public class FacebookProviderTests : BaseForProviderTests
+public class MicrosoftProviderTests : BaseForProviderTests
 {
     [Fact]
-    public async Task GenerateStartRequestDoesNotCallFacebookApi()
+    public async Task GenerateStartRequestDoesNotCallMicrosoftApi()
     {
         // Arrange
         var config = CreateProviderConfig();
         using var httpTest = new HttpTest();
 
-        var provider = new FacebookProvider(config, "url1", "url2");
+        var provider = new MicrosoftProvider(config, "url1", "url2");
 
         var http = Substitute.For<HttpRequest>();
 
@@ -38,53 +37,44 @@ public class FacebookProviderTests : BaseForProviderTests
     {
         // Arrange
         var config = CreateProviderConfig();
+        using var httpTest = new HttpTest();
 
-        // Arrange - Calling Facebook API succeeds
+        // Arrange - Calling Microsoft API succeeds
 
-        var provider = new FacebookProvider(config, "url1", "url2");
+        var provider = new MicrosoftProvider(config, "url1", "url2");
 
         var http = Substitute.For<HttpRequest>();
 
         // Act 
-        var result = await provider.GenerateStartRequestUrl(http);
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
-        Assert.NotNull(result.url);
-        Assert.NotNull(result.secret);
-        Assert.True(Guid.TryParse(result.secret, out var guidSecret));
+        Assert.NotNull(url);
     }
 
     [Fact]
-    public async Task AuthenticateUserThrowsExceptionIfFacebookApiFails()
+    public async Task AuthenticateUserThrowsExceptionIfMicrosoftApiFails()
     {
         // Arrange
         var config = CreateProviderConfig();
         using var httpTest = new HttpTest();
 
-        // Arrange - Calling Facebook API for token succeeds
+        // Arrange - Calling Microsoft API for token succeeds
         SetupTokenResultSuccess(httpTest, "token");
 
-        // Arrange - Calling Facebook API fails
-        var response = new MeResult
-        {
-            Error = new Error
-            {
-                Code = 666
-            }
-        };
+        // Arrange - Calling Microsoft API to get user fails
+        var errorResult = new ErrorResult { Error = "Test Error", ErrorDescription = "It'll all be okay by default." };
+        httpTest.RespondWithJson(errorResult, 400);
 
-        httpTest.RespondWithJson(response, 500);
-
-        var provider = new FacebookProvider(config, "url1", "url2");
+        var provider = new MicrosoftProvider(config, "url1", "url2");
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
-            { "state", new StringValues("TestState") },
-            { "code", new StringValues("TestCode") },
+            { "code", new StringValues("TestCode") }
         }));
 
         // Act / Assert
-        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "secret"));
+        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, ""));
     }
 
     [Fact]
@@ -94,24 +84,22 @@ public class FacebookProviderTests : BaseForProviderTests
         var config = CreateProviderConfig();
         using var httpTest = new HttpTest();
 
-
-        // Arrange - Calling Facebook API for token
+        // Arrange - Calling Microsoft API for token
         SetupTokenResultSuccess(httpTest, "token");
 
-        // Arrange - Calling Facebook for user details
-        var facebookResponse = new MeResult
+        // Arrange - Calling Microsoft for user details
+        var msUser = new UserResult
         {
-            Id = 2268,
-            Name = "Richard Garside",
-            Email = "code@nogginbox.co.uk"
+            Id = "msid-2268",
+            UserPrincipalName = "NogginBox",
+            DisplayName = "Richard Garside",
         };
-        httpTest.RespondWithJson(facebookResponse);
+        httpTest.RespondWithJson(msUser);
 
-        var provider = new FacebookProvider(config, "url1", "url2");
+        var provider = new MicrosoftProvider(config, "url1", "url2");
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
-            { "state", new StringValues("TestState") },
             { "code", new StringValues("TestCode") },
         }));
 
@@ -120,15 +108,15 @@ public class FacebookProviderTests : BaseForProviderTests
 
         // Assert
         Assert.Equal("Richard Garside", authenticatedUser.Name);
-        Assert.Equal("code@nogginbox.co.uk", authenticatedUser.Email);
-        Assert.Equal("https://graph.facebook.com/2268/picture", authenticatedUser.Picture);
+        Assert.Equal("NogginBox", authenticatedUser.UserName);
+        Assert.Null(authenticatedUser.Picture);
     }
 
     private static ProviderConfig CreateProviderConfig()
     {
         return new ProviderConfig
         {
-            Name = "Facebook",
+            Name = "Microsoft",
             Api = new ApiConfig
             {
                 PrivateKey = "privateKey",
@@ -139,7 +127,7 @@ public class FacebookProviderTests : BaseForProviderTests
 
     private static void SetupTokenResultSuccess(HttpTest httpTest, string token)
     {
-        var facebookResponse = new AccessTokenResult { AccessToken = token };
-        httpTest.RespondWithJson(facebookResponse);
-    }
+        var msResponse = new AccessTokenResult { AccessToken = token };
+        httpTest.RespondWithJson(msResponse);
+    }   
 }

@@ -1,8 +1,7 @@
-﻿namespace Noggin.NetCoreAuth.Config
+﻿namespace Noggin.NetCoreAuth.Config;
+
+public class ApiConfig
 {
-    public class ApiConfig
-    {
-        public string PublicKey { get; init; }
-        public string PrivateKey { get; init; }
-    }
+    public string PublicKey { get; init; }
+    public string PrivateKey { get; init; }
 }
