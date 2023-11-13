@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Noggin.NetCoreAuth.Providers.Google;
 
 /// <summary>
-/// 
+/// Google Login Provider
 /// </summary>
 /// <remarks> Reference: https://developers.google.com/accounts/docs/OAuth2Login</remarks>
 internal class GoogleProvider : Provider
@@ -90,9 +90,9 @@ internal class GoogleProvider : Provider
 	private async Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl)
 	{
 		var url = _googleOAuthUrl
-			.AppendPathSegment("token");
+			.AppendPathSegment("token")
+            .WithHeader("User-Agent", NogginAuthUserAgentName);
 
-		//var restRequest = new RestRequest("/o/oauth2/token", Method.POST);
 		var form = new
 		{
 			client_id = _apiDetails.PublicKey,
@@ -113,7 +113,12 @@ internal class GoogleProvider : Provider
 			}
 			return token.AccessToken;
 		}
-		catch (Exception ex)
+        catch (FlurlHttpException ex)
+        {
+            var error = await ex.GetResponseJsonAsync<GoogleError>();
+            throw new NogginNetCoreAuthException($"Error {ex.StatusCode} - Failed to get access token from Google: {ex.Message} - {error?.Error}: {error?.Description}", ex);
+        }
+        catch (Exception ex)
 		{
 			throw new NogginNetCoreAuthException("Failed to get access token from Google", ex);
 		}
@@ -131,7 +136,8 @@ internal class GoogleProvider : Provider
 		try
 		{
             var url = _googleApi
-				.AppendPathSegments("oauth2", "v3", "userinfo");
+				.AppendPathSegments("oauth2", "v3", "userinfo")
+                .WithHeader("User-Agent", NogginAuthUserAgentName);
 
 			var form = new
 			{
@@ -141,34 +147,25 @@ internal class GoogleProvider : Provider
 			var response = await url.PostUrlEncodedAsync(form);
 			user = await response.GetJsonAsync<UserInfoResult>();
 		}
-		catch (Exception ex)
+        catch (FlurlHttpException ex)
+        {
+            var error = await ex.GetResponseJsonAsync<GoogleError>();
+            throw new NogginNetCoreAuthException($"Error {ex.StatusCode} - Failed to get user info from Google: {ex.Message} - {error?.Error}: {error?.Description}", ex);
+        }
+        catch (Exception ex)
 		{
-			throw new NogginNetCoreAuthException("Failed to get UserInfo data from the Google API due to exception", ex);
+			throw new NogginNetCoreAuthException($"Failed to get UserInfo from Google - {ex.Message}", ex);
 		}
 
 		if (user == null)
 		{
-			throw new NogginNetCoreAuthException("Null response from Google API");
+			throw new NogginNetCoreAuthException("Null response from Google");
 		}
-
-		/*if (response.StatusCode != HttpStatusCode.OK)
-		{
-			var error = JsonSerializerExtensions.TryDeserialize<GoogleApiError>(response.Content)?.Error;
-
-			const string errorStart = "Failed to get UserInfo data from the Google Api due to error.";
-			var errorMessage = error != null
-				? $"{errorStart} Code: {error.Code} ({error.Status}). Message: {error.Message}"
-				: $"{errorStart}. Response Status: {response.StatusCode}. Response Description: {response.StatusDescription}. Error Message: {response.ErrorException?.Message ?? "--no error exception--"}.";
-
-			throw new NogginNetCoreAuthException(errorMessage);
-		}*/
 
 		// Lets check to make sure we have some bare minimum data.
 		if (string.IsNullOrEmpty(user.Sub))
 		{
-			const string errorMessage =
-				"We were unable to retrieve the User Id from Google API, the user may have denied the authorization.";
-			throw new NogginNetCoreAuthException(errorMessage);
+			throw new NogginNetCoreAuthException("Could not get User Id from Google, the user may have denied the authorization.");
 		}
 
 		return new UserInformation
