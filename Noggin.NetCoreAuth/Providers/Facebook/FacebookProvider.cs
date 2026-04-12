@@ -1,6 +1,7 @@
 using Flurl;
 using Flurl.Http;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
 using Noggin.NetCoreAuth.Model;
@@ -24,7 +25,7 @@ internal class FacebookProvider : Provider
 
     private readonly ApiConfig _apiDetails;
 
-    internal FacebookProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
+    internal FacebookProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate, ILogger<FacebookProvider> logger) : base(config, defaultRedirectTemplate, defaultCallbackTemplate, logger)
     {
         _apiDetails = config.Api;
     }

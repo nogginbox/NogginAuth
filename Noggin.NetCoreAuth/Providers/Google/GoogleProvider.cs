@@ -1,6 +1,7 @@
 ﻿using Flurl;
 using Flurl.Http;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
 using Noggin.NetCoreAuth.Model;
@@ -22,7 +23,7 @@ internal class GoogleProvider : Provider
 	private const string _googleOAuthUrl = "https://accounts.google.com/o/oauth2/";
 	private const string _googleApi = "https://www.googleapis.com";
 
-    internal GoogleProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
+    internal GoogleProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate, ILogger<GoogleProvider> logger) : base(config, defaultRedirectTemplate, defaultCallbackTemplate, logger)
 	{
 		_apiDetails = config.Api;
     }

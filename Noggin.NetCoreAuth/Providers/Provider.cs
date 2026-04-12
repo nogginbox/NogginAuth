@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Model;
 using System.Threading.Tasks;
@@ -9,9 +10,10 @@ public abstract class Provider
 {
 	protected const string NogginAuthUserAgentName = "NogginAuth";
 
-    protected Provider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate)
+    protected Provider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate, ILogger logger)
     {
         config.CheckIsValid();
+        Logger = logger;
         Name = config.Name;
 
 		CallbackTemplate = CreateTemplate(Name, config.CallbackTemplate, defaultCallbackTemplate);
@@ -20,6 +22,8 @@ public abstract class Provider
 		CallbacksUseHttps = config.CallbackIsHttps;
         CallbackUrlHost = config.CallbackUrlHost;
     }
+
+    protected ILogger Logger { get; }
 
     public string Name { get; }
 	public string CallbackTemplate { get; }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
 using Noggin.NetCoreAuth.Providers;
@@ -33,7 +34,7 @@ public class ProviderFactoryTests
         );
 
         // Act / Assert
-        Assert.Throws<NogginNetCoreConfigException>(() => new ProviderFactory(options));
+        Assert.Throws<NogginNetCoreConfigException>(() => new ProviderFactory(options, NullLoggerFactory.Instance));
     }
 
     [Fact]
@@ -42,7 +43,7 @@ public class ProviderFactoryTests
         // Arrange
         var options = Substitute.For<IOptions<AuthConfigSection>>();
         options.Value.Returns(new AuthConfigSection());
-        var factory = new ProviderFactory(options);
+        var factory = new ProviderFactory(options, NullLoggerFactory.Instance);
 
         // Act / Assert
         Assert.Throws<NogginNetCoreConfigException>(() => factory.Get("github"));
@@ -54,7 +55,7 @@ public class ProviderFactoryTests
         // Arrange
         var options = Substitute.For<IOptions<AuthConfigSection>>();
         options.Value.Returns(new AuthConfigSection());
-        var factory = new ProviderFactory(options);
+        var factory = new ProviderFactory(options, NullLoggerFactory.Instance);
 
         // Act / Assert
         Assert.Throws<NogginNetCoreConfigException>(() => factory.Get("made-up"));
@@ -86,7 +87,7 @@ public class ProviderFactoryTests
                 }
             }
         );
-        var factory = new ProviderFactory(options);
+        var factory = new ProviderFactory(options, NullLoggerFactory.Instance);
 
         // Act 
         var provider = factory.Get("github");
@@ -121,7 +122,7 @@ public class ProviderFactoryTests
                 }
             }
         );
-        var factory = new ProviderFactory(options);
+        var factory = new ProviderFactory(options, NullLoggerFactory.Instance);
 
         // Act 
         var provider = factory.Get("facebook");
