@@ -8,6 +8,7 @@ using Noggin.NetCoreAuth.Providers.GitHub.Model;
 using NSubstitute;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Noggin.NetCoreAuth.Tests.Providers;
@@ -21,7 +22,7 @@ public class GitHubProviderTests : BaseForProviderTests
         var config = CreateProviderConfig();
         using var httpTest = new HttpTest();
 
-        var provider = new GitHubProvider(config, "url1", "url2");
+        var provider = new GitHubProvider(config, "url1", "url2", NullLogger<GitHubProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
 
@@ -41,7 +42,7 @@ public class GitHubProviderTests : BaseForProviderTests
 
         // Arrange - Calling GitHub API succeeds
 
-        var provider = new GitHubProvider(config, "url1", "url2");
+        var provider = new GitHubProvider(config, "url1", "url2", NullLogger<GitHubProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
 
@@ -66,7 +67,7 @@ public class GitHubProviderTests : BaseForProviderTests
         var badUser = new UserResult { Message = "Failure for reason." };
         httpTest.RespondWithJson(badUser, 400);
 
-        var provider = new GitHubProvider(config, "url1", "url2");
+        var provider = new GitHubProvider(config, "url1", "url2", NullLogger<GitHubProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
@@ -97,7 +98,7 @@ public class GitHubProviderTests : BaseForProviderTests
         };
         httpTest.RespondWithJson(gitHubUser);
 
-        var provider = new GitHubProvider(config, "url1", "url2");
+        var provider = new GitHubProvider(config, "url1", "url2", NullLogger<GitHubProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {

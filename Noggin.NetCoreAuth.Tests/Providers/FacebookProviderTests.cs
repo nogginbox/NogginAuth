@@ -9,6 +9,7 @@ using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Noggin.NetCoreAuth.Tests.Providers;
@@ -22,7 +23,7 @@ public class FacebookProviderTests : BaseForProviderTests
         var config = CreateProviderConfig();
         using var httpTest = new HttpTest();
 
-        var provider = new FacebookProvider(config, "url1", "url2");
+        var provider = new FacebookProvider(config, "url1", "url2", NullLogger<FacebookProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
 
@@ -41,7 +42,7 @@ public class FacebookProviderTests : BaseForProviderTests
 
         // Arrange - Calling Facebook API succeeds
 
-        var provider = new FacebookProvider(config, "url1", "url2");
+        var provider = new FacebookProvider(config, "url1", "url2", NullLogger<FacebookProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
 
@@ -75,7 +76,7 @@ public class FacebookProviderTests : BaseForProviderTests
 
         httpTest.RespondWithJson(response, 500);
 
-        var provider = new FacebookProvider(config, "url1", "url2");
+        var provider = new FacebookProvider(config, "url1", "url2", NullLogger<FacebookProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
@@ -107,7 +108,7 @@ public class FacebookProviderTests : BaseForProviderTests
         };
         httpTest.RespondWithJson(facebookResponse);
 
-        var provider = new FacebookProvider(config, "url1", "url2");
+        var provider = new FacebookProvider(config, "url1", "url2", NullLogger<FacebookProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {

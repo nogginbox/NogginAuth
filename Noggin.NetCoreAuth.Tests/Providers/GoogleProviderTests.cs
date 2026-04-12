@@ -9,6 +9,7 @@ using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Noggin.NetCoreAuth.Tests.Providers;
@@ -20,7 +21,7 @@ public class GoogleProviderTests : BaseForProviderTests
     {
         // Arrange
         var config = CreateProviderConfig();
-        var provider = new GoogleProvider(config, "url1", "url2");
+        var provider = new GoogleProvider(config, "url1", "url2", NullLogger<GoogleProvider>.Instance);
         var http = Substitute.For<HttpRequest>();
         using var httpTest = new HttpTest();
 
@@ -38,7 +39,7 @@ public class GoogleProviderTests : BaseForProviderTests
         var config = CreateProviderConfig();
 
         // Arrange - Calling Google API succeeds
-        var provider = new GoogleProvider(config, "url1", "url2");
+        var provider = new GoogleProvider(config, "url1", "url2", NullLogger<GoogleProvider>.Instance);
         var http = Substitute.For<HttpRequest>();
         using var httpTest = new HttpTest();
         
@@ -66,7 +67,7 @@ public class GoogleProviderTests : BaseForProviderTests
         var tokenResponse = new AccessTokenResult();
         httpTest.RespondWithJson(tokenResponse);
 
-        var provider = new GoogleProvider(config, "url1", "url2");
+        var provider = new GoogleProvider(config, "url1", "url2", NullLogger<GoogleProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
         
@@ -101,7 +102,7 @@ public class GoogleProviderTests : BaseForProviderTests
         };
         httpTest.RespondWithJson(googleResponse);
 
-        var provider = new GoogleProvider(config, "url1", "url2");
+        var provider = new GoogleProvider(config, "url1", "url2", NullLogger<GoogleProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {

@@ -1,6 +1,7 @@
 ﻿using Flurl;
 using Flurl.Http;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
 using Noggin.NetCoreAuth.Model;
@@ -24,7 +25,7 @@ internal class GitHubProvider : Provider
 
     private readonly ApiConfig _apiDetails;
 
-    internal GitHubProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
+    internal GitHubProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate, ILogger<GitHubProvider> logger) : base(config, defaultRedirectTemplate, defaultCallbackTemplate, logger)
     {
         _apiDetails = config.Api;
     }
@@ -37,6 +38,8 @@ internal class GitHubProvider : Provider
             .SetQueryParam("scope", "user:email read:user")
 			.SetQueryParam("client_id", _apiDetails.PublicKey)
 			.SetQueryParam("redirect_uri", callback);
+
+		Logger.LogDebug("Provider {name} setting callback URL to {callback-url}", Name, callback);
 
 		// This implementation of method does not need to be async, so convert result to task
 		return Task.FromResult((url.ToString(), string.Empty));

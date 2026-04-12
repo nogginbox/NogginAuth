@@ -8,6 +8,7 @@ using Noggin.NetCoreAuth.Providers.Microsoft.Model;
 using NSubstitute;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Noggin.NetCoreAuth.Tests.Providers;
@@ -21,7 +22,7 @@ public class MicrosoftProviderTests : BaseForProviderTests
         var config = CreateProviderConfig();
         using var httpTest = new HttpTest();
 
-        var provider = new MicrosoftProvider(config, "url1", "url2");
+        var provider = new MicrosoftProvider(config, "url1", "url2", NullLogger<MicrosoftProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
 
@@ -41,7 +42,7 @@ public class MicrosoftProviderTests : BaseForProviderTests
 
         // Arrange - Calling Microsoft API succeeds
 
-        var provider = new MicrosoftProvider(config, "url1", "url2");
+        var provider = new MicrosoftProvider(config, "url1", "url2", NullLogger<MicrosoftProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
 
@@ -66,7 +67,7 @@ public class MicrosoftProviderTests : BaseForProviderTests
         var errorResult = new ErrorResult { Error = "Test Error", ErrorDescription = "It'll all be okay by default." };
         httpTest.RespondWithJson(errorResult, 400);
 
-        var provider = new MicrosoftProvider(config, "url1", "url2");
+        var provider = new MicrosoftProvider(config, "url1", "url2", NullLogger<MicrosoftProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
@@ -96,7 +97,7 @@ public class MicrosoftProviderTests : BaseForProviderTests
         };
         httpTest.RespondWithJson(msUser);
 
-        var provider = new MicrosoftProvider(config, "url1", "url2");
+        var provider = new MicrosoftProvider(config, "url1", "url2", NullLogger<MicrosoftProvider>.Instance);
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {

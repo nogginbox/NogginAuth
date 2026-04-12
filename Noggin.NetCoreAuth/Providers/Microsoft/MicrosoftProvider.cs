@@ -1,6 +1,7 @@
 ﻿using Flurl;
 using Flurl.Http;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
 using Noggin.NetCoreAuth.Model;
@@ -24,7 +25,7 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
         private const string _msOAuthUrl = "https://login.microsoftonline.com/common/oauth2/v2.0/";
         private readonly ApiConfig _apiDetails;
 
-        public MicrosoftProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate) : base(config, defaultRedirectTemplate, defaultCallbackTemplate)
+        public MicrosoftProvider(ProviderConfig config, string defaultRedirectTemplate, string defaultCallbackTemplate, ILogger<MicrosoftProvider> logger) : base(config, defaultRedirectTemplate, defaultCallbackTemplate, logger)
         {
             _apiDetails = config.Api;
         }

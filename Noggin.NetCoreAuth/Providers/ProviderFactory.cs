@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Noggin.NetCoreAuth.Config;
 using Noggin.NetCoreAuth.Exceptions;
 using Noggin.NetCoreAuth.Providers.Facebook;
@@ -17,14 +18,16 @@ internal class ProviderFactory : IProviderFactory
     private readonly IDictionary<string, Provider> _providers;
     private readonly string _defaultRedirectTemplate;
     private readonly string _defaultCallbackTemplate;
+    private readonly ILoggerFactory _loggerFactory;
 
-    public ProviderFactory(IOptions<AuthConfigSection> config)
+    public ProviderFactory(IOptions<AuthConfigSection> config, ILoggerFactory loggerFactory)
     {
         if (config == null)
         {
             throw new ArgumentNullException(nameof(config));
         }
 
+        _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         _providerConfigs = config.Value?.Providers;
         _providers = new Dictionary<string, Provider>();
 
@@ -41,10 +44,10 @@ internal class ProviderFactory : IProviderFactory
     {
         return name.ToLower() switch
         {
-            "facebook" => Get(name, (x) => new FacebookProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
-            "github" => Get(name, (x) => new GitHubProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
-            "google" => Get(name, (x) => new GoogleProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
-            "microsoft" => Get(name, (x) => new MicrosoftProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate)),
+            "facebook" => Get(name, (x) => new FacebookProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate, _loggerFactory.CreateLogger<FacebookProvider>())),
+            "github" => Get(name, (x) => new GitHubProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate, _loggerFactory.CreateLogger<GitHubProvider>())),
+            "google" => Get(name, (x) => new GoogleProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate, _loggerFactory.CreateLogger<GoogleProvider>())),
+            "microsoft" => Get(name, (x) => new MicrosoftProvider(x, _defaultRedirectTemplate, _defaultCallbackTemplate, _loggerFactory.CreateLogger<MicrosoftProvider>())),
             _ => throw new NogginNetCoreConfigException($"No provider called {name} found"),
         };
     }
