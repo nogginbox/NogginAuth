@@ -14,9 +14,11 @@ public abstract class Provider
         config.CheckIsValid();
         Name = config.Name;
 
-			CallbackTemplate = CreateTemplate(Name, config.CallbackTemplate, defaultCallbackTemplate);
+		CallbackTemplate = CreateTemplate(Name, config.CallbackTemplate, defaultCallbackTemplate);
         RedirectTemplate = CreateTemplate(Name, config.RedirectTemplate, defaultRedirectTemplate);
-			CallbacksUseHttps = config.CallbackIsHttps;
+
+		CallbacksUseHttps = config.CallbackIsHttps;
+        CallbackUrlHost = config.CallbackUrlHost;
     }
 
     public string Name { get; }
@@ -27,6 +29,15 @@ public abstract class Provider
 	/// [null: use settings from request, false: always use HTTP, true: always use HTTPS]
 	/// </summary>
 	public bool? CallbacksUseHttps { get; }
+
+    /// <summary>
+    /// The host and port part of your callback URL.
+    /// ie. "coreauth.nogginbox.co.uk"
+    /// If null, the host URL and port will be autodetected.
+    /// (Autodetection may not work if your site is hosted on a reverse proxy like YARP or NGINX)
+    /// </summary>
+    public string? CallbackUrlHost { get; }
+
     public string RedirectTemplate { get; }
 
     internal abstract Task<UserInformation> AuthenticateUser(HttpRequest request, string state);
@@ -41,7 +52,12 @@ public abstract class Provider
 
 	protected string CreateCallbackUrl(HttpRequest request)
 	{
-		return CreateUrl(CallbacksUseHttps ?? request.IsHttps, request.Host.Value, CallbackTemplate);
+        bool useHttps = CallbacksUseHttps ?? request.IsHttps;
+        string host = string.IsNullOrEmpty(CallbackUrlHost)
+            ? request.Host.Value
+            : CallbackUrlHost;
+
+		return CreateUrl(useHttps, host, CallbackTemplate);
 	}
 
 	private static string CreateUrl(bool isHttps, string host, string template)
