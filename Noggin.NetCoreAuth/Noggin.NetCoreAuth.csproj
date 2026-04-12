@@ -10,9 +10,10 @@
     <!-- summary is not migrated from project.json, but you can use the <Description> property for that if needed. -->
     <PackageTags>auth, authentication, login, facebook, google, github, microsoft</PackageTags>
     <PackageReleaseNotes>Updated to .NET 8.0. Please add feature requests and bug reports to the project's GitHub issue page.</PackageReleaseNotes>
-    <PackageIconUrl>https://avatars1.githubusercontent.com/u/729381?s=460&amp;v=4</PackageIconUrl>
+	<PackageIcon>NogginAuthIcon.png</PackageIcon>
     <PackageProjectUrl>http://coreauth.nogginbox.co.uk</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/NogginBox/NogginAuth/blob/master/LICENSE.md</PackageLicenseUrl>
+	<PackageReadmeFile>readme.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/NogginBox/NogginAuth</RepositoryUrl>
@@ -33,7 +34,8 @@ See the project site for instructions and the sample site implementation on for 
 
 
   <ItemGroup>
-    <None Include="readme.txt" Pack="true" PackagePath="." />
+	<None Include="NogginAuthIcon.png" Pack="true" PackagePath="\" />
+    <None Include="readme.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
