@@ -4,7 +4,7 @@ namespace Noggin.NetCoreAuth.Extensions;
 
 internal static class JsonSerializerExtensions
 {
-	public static T TryDeserialize<T>(string jsonString)
+	public static T? TryDeserialize<T>(string jsonString)
 	{
 		try
 		{
