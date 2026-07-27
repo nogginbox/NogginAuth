@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Noggin.NetCoreAuth.Providers.GitHub.Model;
 
@@ -6,7 +6,7 @@ internal class UserResult
 {
     public long Id { get; init; }
 
-    [JsonProperty(PropertyName = "avatar_url")]
+    [JsonPropertyName("avatar_url")]
     public string AvatarUrl { get; init; }
 
     public string Bio { get; init; }
@@ -17,7 +17,7 @@ internal class UserResult
 
     public string Email { get; init; }
 
-    [JsonProperty(PropertyName = "html_url")]
+    [JsonPropertyName("html_url")]
     public string HtmlUrl { get; init; }
 
     public string Location { get; init; }

@@ -1,20 +1,20 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Noggin.NetCoreAuth.Providers.Google.Model;
 
 internal class UserInfoResult
 {
 	public string Sub { get; set; }
-	
+
 	public string Email { get; set; }
 
-    [JsonProperty(PropertyName = "email_verified")]
+    [JsonPropertyName("email_verified")]
     public bool EmailVerified { get; set; }
-    
-	[JsonProperty(PropertyName = "family_name")]
+
+	[JsonPropertyName("family_name")]
     public string FamilyName { get; set; }
 
-    [JsonProperty(PropertyName = "given_name")]
+    [JsonPropertyName("given_name")]
     public string GivenName { get; set; }
 	
 	public string Name { get; set; }

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Noggin.NetCoreAuth.Providers.Google.Model;
 
@@ -7,13 +7,13 @@ internal class AccessTokenResult
 	/// <summary>
 	/// Access Token
 	/// </summary>
-    [JsonProperty(PropertyName = "access_token")]
+    [JsonPropertyName("access_token")]
     public string AccessToken { get; set; }
 
-	[JsonProperty(PropertyName = "expires_in")]
+	[JsonPropertyName("expires_in")]
 	public long ExpiresIn { get; set; }
 
-	[JsonProperty(PropertyName = "id_token")]
+	[JsonPropertyName("id_token")]
 	public string IdToken { get; set; }
 
 	public string Scope { get; set; }
@@ -21,6 +21,6 @@ internal class AccessTokenResult
 	/// <summary>
 	/// Property Name
 	/// </summary>
-	[JsonProperty(PropertyName = "token_type")]
+	[JsonPropertyName("token_type")]
 	public string TokenType { get; set; }
 }

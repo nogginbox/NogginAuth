@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Noggin.NetCoreAuth.Providers.Microsoft.Model;
 
@@ -6,7 +6,7 @@ internal class UserResult
 {
     public string Id { get; init; }
 
-    [JsonProperty(PropertyName = "@odata.context")]
+    [JsonPropertyName("@odata.context")]
     public string odatacontext { get; init; }
     
     public string UserPrincipalName { get; init; }

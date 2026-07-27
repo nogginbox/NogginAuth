@@ -1,23 +1,23 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Noggin.NetCoreAuth.Providers.Microsoft.Model;
 
 internal class ErrorResult
 {
-    
+
     public string Error { get; init; }
 
-    [JsonProperty(PropertyName = "error_description")]
+    [JsonPropertyName("error_description")]
     public string ErrorDescription { get; init; }
 
-    [JsonProperty(PropertyName = "error_codes")]
+    [JsonPropertyName("error_codes")]
     public int[] ErrorCodes { get; init; }
 
     public string Timestamp { get; init; }
 
-    [JsonProperty(PropertyName = "trace_id")]
+    [JsonPropertyName("trace_id")]
     public string TraceId { get; init; }
-    
-    [JsonProperty(PropertyName = "correlation_id")]
+
+    [JsonPropertyName("correlation_id")]
     public string CorrelationId { get; init; }
 }
