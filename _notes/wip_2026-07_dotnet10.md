@@ -33,9 +33,16 @@ Decisions and findings that anyone picking this up needs to know:
 
 **DECIDED (2026-07-27):** User asked to update the remaining testing-related NuGet packages to latest and fix anything that broke. Bumped `Microsoft.NET.Test.Sdk` 18.4.0 → 18.8.1 and `NSubstitute` 5.3.0 → 6.0.0. `xunit.v3` (3.2.2) and `xunit.runner.visualstudio` (3.1.5) were already at latest stable — left unchanged. NSubstitute 6.0's main breaking changes are around legacy/obsolete API removal and its own TFM bump to net8.0/netstandard2.0; this codebase only uses `Substitute.For<T>()` and `.Returns(...)`, none of the removed legacy API, so nothing needed changing in test code. `dotnet build` 0 errors, `dotnet test` 21/21 passing — no test fixes were needed.
 
+**DECIDED (2026-07-27):** Confirmed all NuGet packages and the TFM are now fully on .NET 10 / latest versions — nothing package-related is outstanding. Remaining items are optional modernization, not upgrade work: `Startup.cs` → minimal hosting model, and enabling `<Nullable>` solution-wide (currently only set on `Noggin.NetCoreAuth`).
+
+### Open questions
+
+- [ ] User needs to separately update "the instructions" (exact scope not yet specified — docs/CLAUDE.md/team instructions referencing the old setup?) to reflect this upgrade. Wants to give it more thought before deciding — not started.
+
 ### Possible future work (out of scope for this branch)
 
-- Modernizing `Startup.cs` to the minimal hosting model (still works fine as-is on .NET 10).
+- Modernizing `Startup.cs` to the minimal hosting model (still works fine as-is on .NET 10) — user said "might be for later", explicitly deferred, no decision yet.
+- Enabling `<Nullable>enable</Nullable>` on `Noggin.SampleSite` and `Noggin.NetCoreAuth.Tests` for consistency (only `Noggin.NetCoreAuth` has it currently).
 - Addressing remaining pre-existing NuGet security advisories unrelated to the TFM bump: `SQLitePCLRaw.lib.e_sqlite3` 2.1.11 (transitive via EF Core Sqlite, high severity), `NuGet.Packaging`/`NuGet.Protocol` 6.12.1 (transitive via CodeGeneration.Design, low severity). (`Newtonsoft.Json` advisory is now resolved — see Flurl.Http 4.0.2 decision above.)
 
 ---
@@ -50,11 +57,13 @@ Decisions and findings that anyone picking this up needs to know:
 - 2026-07-27 — Committed the .NET 10 upgrade (commit `1c1a95f`, "Upgrade to .NET 10.0").
 - 2026-07-27 — Bumped `Flurl.Http` to 4.0.2 and migrated 10 provider model classes from Newtonsoft's `[JsonProperty]` to System.Text.Json's `[JsonPropertyName]` (see Context section for why this was needed). `dotnet build` 0 errors, `dotnet test` 21/21 passing, plus 3 throwaway real-JSON-shaped verification tests passed and were removed.
 - 2026-07-27 — Committed the Flurl.Http 4.0.2 + JSON attribute migration (commit `4226090`).
-- 2026-07-27 — Bumped `Microsoft.NET.Test.Sdk` to 18.8.1 and `NSubstitute` to 6.0.0. No test code changes needed — `dotnet build` 0 errors, `dotnet test` 21/21 passing. Not yet committed.
+- 2026-07-27 — Bumped `Microsoft.NET.Test.Sdk` to 18.8.1 and `NSubstitute` to 6.0.0. No test code changes needed — `dotnet build` 0 errors, `dotnet test` 21/21 passing.
+- 2026-07-27 — Committed the testing package bumps (commit `1b13529`).
+- 2026-07-27 — Reviewed the solution for any remaining .NET 10-related upgrades: confirmed no packages are outdated. User deferred `Startup.cs` modernization ("might be for later") and flagged a separate need to update "the instructions" for this upgrade, still deciding scope.
 
 ---
 
 ## TODO / Up Next
 
-- [ ] Commit the testing package bumps (Microsoft.NET.Test.Sdk, NSubstitute).
 - [ ] Confirm `azure-pipelines.yml`'s hosted agent has .NET 10 SDK available (see Open questions).
+- [ ] User to decide scope of "instructions" update needed for this upgrade (see Open questions).
