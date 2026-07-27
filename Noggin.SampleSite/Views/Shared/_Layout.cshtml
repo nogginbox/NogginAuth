@@ -18,7 +18,7 @@
         <nav>
             <ul class="nav-right">
                 <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
-                @if (!User.Identity.IsAuthenticated)
+                @if (User.Identity?.IsAuthenticated != true)
                 {
                     <li>Login with:</li>
                     <li><auth-link provider="github">GitHub</auth-link></li>
