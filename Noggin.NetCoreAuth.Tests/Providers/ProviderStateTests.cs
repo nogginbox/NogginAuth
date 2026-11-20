@@ -16,22 +16,33 @@ public class ProviderStateTests
 {
     private readonly FakeProvider _provider = new();
 
-    [Fact]
-    public async Task GenerateStartRequestUrlPutsSecretInUrlAsState()
+    [Theory]
+    [InlineData("?code=abc&state=wrong-state", "the-state")]   // State doesn't match
+    [InlineData("?code=abc", "the-state")]                     // No state returned
+    [InlineData("?code=abc&state=", "the-state")]              // Empty state returned
+    [InlineData("?code=abc&state=the-state", null)]            // Login not started in this session (login CSRF)
+    [InlineData("?code=abc&state=the-state", "")]
+    public async Task AuthenticateUserWithBadStateThrowsWithoutExchangingCode(string callbackQuery, string? secret)
     {
-        var (url, secret) = await _provider.GenerateStartRequestUrl(new DefaultHttpContext().Request);
+        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => _provider.AuthenticateUser(CreateCallback(callbackQuery), secret));
 
-        Assert.Equal(secret, new Url(url).QueryParams.FirstOrDefault("state"));
+        Assert.False(_provider.ExchangeCodeForUserCalled);
     }
 
     [Fact]
-    public async Task GenerateStartRequestUrlCreatesUrlSafeSecret()
+    public async Task AuthenticateUserWithMatchingStateExchangesCode()
     {
-        var (_, secret) = await _provider.GenerateStartRequestUrl(new DefaultHttpContext().Request);
+        var user = await _provider.AuthenticateUser(CreateCallback("?code=abc&state=the-state"), "the-state");
 
-        // 32 random bytes, base64url encoded without padding
-        Assert.Equal(43, secret.Length);
-        Assert.Equal(Uri.EscapeDataString(secret), secret);
+        Assert.True(_provider.ExchangeCodeForUserCalled);
+        Assert.Equal("user-id", user.Id);
+    }
+
+    private static HttpRequest CreateCallback(string queryString)
+    {
+        var request = new DefaultHttpContext().Request;
+        request.QueryString = new QueryString(queryString);
+        return request;
     }
 
     [Fact]
@@ -48,31 +59,20 @@ public class ProviderStateTests
     }
 
     [Fact]
-    public async Task AuthenticateUserWithMatchingStateExchangesCode()
+    public async Task GenerateStartRequestUrlCreatesUrlSafeSecret()
     {
-        var user = await _provider.AuthenticateUser(CreateCallback("?code=abc&state=the-state"), "the-state");
+        var (_, secret) = await _provider.GenerateStartRequestUrl(new DefaultHttpContext().Request);
 
-        Assert.True(_provider.ExchangeCodeForUserCalled);
-        Assert.Equal("user-id", user.Id);
+        // 32 random bytes, base64url encoded without padding
+        Assert.Equal(43, secret.Length);
+        Assert.Equal(Uri.EscapeDataString(secret), secret);
     }
 
-    [Theory]
-    [InlineData("?code=abc&state=wrong-state", "the-state")]   // State doesn't match
-    [InlineData("?code=abc", "the-state")]                     // No state returned
-    [InlineData("?code=abc&state=", "the-state")]              // Empty state returned
-    [InlineData("?code=abc&state=the-state", null)]            // Login not started in this session (login CSRF)
-    [InlineData("?code=abc&state=the-state", "")]
-    public async Task AuthenticateUserWithBadStateThrowsWithoutExchangingCode(string callbackQuery, string? secret)
+    [Fact]
+    public async Task GenerateStartRequestUrlPutsSecretInUrlAsState()
     {
-        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => _provider.AuthenticateUser(CreateCallback(callbackQuery), secret));
+        var (url, secret) = await _provider.GenerateStartRequestUrl(new DefaultHttpContext().Request);
 
-        Assert.False(_provider.ExchangeCodeForUserCalled);
-    }
-
-    private static HttpRequest CreateCallback(string queryString)
-    {
-        var request = new DefaultHttpContext().Request;
-        request.QueryString = new QueryString(queryString);
-        return request;
+        Assert.Equal(secret, new Url(url).QueryParams.FirstOrDefault("state"));
     }
 }

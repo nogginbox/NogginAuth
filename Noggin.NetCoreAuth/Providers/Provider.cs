@@ -49,20 +49,6 @@ public abstract class Provider
     public string RedirectTemplate { get; }
 
     /// <summary>
-    /// Start a login: create a new OAuth state (the secret) and the provider URL to send the user to.
-    /// </summary>
-    /// <returns>
-    /// The URL to redirect to, and the secret. The caller must store the secret (e.g. in session)
-    /// and pass it to <see cref="AuthenticateUser"/> when the provider calls back.
-    /// </returns>
-    internal Task<(string url, string secret)> GenerateStartRequestUrl(HttpRequest request)
-    {
-        var secret = CreateState();
-        var url = CreateAuthoriseUrl(request, secret);
-        return Task.FromResult((url, secret));
-    }
-
-    /// <summary>
     /// Complete a login when the provider calls back: check the OAuth state, then exchange the code for the user's details.
     /// </summary>
     /// <param name="state">The secret returned by <see cref="GenerateStartRequestUrl"/> for this browser, or null if there isn't one.</param>
@@ -81,15 +67,29 @@ public abstract class Provider
     private protected abstract string CreateAuthoriseUrl(HttpRequest request, string state);
 
     /// <summary>
+    /// Create an unguessable state value (256 random bits, base64url encoded so it's URL safe)
+    /// </summary>
+    private static string CreateState() => Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(32));
+
+    /// <summary>
     /// Exchange the code in the callback request for the user's details.
     /// </summary>
     /// <remarks>Only overridable by providers in this library, and only called by <see cref="AuthenticateUser"/> after the state has been checked.</remarks>
     private protected abstract Task<UserInformation> ExchangeCodeForUser(HttpRequest request);
 
     /// <summary>
-    /// Create an unguessable state value (256 random bits, base64url encoded so it's URL safe)
+    /// Start a login: create a new OAuth state (the secret) and the provider URL to send the user to.
     /// </summary>
-    private static string CreateState() => Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(32));
+    /// <returns>
+    /// The URL to redirect to, and the secret. The caller must store the secret (e.g. in session)
+    /// and pass it to <see cref="AuthenticateUser"/> when the provider calls back.
+    /// </returns>
+    internal Task<(string url, string secret)> GenerateStartRequestUrl(HttpRequest request)
+    {
+        var secret = CreateState();
+        var url = CreateAuthoriseUrl(request, secret);
+        return Task.FromResult((url, secret));
+    }
 
     private static void ValidateState(string? expectedState, string? returnedState)
     {

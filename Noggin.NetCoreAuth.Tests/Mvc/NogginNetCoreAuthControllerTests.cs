@@ -29,37 +29,19 @@ public class NogginNetCoreAuthControllerTests
         _loginHandler.FailedLoginFrom(default!, default!, default!).ReturnsForAnyArgs(new UnauthorizedResult());
     }
 
-    [Fact]
-    public async Task RedirectToProviderStoresStateInSession()
+    private NogginNetCoreAuthController CreateController(string queryString = "")
     {
-        var result = await CreateController().RedirectToProvider(FakeProvider.ProviderName);
+        var providerFactory = Substitute.For<IProviderFactory>();
+        providerFactory.Get(FakeProvider.ProviderName).Returns(_provider);
 
-        var redirect = Assert.IsType<RedirectResult>(result);
-        var sessionState = _session.GetString(NogginNetCoreAuthController.StateSessionKey);
-        Assert.False(string.IsNullOrEmpty(sessionState));
-        Assert.Equal(sessionState, new Url(redirect.Url).QueryParams.FirstOrDefault("state"));
-    }
+        var httpContext = new DefaultHttpContext();
+        httpContext.Features.Set<ISessionFeature>(new SessionFeature { Session = _session });
+        httpContext.Request.QueryString = new QueryString(string.IsNullOrEmpty(queryString) ? null : queryString);
 
-    [Fact]
-    public async Task ProviderCallbackWithStateFromSessionLogsUserIn()
-    {
-        _session.SetString(NogginNetCoreAuthController.StateSessionKey, "the-state");
-
-        var result = await CreateController("?code=abc&state=the-state").ProviderCallback(FakeProvider.ProviderName);
-
-        Assert.IsType<OkResult>(result);
-        await _loginHandler.ReceivedWithAnyArgs(1).SuccessfulLoginFrom(default!, default!, default!);
-    }
-
-    [Fact]
-    public async Task ProviderCallbackWhenLoginNotStartedInThisSessionCallsFailedLogin()
-    {
-        // Login CSRF: the victim's browser is sent to a callback URL the attacker started
-        var result = await CreateController("?code=attackers-code&state=attackers-state").ProviderCallback(FakeProvider.ProviderName);
-
-        Assert.IsType<UnauthorizedResult>(result);
-        Assert.False(_provider.ExchangeCodeForUserCalled);
-        await _loginHandler.DidNotReceiveWithAnyArgs().SuccessfulLoginFrom(default!, default!, default!);
+        return new NogginNetCoreAuthController(_loginHandler, providerFactory)
+        {
+            ControllerContext = new ControllerContext { HttpContext = httpContext }
+        };
     }
 
     [Fact]
@@ -76,19 +58,37 @@ public class NogginNetCoreAuthControllerTests
         Assert.False(_provider.ExchangeCodeForUserCalled);
     }
 
-    private NogginNetCoreAuthController CreateController(string queryString = "")
+    [Fact]
+    public async Task ProviderCallbackWhenLoginNotStartedInThisSessionCallsFailedLogin()
     {
-        var providerFactory = Substitute.For<IProviderFactory>();
-        providerFactory.Get(FakeProvider.ProviderName).Returns(_provider);
+        // Login CSRF: the victim's browser is sent to a callback URL the attacker started
+        var result = await CreateController("?code=attackers-code&state=attackers-state").ProviderCallback(FakeProvider.ProviderName);
 
-        var httpContext = new DefaultHttpContext();
-        httpContext.Features.Set<ISessionFeature>(new SessionFeature { Session = _session });
-        httpContext.Request.QueryString = new QueryString(string.IsNullOrEmpty(queryString) ? null : queryString);
+        Assert.IsType<UnauthorizedResult>(result);
+        Assert.False(_provider.ExchangeCodeForUserCalled);
+        await _loginHandler.DidNotReceiveWithAnyArgs().SuccessfulLoginFrom(default!, default!, default!);
+    }
 
-        return new NogginNetCoreAuthController(_loginHandler, providerFactory)
-        {
-            ControllerContext = new ControllerContext { HttpContext = httpContext }
-        };
+    [Fact]
+    public async Task ProviderCallbackWithStateFromSessionLogsUserIn()
+    {
+        _session.SetString(NogginNetCoreAuthController.StateSessionKey, "the-state");
+
+        var result = await CreateController("?code=abc&state=the-state").ProviderCallback(FakeProvider.ProviderName);
+
+        Assert.IsType<OkResult>(result);
+        await _loginHandler.ReceivedWithAnyArgs(1).SuccessfulLoginFrom(default!, default!, default!);
+    }
+
+    [Fact]
+    public async Task RedirectToProviderStoresStateInSession()
+    {
+        var result = await CreateController().RedirectToProvider(FakeProvider.ProviderName);
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+        var sessionState = _session.GetString(NogginNetCoreAuthController.StateSessionKey);
+        Assert.False(string.IsNullOrEmpty(sessionState));
+        Assert.Equal(sessionState, new Url(redirect.Url).QueryParams.FirstOrDefault("state"));
     }
 
     private class TestSession : ISession
