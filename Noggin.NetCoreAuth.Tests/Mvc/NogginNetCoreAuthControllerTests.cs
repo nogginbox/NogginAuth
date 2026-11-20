@@ -30,9 +30,9 @@ public class NogginNetCoreAuthControllerTests
     }
 
     [Fact]
-    public void RedirectToProviderStoresStateInSession()
+    public async Task RedirectToProviderStoresStateInSession()
     {
-        var result = CreateController().RedirectToProvider(FakeProvider.ProviderName);
+        var result = await CreateController().RedirectToProvider(FakeProvider.ProviderName);
 
         var redirect = Assert.IsType<RedirectResult>(result);
         var sessionState = _session.GetString(NogginNetCoreAuthController.StateSessionKey);

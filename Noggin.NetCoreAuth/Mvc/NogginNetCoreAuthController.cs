@@ -22,13 +22,13 @@ public class NogginNetCoreAuthController : Controller
     /// <summary>Session key that holds the OAuth state between the redirect and the callback</summary>
     internal const string StateSessionKey = "NogginNetCoreAuth.State";
 
-    public IActionResult RedirectToProvider(string provider)
+    public async Task<IActionResult> RedirectToProvider(string provider)
     {
         var authProvider = _providerFactory.Get(provider);
-        var (url, state) = authProvider.StartLogin(Request);
+        var (url, secret) = await authProvider.GenerateStartRequestUrl(Request);
 
-        // Remember the state so the provider can check it on the callback
-        HttpContext.Session.SetString(StateSessionKey, state);
+        // Remember the secret so the provider can check it on the callback
+        HttpContext.Session.SetString(StateSessionKey, secret);
 
         return Redirect(url);
     }
@@ -37,14 +37,14 @@ public class NogginNetCoreAuthController : Controller
     {
         var authProvider = _providerFactory.Get(provider);
 
-        // A state can only be used once
-        var expectedState = HttpContext.Session.GetString(StateSessionKey);
+        // A secret can only be used once
+        var secret = HttpContext.Session.GetString(StateSessionKey);
         HttpContext.Session.Remove(StateSessionKey);
 
         UserInformation user;
         try
         {
-            user = await authProvider.CompleteLogin(Request, expectedState);
+            user = await authProvider.AuthenticateUser(Request, secret);
         }
         catch(Exception ex) when (!(ex is NogginNetCoreConfigException))
         {

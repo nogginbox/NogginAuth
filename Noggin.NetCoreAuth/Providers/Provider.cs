@@ -49,41 +49,41 @@ public abstract class Provider
     public string RedirectTemplate { get; }
 
     /// <summary>
-    /// Start a login: create a new OAuth state and the provider URL to send the user to.
+    /// Start a login: create a new OAuth state (the secret) and the provider URL to send the user to.
     /// </summary>
     /// <returns>
-    /// The URL to redirect to, and the state. The caller must store the state (e.g. in session)
-    /// and pass it to <see cref="CompleteLogin"/> when the provider calls back.
+    /// The URL to redirect to, and the secret. The caller must store the secret (e.g. in session)
+    /// and pass it to <see cref="AuthenticateUser"/> when the provider calls back.
     /// </returns>
-    internal (string url, string state) StartLogin(HttpRequest request)
+    internal Task<(string url, string secret)> GenerateStartRequestUrl(HttpRequest request)
     {
-        var state = CreateState();
-        var url = CreateAuthoriseUrl(request, state);
-        return (url, state);
+        var secret = CreateState();
+        var url = CreateAuthoriseUrl(request, secret);
+        return Task.FromResult((url, secret));
     }
 
     /// <summary>
     /// Complete a login when the provider calls back: check the OAuth state, then exchange the code for the user's details.
     /// </summary>
-    /// <param name="expectedState">The state returned by <see cref="StartLogin"/> for this browser, or null if there isn't one.</param>
+    /// <param name="state">The secret returned by <see cref="GenerateStartRequestUrl"/> for this browser, or null if there isn't one.</param>
     /// <exception cref="NogginNetCoreAuthException">The state is missing or doesn't match, so this browser didn't start the login.</exception>
-    internal async Task<UserInformation> CompleteLogin(HttpRequest request, string? expectedState)
+    internal async Task<UserInformation> AuthenticateUser(HttpRequest request, string? state)
     {
         // Check the state before using the code, so a callback this browser didn't start is rejected (prevents login CSRF)
-        ValidateState(expectedState, request.Query["state"].ToString());
+        ValidateState(state, request.Query["state"].ToString());
         return await ExchangeCodeForUser(request);
     }
 
     /// <summary>
     /// Create the provider's authorise URL. It must include the given state as the "state" query parameter.
     /// </summary>
-    /// <remarks>Only overridable by providers in this library, and only called by <see cref="StartLogin"/>.</remarks>
+    /// <remarks>Only overridable by providers in this library, and only called by <see cref="GenerateStartRequestUrl"/>.</remarks>
     private protected abstract string CreateAuthoriseUrl(HttpRequest request, string state);
 
     /// <summary>
     /// Exchange the code in the callback request for the user's details.
     /// </summary>
-    /// <remarks>Only overridable by providers in this library, and only called by <see cref="CompleteLogin"/> after the state has been checked.</remarks>
+    /// <remarks>Only overridable by providers in this library, and only called by <see cref="AuthenticateUser"/> after the state has been checked.</remarks>
     private protected abstract Task<UserInformation> ExchangeCodeForUser(HttpRequest request);
 
     /// <summary>

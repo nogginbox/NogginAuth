@@ -18,7 +18,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers;
 public class GoogleProviderTests : BaseForProviderTests
 {
     [Fact]
-    public void StartLoginDoesNotCallGoogleApi()
+    public async Task GenerateStartRequestDoesNotCallGoogleApi()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -27,14 +27,14 @@ public class GoogleProviderTests : BaseForProviderTests
         using var httpTest = new HttpTest();
 
         // Act
-        var (url, state) = provider.StartLogin(http);
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
         httpTest.ShouldNotHaveMadeACall();
     }
 
     [Fact]
-    public void StartLoginUrlIncludesState()
+    public async Task GenerateStartRequestUrlIncludesState()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -45,14 +45,14 @@ public class GoogleProviderTests : BaseForProviderTests
         using var httpTest = new HttpTest();
         
         // Act
-        var (url, state) = provider.StartLogin(http);
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
-        Assert.Equal(state, new Url(url).QueryParams.FirstOrDefault("state"));
+        Assert.Equal(secret, new Url(url).QueryParams.FirstOrDefault("state"));
     }
 
     [Fact]
-    public async Task CompleteLoginThrowsExceptionIfGoogleApiFails()
+    public async Task AuthenticateUserThrowsExceptionIfGoogleApiFails()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -76,11 +76,11 @@ public class GoogleProviderTests : BaseForProviderTests
         }));
 
         // Act / Assert
-        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.CompleteLogin(http, "TestState"));
+        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "TestState"));
     }
 
     [Fact]
-    public async Task CompleteLoginReturnsUserInfo()
+    public async Task AuthenticateUserReturnsUserInfo()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -110,7 +110,7 @@ public class GoogleProviderTests : BaseForProviderTests
         }));
 
         // Act
-        var authenticatedUser = await provider.CompleteLogin(http, "TestState");
+        var authenticatedUser = await provider.AuthenticateUser(http, "TestState");
 
         // Assert
         Assert.Equal("Richard Garside", authenticatedUser.Name);
@@ -123,7 +123,7 @@ public class GoogleProviderTests : BaseForProviderTests
     /// rather than serialising our own model, so serializer/type mismatches are caught.
     /// </summary>
     [Fact]
-    public async Task CompleteLoginParsesRealGoogleJson()
+    public async Task AuthenticateUserParsesRealGoogleJson()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -161,7 +161,7 @@ public class GoogleProviderTests : BaseForProviderTests
         }));
 
         // Act
-        var authenticatedUser = await provider.CompleteLogin(http, "TestState");
+        var authenticatedUser = await provider.AuthenticateUser(http, "TestState");
 
         // Assert
         Assert.Equal("110169484474386276334", authenticatedUser.Id);

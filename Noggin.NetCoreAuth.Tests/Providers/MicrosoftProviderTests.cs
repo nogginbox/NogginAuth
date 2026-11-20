@@ -17,7 +17,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers;
 public class MicrosoftProviderTests : BaseForProviderTests
 {
     [Fact]
-    public void StartLoginDoesNotCallMicrosoftApi()
+    public async Task GenerateStartRequestDoesNotCallMicrosoftApi()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -28,14 +28,14 @@ public class MicrosoftProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act
-        var (url, state) = provider.StartLogin(http);
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
         httpTest.ShouldNotHaveMadeACall();
     }
 
     [Fact]
-    public void StartLoginUrlIncludesState()
+    public async Task GenerateStartRequestUrlIncludesState()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -48,14 +48,14 @@ public class MicrosoftProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act 
-        var (url, state) = provider.StartLogin(http);
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
-        Assert.Equal(state, new Url(url).QueryParams.FirstOrDefault("state"));
+        Assert.Equal(secret, new Url(url).QueryParams.FirstOrDefault("state"));
     }
 
     [Fact]
-    public async Task CompleteLoginThrowsExceptionIfMicrosoftApiFails()
+    public async Task AuthenticateUserThrowsExceptionIfMicrosoftApiFails()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -77,11 +77,11 @@ public class MicrosoftProviderTests : BaseForProviderTests
         }));
 
         // Act / Assert
-        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.CompleteLogin(http, "TestState"));
+        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "TestState"));
     }
 
     [Fact]
-    public async Task CompleteLoginReturnsUserInfo()
+    public async Task AuthenticateUserReturnsUserInfo()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -108,7 +108,7 @@ public class MicrosoftProviderTests : BaseForProviderTests
         }));
 
         // Act
-        var authenticatedUser = await provider.CompleteLogin(http, "TestState");
+        var authenticatedUser = await provider.AuthenticateUser(http, "TestState");
 
         // Assert
         Assert.Equal("Richard Garside", authenticatedUser.Name);
@@ -122,7 +122,7 @@ public class MicrosoftProviderTests : BaseForProviderTests
     /// so serializer/type mismatches are caught.
     /// </summary>
     [Fact]
-    public async Task CompleteLoginParsesRealMicrosoftJson()
+    public async Task AuthenticateUserParsesRealMicrosoftJson()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -164,7 +164,7 @@ public class MicrosoftProviderTests : BaseForProviderTests
         }));
 
         // Act
-        var authenticatedUser = await provider.CompleteLogin(http, "TestState");
+        var authenticatedUser = await provider.AuthenticateUser(http, "TestState");
 
         // Assert
         Assert.Equal("48d31887-5fad-4d73-a9f5-3c356e68a038", authenticatedUser.Id);

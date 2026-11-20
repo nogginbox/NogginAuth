@@ -18,7 +18,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers;
 public class FacebookProviderTests : BaseForProviderTests
 {
     [Fact]
-    public void StartLoginDoesNotCallFacebookApi()
+    public async Task GenerateStartRequestDoesNotCallFacebookApi()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -29,14 +29,14 @@ public class FacebookProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act
-        var (url, state) = provider.StartLogin(http);
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
         httpTest.ShouldNotHaveMadeACall();
     }
 
     [Fact]
-    public void StartLoginUrlIncludesState()
+    public async Task GenerateStartRequestUrlIncludesState()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -48,14 +48,14 @@ public class FacebookProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act 
-        var (url, state) = provider.StartLogin(http);
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
-        Assert.Equal(state, new Url(url).QueryParams.FirstOrDefault("state"));
+        Assert.Equal(secret, new Url(url).QueryParams.FirstOrDefault("state"));
     }
 
     [Fact]
-    public async Task CompleteLoginThrowsExceptionIfFacebookApiFails()
+    public async Task AuthenticateUserThrowsExceptionIfFacebookApiFails()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -84,11 +84,11 @@ public class FacebookProviderTests : BaseForProviderTests
         }));
 
         // Act / Assert
-        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.CompleteLogin(http, "TestState"));
+        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "TestState"));
     }
 
     [Fact]
-    public async Task CompleteLoginReturnsUserInfo()
+    public async Task AuthenticateUserReturnsUserInfo()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -116,7 +116,7 @@ public class FacebookProviderTests : BaseForProviderTests
         }));
 
         // Act
-        var authenticatedUser = await provider.CompleteLogin(http, "TestState");
+        var authenticatedUser = await provider.AuthenticateUser(http, "TestState");
 
         // Assert
         Assert.Equal("Richard Garside", authenticatedUser.Name);
@@ -129,7 +129,7 @@ public class FacebookProviderTests : BaseForProviderTests
     /// rather than serialising our own model, so serializer/type mismatches are caught.
     /// </summary>
     [Fact]
-    public async Task CompleteLoginParsesRealFacebookJson()
+    public async Task AuthenticateUserParsesRealFacebookJson()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -157,7 +157,7 @@ public class FacebookProviderTests : BaseForProviderTests
         var http = CreateCallbackRequest();
 
         // Act
-        var authenticatedUser = await provider.CompleteLogin(http, "TestState");
+        var authenticatedUser = await provider.AuthenticateUser(http, "TestState");
 
         // Assert
         Assert.Equal("10158123456789012", authenticatedUser.Id);
@@ -167,7 +167,7 @@ public class FacebookProviderTests : BaseForProviderTests
     }
 
     [Fact]
-    public async Task CompleteLoginThrowsExceptionIfFacebookIdMissing()
+    public async Task AuthenticateUserThrowsExceptionIfFacebookIdMissing()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -180,11 +180,11 @@ public class FacebookProviderTests : BaseForProviderTests
         var http = CreateCallbackRequest();
 
         // Act / Assert
-        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.CompleteLogin(http, "TestState"));
+        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "TestState"));
     }
 
     [Fact]
-    public async Task CompleteLoginErrorIncludesFacebookErrorDetails()
+    public async Task AuthenticateUserErrorIncludesFacebookErrorDetails()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -208,7 +208,7 @@ public class FacebookProviderTests : BaseForProviderTests
         var http = CreateCallbackRequest();
 
         // Act
-        var ex = await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.CompleteLogin(http, "TestState"));
+        var ex = await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "TestState"));
 
         // Assert
         Assert.Contains("190: Invalid OAuth access token.", ex.Message);
