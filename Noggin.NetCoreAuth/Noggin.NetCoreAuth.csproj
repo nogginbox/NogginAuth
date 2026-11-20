@@ -12,9 +12,8 @@
     <PackageReleaseNotes>Updated to .NET 10.0. Please add feature requests and bug reports to the project's GitHub issue page.</PackageReleaseNotes>
 	<PackageIcon>NogginAuthIcon.png</PackageIcon>
     <PackageProjectUrl>http://coreauth.nogginbox.co.uk</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/NogginBox/NogginAuth/blob/master/LICENSE.md</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
 	<PackageReadmeFile>readme.md</PackageReadmeFile>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/NogginBox/NogginAuth</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
