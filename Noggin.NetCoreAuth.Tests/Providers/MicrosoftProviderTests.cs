@@ -1,3 +1,4 @@
+using Flurl;
 using Flurl.Http.Testing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -27,14 +28,14 @@ public class MicrosoftProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act
-        var (url, secret) = await provider.GenerateStartRequestUrl(http);
+        var url = await provider.GenerateStartRequestUrl(http, "TestState");
 
         // Assert
         httpTest.ShouldNotHaveMadeACall();
     }
 
     [Fact]
-    public async Task GenerateStartRequestUrlReturnsToken()
+    public async Task GenerateStartRequestUrlIncludesState()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -47,10 +48,10 @@ public class MicrosoftProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act 
-        var (url, secret) = await provider.GenerateStartRequestUrl(http);
+        var url = await provider.GenerateStartRequestUrl(http, "TestState");
 
         // Assert
-        Assert.NotNull(url);
+        Assert.Equal("TestState", new Url(url).QueryParams.FirstOrDefault("state"));
     }
 
     [Fact]
@@ -75,7 +76,7 @@ public class MicrosoftProviderTests : BaseForProviderTests
         }));
 
         // Act / Assert
-        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, ""));
+        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http));
     }
 
     [Fact]
@@ -105,7 +106,7 @@ public class MicrosoftProviderTests : BaseForProviderTests
         }));
 
         // Act
-        var authenticatedUser = await provider.AuthenticateUser(http, "secret");
+        var authenticatedUser = await provider.AuthenticateUser(http);
 
         // Assert
         Assert.Equal("Richard Garside", authenticatedUser.Name);
@@ -160,7 +161,7 @@ public class MicrosoftProviderTests : BaseForProviderTests
         }));
 
         // Act
-        var authenticatedUser = await provider.AuthenticateUser(http, "secret");
+        var authenticatedUser = await provider.AuthenticateUser(http);
 
         // Assert
         Assert.Equal("48d31887-5fad-4d73-a9f5-3c356e68a038", authenticatedUser.Id);
@@ -188,4 +189,4 @@ public class MicrosoftProviderTests : BaseForProviderTests
         var msResponse = new AccessTokenResult { AccessToken = token };
         httpTest.RespondWithJson(msResponse);
     }   
-}
+}

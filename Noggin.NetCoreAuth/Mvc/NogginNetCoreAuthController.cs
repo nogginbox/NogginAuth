@@ -22,24 +22,29 @@ public class NogginNetCoreAuthController : Controller
     public async Task<IActionResult> RedirectToProvider(string provider)
     {
         var authProvider = _providerFactory.Get(provider);
-        var redirectSettings = await authProvider.GenerateStartRequestUrl(Request);
 
-        // Store stuff so that we know we initiated this
-        // Todo: Probably can't rely on session if we want this to be flexible
-        HttpContext.Session.SetString("secret", redirectSettings.secret);
+        // Remember a random state so the callback can prove this browser started the login (prevents login CSRF)
+        var state = OAuthState.Create();
+        HttpContext.Session.SetString(OAuthState.SessionKey, state);
 
-        return Redirect(redirectSettings.url);
+        var url = await authProvider.GenerateStartRequestUrl(Request, state);
+        return Redirect(url);
     }
 
     public async Task<IActionResult> ProviderCallback(string provider)
     {
         var authProvider = _providerFactory.Get(provider);
 
+        // A state can only be used once
+        var expectedState = HttpContext.Session.GetString(OAuthState.SessionKey);
+        HttpContext.Session.Remove(OAuthState.SessionKey);
+
         UserInformation user;
         try
         {
-            var secret = HttpContext.Session.GetString("secret");
-            user = await authProvider.AuthenticateUser(Request, secret);
+            // Check the state before using the code, so a callback this browser didn't start is rejected
+            OAuthState.Validate(expectedState, Request.Query[OAuthState.QueryParameterName].ToString());
+            user = await authProvider.AuthenticateUser(Request);
         }
         catch(Exception ex) when (!(ex is NogginNetCoreConfigException))
         {
