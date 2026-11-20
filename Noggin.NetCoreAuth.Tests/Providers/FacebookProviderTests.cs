@@ -184,6 +184,38 @@ public class FacebookProviderTests : BaseForProviderTests
         await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "secret"));
     }
 
+    [Fact]
+    public async Task AuthenticateUserErrorIncludesFacebookErrorDetails()
+    {
+        // Arrange
+        var config = CreateProviderConfig();
+        using var httpTest = new HttpTest();
+
+        SetupTokenResultSuccess(httpTest, "token");
+
+        // Raw JSON in the shape Facebook's Graph API sends for errors
+        httpTest.RespondWith("""
+            {
+              "error": {
+                "message": "Invalid OAuth access token.",
+                "type": "OAuthException",
+                "code": 190,
+                "fbtrace_id": "AbCdEfGh123"
+              }
+            }
+            """, 400);
+
+        var provider = new FacebookProvider(config, "url1", "url2", NullLogger<FacebookProvider>.Instance);
+        var http = CreateCallbackRequest();
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "secret"));
+
+        // Assert
+        Assert.Contains("190: Invalid OAuth access token.", ex.Message);
+        Assert.Contains("fbtrace_id: AbCdEfGh123", ex.Message);
+    }
+
     private static HttpRequest CreateCallbackRequest()
     {
         var http = Substitute.For<HttpRequest>();

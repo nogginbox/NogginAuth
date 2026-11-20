@@ -118,7 +118,7 @@ internal class FacebookProvider : Provider
         catch (FlurlHttpException ex)
         {
             var error = (await ex.GetResponseJsonAsync<ErrorResult>())?.Error;
-            throw new NogginNetCoreAuthException($"Failed to get access token from Facebook: {ex.Message} - {error?.Code}: {error?.Message}", ex);
+            throw new NogginNetCoreAuthException($"Failed to get access token from Facebook: {ex.Message} - {error?.Code}: {error?.Message} (fbtrace_id: {error?.FbtraceId})", ex);
         }
         catch (Exception ex)
 		{
@@ -151,7 +151,7 @@ internal class FacebookProvider : Provider
         catch (FlurlHttpException ex)
         {
             var error = (await ex.GetResponseJsonAsync<ErrorResult>())?.Error;
-            throw new NogginNetCoreAuthException($"Failed to get access token from Facebook: {ex.Message} - {error?.Code}: {error?.Message}", ex);
+            throw new NogginNetCoreAuthException($"Failed to get user information from Facebook: {ex.Message} - {error?.Code}: {error?.Message} (fbtrace_id: {error?.FbtraceId})", ex);
         }
         catch (Exception ex)
 		{
