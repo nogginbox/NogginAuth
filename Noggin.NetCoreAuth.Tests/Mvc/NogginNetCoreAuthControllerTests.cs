@@ -49,13 +49,13 @@ public class NogginNetCoreAuthControllerTests
     {
         _session.SetString(NogginNetCoreAuthController.StateSessionKey, "the-state");
         await CreateController("?code=abc&state=the-state").ProviderCallback(FakeProvider.ProviderName);
-        _provider.ExchangeCodeForUserCalled = false;
+        _provider.RetrieveUserInformationFromCallbackCalled = false;
 
         var result = await CreateController("?code=abc&state=the-state").ProviderCallback(FakeProvider.ProviderName);
 
         Assert.Null(_session.GetString(NogginNetCoreAuthController.StateSessionKey));
         Assert.IsType<UnauthorizedResult>(result);
-        Assert.False(_provider.ExchangeCodeForUserCalled);
+        Assert.False(_provider.RetrieveUserInformationFromCallbackCalled);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class NogginNetCoreAuthControllerTests
         var result = await CreateController("?code=attackers-code&state=attackers-state").ProviderCallback(FakeProvider.ProviderName);
 
         Assert.IsType<UnauthorizedResult>(result);
-        Assert.False(_provider.ExchangeCodeForUserCalled);
+        Assert.False(_provider.RetrieveUserInformationFromCallbackCalled);
         await _loginHandler.DidNotReceiveWithAnyArgs().SuccessfulLoginFrom(default!, default!, default!);
     }
 

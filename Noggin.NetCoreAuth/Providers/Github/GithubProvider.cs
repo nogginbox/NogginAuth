@@ -45,7 +45,7 @@ internal class GitHubProvider : Provider
 		return url.ToString();
 	}
 
-    private protected override async Task<UserInformation> ExchangeCodeForUser(HttpRequest request)
+    private protected override async Task<UserInformation> RetrieveUserInformationFromCallback(HttpRequest request)
     {
 		var code = GetCode(request.Query);
         var accessToken = await RetrieveAccessToken(code);

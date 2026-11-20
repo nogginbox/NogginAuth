@@ -22,19 +22,19 @@ public class ProviderStateTests
     [InlineData("?code=abc&state=", "the-state")]              // Empty state returned
     [InlineData("?code=abc&state=the-state", null)]            // Login not started in this session (login CSRF)
     [InlineData("?code=abc&state=the-state", "")]
-    public async Task AuthenticateUserWithBadStateThrowsWithoutExchangingCode(string callbackQuery, string? secret)
+    public async Task AuthenticateUserWithBadStateThrowsWithoutRetrievingUserInformation(string callbackQuery, string? secret)
     {
         await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => _provider.AuthenticateUser(CreateCallback(callbackQuery), secret));
 
-        Assert.False(_provider.ExchangeCodeForUserCalled);
+        Assert.False(_provider.RetrieveUserInformationFromCallbackCalled);
     }
 
     [Fact]
-    public async Task AuthenticateUserWithMatchingStateExchangesCode()
+    public async Task AuthenticateUserWithMatchingStateRetrievesUserInformation()
     {
         var user = await _provider.AuthenticateUser(CreateCallback("?code=abc&state=the-state"), "the-state");
 
-        Assert.True(_provider.ExchangeCodeForUserCalled);
+        Assert.True(_provider.RetrieveUserInformationFromCallbackCalled);
         Assert.Equal("user-id", user.Id);
     }
 

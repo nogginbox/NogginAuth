@@ -20,16 +20,16 @@ internal class FakeProvider : Provider
     {
     }
 
-    public bool ExchangeCodeForUserCalled { get; set; }
+    public bool RetrieveUserInformationFromCallbackCalled { get; set; }
 
     private protected override string CreateAuthoriseUrl(HttpRequest request, string state)
     {
         return $"https://provider.example/authorize?state={state}";
     }
 
-    private protected override Task<UserInformation> ExchangeCodeForUser(HttpRequest request)
+    private protected override Task<UserInformation> RetrieveUserInformationFromCallback(HttpRequest request)
     {
-        ExchangeCodeForUserCalled = true;
+        RetrieveUserInformationFromCallbackCalled = true;
         return Task.FromResult(new UserInformation { Id = "user-id" });
     }
 }

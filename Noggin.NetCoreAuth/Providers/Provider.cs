@@ -49,7 +49,7 @@ public abstract class Provider
     public string RedirectTemplate { get; }
 
     /// <summary>
-    /// Complete a login when the provider calls back: check the OAuth state, then exchange the code for the user's details.
+    /// Complete a login when the provider calls back: check the OAuth state, then retrieve the user's details.
     /// </summary>
     /// <param name="state">The secret returned by <see cref="GenerateStartRequestUrl"/> for this browser, or null if there isn't one.</param>
     /// <exception cref="NogginNetCoreAuthException">The state is missing or doesn't match, so this browser didn't start the login.</exception>
@@ -57,7 +57,7 @@ public abstract class Provider
     {
         // Check the state before using the code, so a callback this browser didn't start is rejected (prevents login CSRF)
         ValidateState(state, request.Query["state"].ToString());
-        return await ExchangeCodeForUser(request);
+        return await RetrieveUserInformationFromCallback(request);
     }
 
     /// <summary>
@@ -72,12 +72,6 @@ public abstract class Provider
     private static string CreateState() => Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(32));
 
     /// <summary>
-    /// Exchange the code in the callback request for the user's details.
-    /// </summary>
-    /// <remarks>Only overridable by providers in this library, and only called by <see cref="AuthenticateUser"/> after the state has been checked.</remarks>
-    private protected abstract Task<UserInformation> ExchangeCodeForUser(HttpRequest request);
-
-    /// <summary>
     /// Start a login: create a new OAuth state (the secret) and the provider URL to send the user to.
     /// </summary>
     /// <returns>
@@ -90,6 +84,13 @@ public abstract class Provider
         var url = CreateAuthoriseUrl(request, secret);
         return Task.FromResult((url, secret));
     }
+
+    /// <summary>
+    /// Get the user's details using the callback request: read the code from it, exchange the code
+    /// for an access token, then call the provider's API for the user's details.
+    /// </summary>
+    /// <remarks>Only overridable by providers in this library, and only called by <see cref="AuthenticateUser"/> after the state has been checked.</remarks>
+    private protected abstract Task<UserInformation> RetrieveUserInformationFromCallback(HttpRequest request);
 
     private static void ValidateState(string? expectedState, string? returnedState)
     {

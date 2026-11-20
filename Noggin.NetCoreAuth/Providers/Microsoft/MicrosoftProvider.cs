@@ -30,7 +30,7 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
             _apiDetails = config.Api;
         }
 
-        private protected async override Task<UserInformation> ExchangeCodeForUser(HttpRequest request)
+        private protected async override Task<UserInformation> RetrieveUserInformationFromCallback(HttpRequest request)
         {
             var code = GetCode(request.Query);
             var callback = CreateCallbackUrl(request);
