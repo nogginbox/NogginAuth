@@ -19,15 +19,17 @@ public class NogginNetCoreAuthController : Controller
         _providerFactory = providerFactory;
     }
 
-    public async Task<IActionResult> RedirectToProvider(string provider)
+    /// <summary>Session key that holds the OAuth state between the redirect and the callback</summary>
+    internal const string StateSessionKey = "NogginNetCoreAuth.State";
+
+    public IActionResult RedirectToProvider(string provider)
     {
         var authProvider = _providerFactory.Get(provider);
+        var (url, state) = authProvider.StartLogin(Request);
 
-        // Remember a random state so the callback can prove this browser started the login (prevents login CSRF)
-        var state = OAuthState.Create();
-        HttpContext.Session.SetString(OAuthState.SessionKey, state);
+        // Remember the state so the provider can check it on the callback
+        HttpContext.Session.SetString(StateSessionKey, state);
 
-        var url = await authProvider.GenerateStartRequestUrl(Request, state);
         return Redirect(url);
     }
 
@@ -36,15 +38,13 @@ public class NogginNetCoreAuthController : Controller
         var authProvider = _providerFactory.Get(provider);
 
         // A state can only be used once
-        var expectedState = HttpContext.Session.GetString(OAuthState.SessionKey);
-        HttpContext.Session.Remove(OAuthState.SessionKey);
+        var expectedState = HttpContext.Session.GetString(StateSessionKey);
+        HttpContext.Session.Remove(StateSessionKey);
 
         UserInformation user;
         try
         {
-            // Check the state before using the code, so a callback this browser didn't start is rejected
-            OAuthState.Validate(expectedState, Request.Query[OAuthState.QueryParameterName].ToString());
-            user = await authProvider.AuthenticateUser(Request);
+            user = await authProvider.CompleteLogin(Request, expectedState);
         }
         catch(Exception ex) when (!(ex is NogginNetCoreConfigException))
         {

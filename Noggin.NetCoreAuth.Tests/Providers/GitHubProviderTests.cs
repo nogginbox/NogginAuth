@@ -17,7 +17,7 @@ namespace Noggin.NetCoreAuth.Tests.Providers;
 public class GitHubProviderTests : BaseForProviderTests
 {
     [Fact]
-    public async Task GenerateStartRequestDoesNotCallGitHubApi()
+    public void StartLoginDoesNotCallGitHubApi()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -28,14 +28,14 @@ public class GitHubProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act
-        var url = await provider.GenerateStartRequestUrl(http, "TestState");
+        var (url, state) = provider.StartLogin(http);
 
         // Assert
         httpTest.ShouldNotHaveMadeACall();
     }
 
     [Fact]
-    public async Task GenerateStartRequestUrlIncludesState()
+    public void StartLoginUrlIncludesState()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -48,14 +48,14 @@ public class GitHubProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act 
-        var url = await provider.GenerateStartRequestUrl(http, "TestState");
+        var (url, state) = provider.StartLogin(http);
 
         // Assert
-        Assert.Equal("TestState", new Url(url).QueryParams.FirstOrDefault("state"));
+        Assert.Equal(state, new Url(url).QueryParams.FirstOrDefault("state"));
     }
 
     [Fact]
-    public async Task AuthenticateUserThrowsExceptionIfGitHubApiFails()
+    public async Task CompleteLoginThrowsExceptionIfGitHubApiFails()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -72,15 +72,16 @@ public class GitHubProviderTests : BaseForProviderTests
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
+            { "state", new StringValues("TestState") },
             { "code", new StringValues("TestCode") }
         }));
 
         // Act / Assert
-        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http));
+        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.CompleteLogin(http, "TestState"));
     }
 
     [Fact]
-    public async Task AuthenticateUserReturnsUserInfo()
+    public async Task CompleteLoginReturnsUserInfo()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -103,11 +104,12 @@ public class GitHubProviderTests : BaseForProviderTests
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
+            { "state", new StringValues("TestState") },
             { "code", new StringValues("TestCode") },
         }));
 
         // Act
-        var authenticatedUser = await provider.AuthenticateUser(http);
+        var authenticatedUser = await provider.CompleteLogin(http, "TestState");
 
         // Assert
         Assert.Equal("Richard Garside", authenticatedUser.Name);
@@ -120,7 +122,7 @@ public class GitHubProviderTests : BaseForProviderTests
     /// rather than serialising our own model, so serializer/type mismatches are caught.
     /// </summary>
     [Fact]
-    public async Task AuthenticateUserParsesRealGitHubJson()
+    public async Task CompleteLoginParsesRealGitHubJson()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -163,11 +165,12 @@ public class GitHubProviderTests : BaseForProviderTests
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
+            { "state", new StringValues("TestState") },
             { "code", new StringValues("TestCode") },
         }));
 
         // Act
-        var authenticatedUser = await provider.AuthenticateUser(http);
+        var authenticatedUser = await provider.CompleteLogin(http, "TestState");
 
         // Assert
         Assert.Equal("1234567", authenticatedUser.Id);

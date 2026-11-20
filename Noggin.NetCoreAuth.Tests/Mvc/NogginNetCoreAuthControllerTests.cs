@@ -3,13 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Session;
-using Microsoft.Extensions.Logging.Abstractions;
-using Noggin.NetCoreAuth.Config;
-using Noggin.NetCoreAuth.Model;
 using Noggin.NetCoreAuth.Mvc;
 using Noggin.NetCoreAuth.Providers;
 using NSubstitute;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,10 +13,12 @@ using Xunit;
 
 namespace Noggin.NetCoreAuth.Tests.Mvc;
 
+/// <summary>
+/// The controller stores the OAuth state in session and gives it back to the provider.
+/// (The state itself is created and checked by the Provider base class, see ProviderStateTests.)
+/// </summary>
 public class NogginNetCoreAuthControllerTests
 {
-    private const string ProviderName = "fake";
-
     private readonly FakeProvider _provider = new();
     private readonly ILoginHandler _loginHandler = Substitute.For<ILoginHandler>();
     private readonly TestSession _session = new();
@@ -32,102 +30,56 @@ public class NogginNetCoreAuthControllerTests
     }
 
     [Fact]
-    public async Task RedirectToProviderStoresStateInSessionAndSendsItToProvider()
+    public void RedirectToProviderStoresStateInSession()
     {
-        var controller = CreateController();
-
-        var result = await controller.RedirectToProvider(ProviderName);
+        var result = CreateController().RedirectToProvider(FakeProvider.ProviderName);
 
         var redirect = Assert.IsType<RedirectResult>(result);
-        var sessionState = _session.GetString(OAuthState.SessionKey);
+        var sessionState = _session.GetString(NogginNetCoreAuthController.StateSessionKey);
         Assert.False(string.IsNullOrEmpty(sessionState));
         Assert.Equal(sessionState, new Url(redirect.Url).QueryParams.FirstOrDefault("state"));
     }
 
     [Fact]
-    public async Task RedirectToProviderCreatesNewStateEachTime()
+    public async Task ProviderCallbackWithStateFromSessionLogsUserIn()
     {
-        await CreateController().RedirectToProvider(ProviderName);
-        var firstState = _session.GetString(OAuthState.SessionKey);
+        _session.SetString(NogginNetCoreAuthController.StateSessionKey, "the-state");
 
-        await CreateController().RedirectToProvider(ProviderName);
-        var secondState = _session.GetString(OAuthState.SessionKey);
-
-        Assert.NotEqual(firstState, secondState);
-    }
-
-    [Fact]
-    public async Task ProviderCallbackWithMatchingStateLogsUserIn()
-    {
-        _session.SetString(OAuthState.SessionKey, "the-state");
-        var controller = CreateController("?code=abc&state=the-state");
-
-        var result = await controller.ProviderCallback(ProviderName);
+        var result = await CreateController("?code=abc&state=the-state").ProviderCallback(FakeProvider.ProviderName);
 
         Assert.IsType<OkResult>(result);
-        Assert.True(_provider.AuthenticateUserCalled);
         await _loginHandler.ReceivedWithAnyArgs(1).SuccessfulLoginFrom(default!, default!, default!);
     }
 
     [Fact]
-    public async Task ProviderCallbackWithWrongStateFailsWithoutUsingCode()
-    {
-        _session.SetString(OAuthState.SessionKey, "the-state");
-        var controller = CreateController("?code=attackers-code&state=attackers-state");
-
-        var result = await controller.ProviderCallback(ProviderName);
-
-        AssertFailedWithoutUsingCode(result);
-    }
-
-    [Fact]
-    public async Task ProviderCallbackWithNoStateReturnedFailsWithoutUsingCode()
-    {
-        _session.SetString(OAuthState.SessionKey, "the-state");
-        var controller = CreateController("?code=attackers-code");
-
-        var result = await controller.ProviderCallback(ProviderName);
-
-        AssertFailedWithoutUsingCode(result);
-    }
-
-    [Fact]
-    public async Task ProviderCallbackWhenLoginNotStartedInThisSessionFailsWithoutUsingCode()
+    public async Task ProviderCallbackWhenLoginNotStartedInThisSessionCallsFailedLogin()
     {
         // Login CSRF: the victim's browser is sent to a callback URL the attacker started
-        var controller = CreateController("?code=attackers-code&state=attackers-state");
+        var result = await CreateController("?code=attackers-code&state=attackers-state").ProviderCallback(FakeProvider.ProviderName);
 
-        var result = await controller.ProviderCallback(ProviderName);
-
-        AssertFailedWithoutUsingCode(result);
+        Assert.IsType<UnauthorizedResult>(result);
+        Assert.False(_provider.ExchangeCodeForUserCalled);
+        await _loginHandler.DidNotReceiveWithAnyArgs().SuccessfulLoginFrom(default!, default!, default!);
     }
 
     [Fact]
     public async Task ProviderCallbackStateCannotBeReused()
     {
-        _session.SetString(OAuthState.SessionKey, "the-state");
-        await CreateController("?code=abc&state=the-state").ProviderCallback(ProviderName);
-        _provider.AuthenticateUserCalled = false;
-        _loginHandler.ClearReceivedCalls();
+        _session.SetString(NogginNetCoreAuthController.StateSessionKey, "the-state");
+        await CreateController("?code=abc&state=the-state").ProviderCallback(FakeProvider.ProviderName);
+        _provider.ExchangeCodeForUserCalled = false;
 
-        var result = await CreateController("?code=abc&state=the-state").ProviderCallback(ProviderName);
+        var result = await CreateController("?code=abc&state=the-state").ProviderCallback(FakeProvider.ProviderName);
 
-        Assert.Null(_session.GetString(OAuthState.SessionKey));
-        AssertFailedWithoutUsingCode(result);
-    }
-
-    private void AssertFailedWithoutUsingCode(IActionResult result)
-    {
+        Assert.Null(_session.GetString(NogginNetCoreAuthController.StateSessionKey));
         Assert.IsType<UnauthorizedResult>(result);
-        Assert.False(_provider.AuthenticateUserCalled);
-        _loginHandler.ReceivedWithAnyArgs(1).FailedLoginFrom(default!, default!, default!);
-        _loginHandler.DidNotReceiveWithAnyArgs().SuccessfulLoginFrom(default!, default!, default!);
+        Assert.False(_provider.ExchangeCodeForUserCalled);
     }
 
     private NogginNetCoreAuthController CreateController(string queryString = "")
     {
         var providerFactory = Substitute.For<IProviderFactory>();
-        providerFactory.Get(ProviderName).Returns(_provider);
+        providerFactory.Get(FakeProvider.ProviderName).Returns(_provider);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Features.Set<ISessionFeature>(new SessionFeature { Session = _session });
@@ -137,28 +89,6 @@ public class NogginNetCoreAuthControllerTests
         {
             ControllerContext = new ControllerContext { HttpContext = httpContext }
         };
-    }
-
-    private class FakeProvider : Provider
-    {
-        public FakeProvider()
-            : base(new ProviderConfig { Name = ProviderName, Api = new ApiConfig { PublicKey = "public", PrivateKey = "private" } },
-                  "auth/{provider}", "auth/callback/{provider}", NullLogger.Instance)
-        {
-        }
-
-        public bool AuthenticateUserCalled { get; set; }
-
-        internal override Task<UserInformation> AuthenticateUser(HttpRequest request)
-        {
-            AuthenticateUserCalled = true;
-            return Task.FromResult(new UserInformation { Id = "user-id" });
-        }
-
-        internal override Task<string> GenerateStartRequestUrl(HttpRequest request, string state)
-        {
-            return Task.FromResult($"https://provider.example/authorize?state={state}");
-        }
     }
 
     private class TestSession : ISession

@@ -30,7 +30,7 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
             _apiDetails = config.Api;
         }
 
-        internal async override Task<UserInformation> AuthenticateUser(HttpRequest request)
+        private protected async override Task<UserInformation> ExchangeCodeForUser(HttpRequest request)
         {
             var code = GetCode(request.Query);
             var callback = CreateCallbackUrl(request);
@@ -40,7 +40,7 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
             return userInfo;
         }
 
-        internal override Task<string> GenerateStartRequestUrl(HttpRequest request, string state)
+        private protected override string CreateAuthoriseUrl(HttpRequest request, string state)
         {
             var callback = CreateCallbackUrl(request);
             var url = _msOAuthUrl
@@ -55,7 +55,7 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
                     state
                 });
 
-            return Task.FromResult(url.ToString());
+            return url.ToString();
         }
         private static string GetCode(IQueryCollection queryStringParameters)
         {

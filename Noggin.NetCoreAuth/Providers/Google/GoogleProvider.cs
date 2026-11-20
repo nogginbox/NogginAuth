@@ -28,7 +28,7 @@ internal class GoogleProvider : Provider
 		_apiDetails = config.Api;
     }
 
-	internal async override Task<UserInformation> AuthenticateUser(HttpRequest request)
+	private protected async override Task<UserInformation> ExchangeCodeForUser(HttpRequest request)
 	{
 		var code = GetCode(request.Query);
 		var callback = CreateCallbackUrl(request);
@@ -38,7 +38,7 @@ internal class GoogleProvider : Provider
 		return userInfo;
 	}
 
-	internal override Task<string> GenerateStartRequestUrl(HttpRequest request, string state)
+	private protected override string CreateAuthoriseUrl(HttpRequest request, string state)
 	{
 		var callback = CreateCallbackUrl(request);
 
@@ -50,8 +50,7 @@ internal class GoogleProvider : Provider
             .SetQueryParam("client_id", _apiDetails.PublicKey)
 			.SetQueryParam("redirect_uri", callback);
 
-        // This implementation of method does not need to be async, so convert result to task
-        return Task.FromResult(url.ToString());
+        return url.ToString();
 	}
 
 	private static string GetCode(IQueryCollection queryStringParameters)
