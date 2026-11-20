@@ -1,0 +1,86 @@
+@{
+    ViewBag.Title = "Tech details";
+    var source = "https://github.com/NogginBox/NogginAuth/blob/main/Noggin.NetCoreAuth";
+}
+
+<section class="content">
+    <h1>How Noggin Auth works</h1>
+    <p>Noggin Auth uses the OAuth 2.0 <em>authorization code</em> flow. Your site never sees the user's password. The provider checks who they are, then gives your site a one-time code that it swaps for the user's details. The diagram shows one login, using GitHub as the example provider.</p>
+</section>
+
+<section class="box">
+    <partial name="_LoginFlowDiagram" />
+</section>
+
+<section class="box content">
+    <h2>Step by step</h2>
+    <ol>
+        <li>The user clicks a login link made by the <code>&lt;auth-link&gt;</code> tag helper. It points at your site's redirect route, e.g. <code>/auth/github</code>.</li>
+        <li><code>NogginNetCoreAuthController.RedirectToProvider</code> calls <code>Provider.GenerateStartRequestUrl</code>. This creates a random secret (32 bytes) and the provider's authorise URL, with the secret as its <code>state</code>. The controller saves the secret in the user's session and redirects the browser to the provider.</li>
+        <li>The browser goes to the provider with your app's public <code>client_id</code>, the <code>redirect_uri</code> to come back to, and the <code>state</code>.</li>
+        <li>The user logs in to the provider (if they aren't already) and agrees to share their details. The provider redirects the browser to your callback URL with a one-time <code>code</code> and the same <code>state</code>.</li>
+        <li><code>NogginNetCoreAuthController.ProviderCallback</code> reads the secret from the session and removes it, so it can only be used once. It calls <code>Provider.AuthenticateUser</code>, which checks the returned <code>state</code> matches the secret, then reads the <code>code</code>.</li>
+        <li>Your site sends the code and your app's client secret directly to the provider (<code>RetrieveAccessToken</code>).</li>
+        <li>The provider returns an access token.</li>
+        <li>Your site uses the token to ask the provider's API for the user's details (<code>RetrieveUserInformationAsync</code>).</li>
+        <li>The provider returns them, and Noggin Auth puts them in a <code>UserInformation</code> object.</li>
+        <li>Noggin Auth calls your <code>ILoginHandler.SuccessfulLoginFrom</code>. You log the user in however you like, and return a response, usually a redirect.</li>
+    </ol>
+</section>
+
+<section class="box content">
+    <h2>Keeping the login secure</h2>
+    <ul>
+        <li><strong>The state stops login CSRF.</strong> Without it, an attacker could start a login with their own account and trick someone else's browser into finishing it, logging that person in as the attacker, or linking the attacker's account to theirs. Noggin Auth only accepts a callback if its <code>state</code> matches the secret in that browser's session. The comparison is constant-time, and the secret is removed after one use.</li>
+        <li><strong>Secrets stay on your server.</strong> The browser only ever carries the public <code>client_id</code>, the <code>state</code> and the one-time <code>code</code>. The client secret and access token are only sent between your site and the provider (the solid lines in the diagram).</li>
+        <li><strong>The code is useless on its own.</strong> It can only be swapped for a token together with your client secret, and only once.</li>
+        <li><strong>Every provider does the same checks.</strong> The steps are run by the <code>Provider</code> base class. Each provider only supplies its own URLs and API calls, so none of them can skip the state check.</li>
+    </ul>
+</section>
+
+<section class="box content">
+    <h2>When a login fails</h2>
+    <p>If anything goes wrong after the user comes back, Noggin Auth calls your <code>ILoginHandler.FailedLoginFrom</code> instead, with an <code>AuthenticationFailInformation</code> that has a <code>Reason</code> and, usually, the <code>Exception</code>. This happens when:</p>
+    <ul>
+        <li>the <code>state</code> is missing or doesn't match, for example the session expired or the login wasn't started in this browser</li>
+        <li>the provider sent back an error instead of a code, for example the user cancelled</li>
+        <li>a call to the provider's token or user API failed</li>
+        <li>the provider didn't return a user ID</li>
+    </ul>
+    <p>Configuration problems, like a provider with no API keys, aren't login failures. They throw a <code>NogginNetCoreConfigException</code> so you notice them straight away.</p>
+    <p>This sample site logs the reason and shows the user a friendly message.</p>
+</section>
+
+<section class="box content">
+    <h2>Where to find it in the code</h2>
+    <table class="table is-fullwidth">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>What it does</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><a href="@source/Mvc/TagHelpers/AuthLinkTagHelper.cs"><code>AuthLinkTagHelper</code></a></td>
+                <td>Renders the login links</td>
+            </tr>
+            <tr>
+                <td><a href="@source/Mvc/NogginNetCoreAuthController.cs"><code>NogginNetCoreAuthController</code></a></td>
+                <td>Handles the redirect and callback routes, and keeps the secret in session</td>
+            </tr>
+            <tr>
+                <td><a href="@source/Providers/Provider.cs"><code>Provider</code></a></td>
+                <td>Runs the login steps for every provider, including the state check</td>
+            </tr>
+            <tr>
+                <td><a href="@source/Providers"><code>FacebookProvider</code>, <code>GitHubProvider</code>, <code>GoogleProvider</code>, <code>MicrosoftProvider</code></a></td>
+                <td>Each provider's authorise URL, token request and user API call</td>
+            </tr>
+            <tr>
+                <td><a href="https://github.com/NogginBox/NogginAuth/blob/main/Noggin.SampleSite/SampleLoginHandler.cs"><code>ILoginHandler</code></a></td>
+                <td>Yours: decides what a successful or failed login means for your site (link is to the sample's)</td>
+            </tr>
+        </tbody>
+    </table>
+</section>

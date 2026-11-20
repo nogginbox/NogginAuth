@@ -15,13 +15,18 @@
     </environment>
 </head>
 <body>
+    @{
+        // Highlight the menu item for the current page
+        var currentPage = $"{ViewContext.RouteData.Values["controller"]}/{ViewContext.RouteData.Values["action"]}";
+        string? ActiveIf(string page) => page == currentPage ? "is-active" : null;
+    }
+
     <header class="container">
-        <nav class="level p-4">
+        <div class="level p-4 mb-0">
             <div class="level-left">
                 <a class="level-item title is-4" asp-controller="Home" asp-action="Index">Noggin Auth Demo</a>
             </div>
             <div class="level-right">
-                <a class="level-item" asp-controller="Home" asp-action="Index">Home</a>
                 @if (User.Identity?.IsAuthenticated != true)
                 {
                     <span class="level-item">Log in with:</span>
@@ -34,10 +39,20 @@
                 }
                 else
                 {
-                    <a class="level-item" asp-controller="UserAdmin" asp-action="Index">User admin</a>
                     <a class="level-item button is-small" asp-controller="Home" asp-action="Logout">Log out</a>
                 }
             </div>
+        </div>
+
+        <nav class="tabs mb-0" aria-label="Main menu">
+            <ul>
+                <li class="@ActiveIf("Home/Index")"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="@ActiveIf("Home/TechDetails")"><a asp-controller="Home" asp-action="TechDetails">Tech details</a></li>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <li class="@ActiveIf("UserAdmin/Index")"><a asp-controller="UserAdmin" asp-action="Index">User admin</a></li>
+                }
+            </ul>
         </nav>
     </header>
 
