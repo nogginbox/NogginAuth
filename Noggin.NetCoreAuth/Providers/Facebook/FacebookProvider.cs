@@ -30,23 +30,22 @@ internal class FacebookProvider : Provider
         _apiDetails = config.Api;
     }
 
-    internal override Task<(string url, string secret)> GenerateStartRequestUrl(HttpRequest request)
+    internal override Task<string> GenerateStartRequestUrl(HttpRequest request, string state)
     {
 		var callback = CreateCallbackUrl(request);
-        var secret = Guid.NewGuid().ToString();
 
 		var url = _facebookUrl
 			.AppendPathSegments("dialog", "oauth")
 			.SetQueryParam("scope", "public_profile,email")
 			.SetQueryParam("client_id", _apiDetails.PublicKey)
-			.SetQueryParam("state", secret)
+			.SetQueryParam("state", state)
 			.SetQueryParam("redirect_uri", callback);
 
 		// This implementation of method does not need to be async, so convert result to task
-		return Task.FromResult((url.ToString(), secret));
+		return Task.FromResult(url.ToString());
 	}
 
-    internal override async Task<UserInformation> AuthenticateUser(HttpRequest request, string state)
+    internal override async Task<UserInformation> AuthenticateUser(HttpRequest request)
     {
 		var code = GetCode(request.Query);
 		var callback = CreateCallbackUrl(request);
@@ -174,4 +173,4 @@ internal class FacebookProvider : Provider
 
 		return userInformation;
 	}
-}
+}

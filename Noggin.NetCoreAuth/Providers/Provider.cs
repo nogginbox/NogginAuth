@@ -44,8 +44,16 @@ public abstract class Provider
 
     public string RedirectTemplate { get; }
 
-    internal abstract Task<UserInformation> AuthenticateUser(HttpRequest request, string state);
-    internal abstract Task<(string url, string secret)> GenerateStartRequestUrl(HttpRequest request);
+    /// <summary>
+    /// Exchange the code in the callback request for the user's details.
+    /// The caller must have already validated the OAuth state (see <see cref="OAuthState"/>).
+    /// </summary>
+    internal abstract Task<UserInformation> AuthenticateUser(HttpRequest request);
+
+    /// <summary>
+    /// Create the provider URL to send the user to, including the given OAuth state.
+    /// </summary>
+    internal abstract Task<string> GenerateStartRequestUrl(HttpRequest request, string state);
 
     private static string CreateTemplate(string providerName, string template1, string templateTemplate)
     {

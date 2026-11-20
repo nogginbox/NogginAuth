@@ -30,22 +30,23 @@ internal class GitHubProvider : Provider
         _apiDetails = config.Api;
     }
 
-    internal override Task<(string url, string secret)> GenerateStartRequestUrl(HttpRequest request)
+    internal override Task<string> GenerateStartRequestUrl(HttpRequest request, string state)
     {
         var callback = CreateCallbackUrl(request);
         var url = _githubOAuthUrl
 			.AppendPathSegment("authorize")
             .SetQueryParam("scope", "user:email read:user")
 			.SetQueryParam("client_id", _apiDetails.PublicKey)
+			.SetQueryParam("state", state)
 			.SetQueryParam("redirect_uri", callback);
 
 		Logger.LogDebug("Provider {name} setting callback URL to {callback-url}", Name, callback);
 
 		// This implementation of method does not need to be async, so convert result to task
-		return Task.FromResult((url.ToString(), string.Empty));
+		return Task.FromResult(url.ToString());
 	}
 
-    internal override async Task<UserInformation> AuthenticateUser(HttpRequest request, string state)
+    internal override async Task<UserInformation> AuthenticateUser(HttpRequest request)
     {
 		var code = GetCode(request.Query);
         var accessToken = await RetrieveAccessToken(code);
@@ -164,4 +165,4 @@ internal class GitHubProvider : Provider
 		return userInformation;
 	}
 
-}
+}

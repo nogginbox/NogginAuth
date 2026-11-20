@@ -30,7 +30,7 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
             _apiDetails = config.Api;
         }
 
-        internal async override Task<UserInformation> AuthenticateUser(HttpRequest request, string state)
+        internal async override Task<UserInformation> AuthenticateUser(HttpRequest request)
         {
             var code = GetCode(request.Query);
             var callback = CreateCallbackUrl(request);
@@ -40,7 +40,7 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
             return userInfo;
         }
 
-        internal override Task<(string url, string secret)> GenerateStartRequestUrl(HttpRequest request)
+        internal override Task<string> GenerateStartRequestUrl(HttpRequest request, string state)
         {
             var callback = CreateCallbackUrl(request);
             var url = _msOAuthUrl
@@ -51,10 +51,11 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
                     response_type = "code",
                     redirect_uri = callback,
                     response_mode = "query",
-                    scope = "openid https://graph.microsoft.com/user.read"
+                    scope = "openid https://graph.microsoft.com/user.read",
+                    state
                 });
 
-            return Task.FromResult((url.ToString(), string.Empty));
+            return Task.FromResult(url.ToString());
         }
         private static string GetCode(IQueryCollection queryStringParameters)
         {

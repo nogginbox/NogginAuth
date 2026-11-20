@@ -28,9 +28,9 @@ internal class GoogleProvider : Provider
 		_apiDetails = config.Api;
     }
 
-	internal async override Task<UserInformation> AuthenticateUser(HttpRequest request, string state)
+	internal async override Task<UserInformation> AuthenticateUser(HttpRequest request)
 	{
-		var (code, _) = GetDetails(request.Query);
+		var code = GetCode(request.Query);
 		var callback = CreateCallbackUrl(request);
 		var accessToken = await RetrieveAccessToken(code, callback);
 		var userInfo = await RetrieveUserInformationAsync(accessToken);
@@ -38,24 +38,23 @@ internal class GoogleProvider : Provider
 		return userInfo;
 	}
 
-	internal override Task<(string url, string secret)> GenerateStartRequestUrl(HttpRequest request)
+	internal override Task<string> GenerateStartRequestUrl(HttpRequest request, string state)
 	{
 		var callback = CreateCallbackUrl(request);
-		var secret = Guid.NewGuid().ToString();
 
         var url = _googleOAuthUrl
 			.AppendPathSegment("auth")
             .SetQueryParam("scope", "profile email")
-			.SetQueryParam("state", secret)
+			.SetQueryParam("state", state)
             .SetQueryParam("response_type", "code")
             .SetQueryParam("client_id", _apiDetails.PublicKey)
 			.SetQueryParam("redirect_uri", callback);
 
         // This implementation of method does not need to be async, so convert result to task
-        return Task.FromResult((url.ToString(), secret));
+        return Task.FromResult(url.ToString());
 	}
 
-	private static (string code, string state) GetDetails(IQueryCollection queryStringParameters)
+	private static string GetCode(IQueryCollection queryStringParameters)
 	{
 		if (queryStringParameters == null || !queryStringParameters.Any())
 		{
@@ -73,19 +72,12 @@ internal class GoogleProvider : Provider
 			throw new NogginNetCoreAuthException(errorMessage);
 		}
 
-		if(!queryStringParameters.ContainsKey("state"))
-		{
-			throw new NogginNetCoreAuthException("No state returned by Facebook");
-		}
-
 		if (!queryStringParameters.ContainsKey("code"))
 		{
-			throw new NogginNetCoreAuthException("No auth code returned by Facebook");
+			throw new NogginNetCoreAuthException("No auth code returned by Google");
 		}
 
-		return 
-			(queryStringParameters["code"].ToString(),
-			queryStringParameters["state"].ToString());
+		return queryStringParameters["code"].ToString();
 	}
 
 	private async Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl)
@@ -178,4 +170,4 @@ internal class GoogleProvider : Provider
 			UserName = user.Email
 		};
 	}
-}
+}

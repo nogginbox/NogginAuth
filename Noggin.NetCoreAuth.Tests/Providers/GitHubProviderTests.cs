@@ -1,3 +1,4 @@
+using Flurl;
 using Flurl.Http.Testing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -27,14 +28,14 @@ public class GitHubProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act
-        var (url, secret) = await provider.GenerateStartRequestUrl(http);
+        var url = await provider.GenerateStartRequestUrl(http, "TestState");
 
         // Assert
         httpTest.ShouldNotHaveMadeACall();
     }
 
     [Fact]
-    public async Task GenerateStartRequestUrlReturnsToken()
+    public async Task GenerateStartRequestUrlIncludesState()
     {
         // Arrange
         var config = CreateProviderConfig();
@@ -47,10 +48,10 @@ public class GitHubProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act 
-        var (url, secret) = await provider.GenerateStartRequestUrl(http);
+        var url = await provider.GenerateStartRequestUrl(http, "TestState");
 
         // Assert
-        Assert.NotNull(url);
+        Assert.Equal("TestState", new Url(url).QueryParams.FirstOrDefault("state"));
     }
 
     [Fact]
@@ -75,7 +76,7 @@ public class GitHubProviderTests : BaseForProviderTests
         }));
 
         // Act / Assert
-        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, ""));
+        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http));
     }
 
     [Fact]
@@ -106,7 +107,7 @@ public class GitHubProviderTests : BaseForProviderTests
         }));
 
         // Act
-        var authenticatedUser = await provider.AuthenticateUser(http, "secret");
+        var authenticatedUser = await provider.AuthenticateUser(http);
 
         // Assert
         Assert.Equal("Richard Garside", authenticatedUser.Name);
@@ -166,7 +167,7 @@ public class GitHubProviderTests : BaseForProviderTests
         }));
 
         // Act
-        var authenticatedUser = await provider.AuthenticateUser(http, "secret");
+        var authenticatedUser = await provider.AuthenticateUser(http);
 
         // Assert
         Assert.Equal("1234567", authenticatedUser.Id);
@@ -195,4 +196,4 @@ public class GitHubProviderTests : BaseForProviderTests
         httpTest.RespondWithJson(gitHubResponse);
     }
     
-}
+}
