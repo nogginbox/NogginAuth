@@ -41,6 +41,13 @@
         </nav>
     </header>
 
+    @if (TempData["LoginError"] is string loginError)
+    {
+        <div class="container px-4">
+            <div class="notification is-danger">@loginError</div>
+        </div>
+    }
+
     @RenderSection("Hero", required: false)
 
     <main class="section">
