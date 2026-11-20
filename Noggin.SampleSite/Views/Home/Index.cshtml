@@ -1,114 +1,157 @@
-﻿@{
-    ViewBag.Title = "Noggin Auth";
+@{
+    ViewBag.Title = "Home";
 }
 
-<section class="intro">
-	<h1>Noggin Auth</h1>
-    <p><strong>Noggin Auth</strong> is a simple library for doing social authentication in ASP.NET Core MVC in .NET 7.0. It authenticates that people are who they say they are, but does not authorise them and has no opinion on how you store details about your users. You're free to do that however you want and in whatever way works best for your application.</p>
-	<p>The source code is available at the <a href="https://github.com/NogginBox/NogginAuth">Noggin .NetCore Git Repo</a>.</p>
-	<p>For a working example download a <a href="https://github.com/NogginBox/NogginAuth/archive/master.zip">zip of the source code including the sample site</a>.
-</section>
+@section Hero {
+    <section class="hero is-link">
+        <div class="hero-body container">
+            <h1 class="title">Noggin Auth</h1>
+            <p class="block"><strong>Noggin Auth</strong> is a simple library for doing social authentication in ASP.NET Core MVC on .NET 10. It authenticates that people are who they say they are, but does not authorise them and has no opinion on how you store details about your users. You're free to do that however you want and in whatever way works best for your application.</p>
+            <p class="block">Install it from <a href="https://www.nuget.org/packages/Noggin.NetCoreAuth">NuGet</a>. The source code is available in the <a href="https://github.com/NogginBox/NogginAuth">Noggin Auth GitHub repo</a>.</p>
+            <p class="block">For a working example download a <a href="https://github.com/NogginBox/NogginAuth/archive/main.zip">zip of the source code including this sample site</a>.</p>
+        </div>
+    </section>
+}
 
-<section>
-    <section class="col2">
+<div class="columns">
+    <section class="column content">
         <h2>Unopinionated</h2>
         <ul>
             <li>Easy to add to an existing application</li>
             <li>We don't care how you store your users</li>
-            <li>No dependencies on ...</li>
+            <li>No dependency on ASP.NET Core Identity or a database</li>
             <li>More power, means a little bit more work to set up, but still pretty straight forward</li>
         </ul>
     </section>
-    <section class="col2">
-        <h2>Lots of social login providers</h2>
+    <section class="column content">
+        <h2>Social login providers</h2>
         <ul>
             <li>Facebook</li>
             <li>GitHub</li>
             <li>Google</li>
             <li>Microsoft</li>
-            <li><del>Twitter</del> (removed due to new API pricing)</li>
-            <li>4... that's lots right. Working on Apple Account next</li>
         </ul>
     </section>
-</section>
+</div>
 
-<section class="setup">
+<section class="box content">
     <h2>How to set up</h2>
-    <p>For an example site of NogginNetCoreAuth in action, the <a href="https://github.com/NogginBox/NogginAuth/tree/master/Noggin.SampleSite">source code for this site is available GitHub</a>.</p>
+    <p>For an example of Noggin Auth in action, the <a href="https://github.com/NogginBox/NogginAuth/tree/main/Noggin.SampleSite">source code for this site is available on GitHub</a>.</p>
     <p>The important steps are:</p>
     <ol>
-        <li><a href="#nuget">Install the nuget package</a></li>
+        <li><a href="#nuget">Install the NuGet package</a></li>
         <li><a href="#ILoginHandler">Implement ILoginHandler</a></li>
-        <li><a href="#startupcs">Add some bits to Startup.cs</a></li>
+        <li><a href="#program">Add some bits to Program.cs</a></li>
         <li><a href="#appsettings">Add provider settings to appsettings.json</a></li>
         <li><a href="#loginButton">Add a login button to your site</a></li>
+        <li><a href="#https">Use HTTPS</a></li>
     </ol>
 </section>
 
-<section class="setup" id="nuget">
-    <h3>1) Install the nuget package</h3>
-    <pre class="code">PM> Install-Package Noggin.NetCoreAuth</pre>
+<section class="box content" id="nuget">
+    <h3>1) Install the NuGet package</h3>
+    <pre>dotnet add package Noggin.NetCoreAuth</pre>
 </section>
 
-<section class="setup" id="ILoginHandler">
+<section class="box content" id="ILoginHandler">
     <h3>2) Implement ILoginHandler</h3>
-    <p>This is the step that requires most thought and the one that gives you the most power and freedom. Noggin.NetCoreAuth.Providers.ILoginHandler has two methods. One is called if the user successfully authenticates with their chosen social login provider, the other is called if they fail. We send you the information we've been able to glean about them from the provider, but you need to log them in (or not) to your site and save anything you need to.</p>
+    <p>This is the step that requires most thought and the one that gives you the most power and freedom. <code>Noggin.NetCoreAuth.Providers.ILoginHandler</code> has two methods. One is called if the user successfully authenticates with their chosen social login provider, the other is called if they fail. We send you the information we've been able to glean about them from the provider, but you need to log them in (or not) to your site and save anything you need to.</p>
     <p>Once you're done you can return a view or redirect the user to a page of your choice.</p>
-    <pre class="code">
-    Task&lt;IActionResult&gt; SuccessfulLoginFrom(string provider, UserInformation user, HttpContext context);
-    Task&lt;IActionResult&gt; FailedLoginFrom(string provider, AuthenticationFailInformation failInfo, HttpContext context);
+    <pre>
+Task&lt;IActionResult&gt; SuccessfulLoginFrom(string provider, UserInformation user, HttpContext httpContext);
+Task&lt;IActionResult&gt; FailedLoginFrom(string provider, AuthenticationFailInformation failInfo, HttpContext httpContext);
 </pre>
-    <p>See <a class="code" href="https://github.com/NogginBox/NogginAuth/blob/master/Noggin.SampleSite/SampleLoginHandler.cs">SampleLoginHandler</a> in the sample site for an example of one. The important part is that we don't have any opinion on how to store your user, or even if you need to. We just tell you who they are.</p>
+    <p>See <a href="https://github.com/NogginBox/NogginAuth/blob/main/Noggin.SampleSite/SampleLoginHandler.cs">SampleLoginHandler</a> in the sample site for an example of one. The important part is that we don't have any opinion on how to store your user, or even if you need to. We just tell you who they are.</p>
 </section>
 
-<section class="setup" id="startupcs">
-    <h3>3) Add some bits to Startup.cs</h3>
-    <p>You'll need the following using statement:</p>
-    <pre class="code">using Noggin.NetCoreAuth.Config;</pre>
-
-    <p>In <strong class="code">ConfigureServices(...)</strong></p>
+<section class="box content" id="program">
+    <h3>3) Add some bits to Program.cs</h3>
     <ul>
-        <li>Register NoggginNetCoreAuth, tell it what type your implentation of
-            <span class="code">ILoginHandler</span> is and pass it an instance of
-            <span class="code">IConfiguration</span> so it can get settings from
-            <span class="code">appsettings.json</span>.</li>
-        <li>Configure session.</li>
+        <li>Register Noggin Auth, tell it what type your implementation of <code>ILoginHandler</code> is and pass it your configuration so it can get settings from <code>appsettings.json</code>.</li>
+        <li>Add session. Noggin Auth uses it to remember details between sending the user to the login provider and the provider sending them back.</li>
+        <li>Register the authentication routes. These can be changed in appsettings.</li>
     </ul>
-    <pre class="code">
+
+    <div class="tabs" data-tabs>
+        <ul>
+            <li class="is-active"><a data-tab="program-cs">Program.cs</a></li>
+            <li><a data-tab="startup-cs">Startup.cs (older apps)</a></li>
+        </ul>
+    </div>
+
+    <div data-tab-panel="program-cs">
+        <pre>
+using Noggin.NetCoreAuth.Config;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Point Noggin Auth at your login handler
+builder.Services.AddNogginNetCoreAuth&lt;YourLoginHandler&gt;(builder.Configuration);
+
+// Noggin Auth requires session to persist details between the first and second call to login providers
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(25);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.Name = ".What.ever.you.want.to.call.your.cookie";
+});
+
+builder.Services.AddControllersWithViews();
+// ...
+
+var app = builder.Build();
+
+app.UseRouting();
+app.UseSession();
+
+// Order here is important (authorization must be after authentication as it needs an authenticated user to check)
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Register the Noggin Auth login and callback routes
+app.MapNogginNetAuthRoutes(app.Services);
+
+app.Run();
+</pre>
+    </div>
+
+    <div data-tab-panel="startup-cs" hidden>
+        <pre>
+using Noggin.NetCoreAuth.Config;
+
 public void ConfigureServices(IServiceCollection services)
 {
-    // Point NogginAuth at you Login Handler
-    services.AddNogginNetCoreAuth&lt;YourFunkyLoginHandler&gt;(Configuration);
+    // Point Noggin Auth at your login handler
+    services.AddNogginNetCoreAuth&lt;YourLoginHandler&gt;(Configuration);
 
-    // Configure session. Noggin Auth requires session to persists details between first and second call to login providers
+    // Noggin Auth requires session to persist details between the first and second call to login providers
+    services.AddDistributedMemoryCache();
     services.AddSession(options =>
     {
         options.IdleTimeout = TimeSpan.FromMinutes(25);
         options.Cookie.HttpOnly = true;
         options.Cookie.Name = ".What.ever.you.want.to.call.your.cookie";
     });
+
+    services.AddControllersWithViews();
     // ...
 }
-</pre>
 
-    <p>In <strong class="code">Configure(...)</strong></p>
-    <ul>
-        <li>Where you register your routes you'll need to register the authentication routes. These can be modified in appsettings.</li>
-        <li>Enable session.</li>
-    </ul>
-    <pre class="code">
-public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
     // ...
 
     app.UseRouting();
     app.UseSession();
-    
+
     // Order here is important (authorization must be after authentication as it needs an authenticated user to check)
     app.UseAuthentication();
     app.UseAuthorization();
-
-    // ...
 
     app.UseEndpoints(endpoints =>
     {
@@ -116,63 +159,96 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
             name: "default",
             pattern: "{controller=Home}/{action=Index}/{id?}");
 
+        // Register the Noggin Auth login and callback routes
         endpoints.MapNogginNetAuthRoutes(app.ApplicationServices);
     });
 }
 </pre>
+    </div>
 </section>
 
-<section class="setup" id="appsettings">
-    <h3>5) Add provider settings to appsettings.json</h3>
-    <p>This is where you say which providers you want to use and to fill in your developer credentials. You need to register an API key for each provider you want to use.</p>
-    <p>Add a x section to your appsettings like this:</p>
-<pre class="code">
-"NogginNetAuth": {
-	"Providers": [
-		{
-			"Name": "Facebook",
-			"Api": {
-				"PublicKey": "...",
-				"PrivateKey": "..."
-			}
-		},
-        {
-            "Name": "Github",
-              "Api": {
-                "PublicKey": "...",
-                "PrivateKey": "..."
-              }
-        },
-		{
-			"Name": "Google",
-			"Api": {
-				"PublicKey": "...",
-				"PrivateKey": "..."
-			}
-		}
-	],
-	"DefaultRedirectTemplate": "auth/{provider}",
-	"DefaultCallbackTemplate": "auth/callback/{provider}"
-}
-</pre>
-    <p>You will need to register an app with each provider to be able to use them to login. You can register here to get API Keys:</p>
+<section class="box content" id="appsettings">
+    <h3>4) Add provider settings to appsettings.json</h3>
+    <p>This is where you say which providers you want to use and fill in your developer credentials. You need to register an app with each provider you want to use:</p>
     <ul>
         <li><a href="https://developers.facebook.com/">Facebook Developer Site</a></li>
-        <li><a href="https://github.com/settings/developers">Github Developer Settings</a></li>
-        <li><a href="https://console.developers.google.com/apis/credentials">Google API Credentials</a></li>
+        <li><a href="https://github.com/settings/developers">GitHub Developer Settings</a></li>
+        <li><a href="https://console.cloud.google.com/apis/credentials">Google API Credentials</a></li>
+        <li><a href="https://entra.microsoft.com/">Microsoft Entra App Registrations</a></li>
+    </ul>
+    <p>When you register, give the provider your callback URL. With the settings below, the GitHub one would be <code>https://your-site/auth/github/callback</code>.</p>
+    <p>Add a <code>NogginNetAuth</code> section to your appsettings like this:</p>
+    <pre>
+"NogginNetAuth": {
+    "Providers": [
+        {
+            "Name": "Facebook",
+            "Api": {
+                "PublicKey": "...",
+                "PrivateKey": "..."
+            }
+        },
+        {
+            "Name": "GitHub",
+            "Api": {
+                "PublicKey": "...",
+                "PrivateKey": "..."
+            }
+        },
+        {
+            "Name": "Google",
+            "Api": {
+                "PublicKey": "...",
+                "PrivateKey": "..."
+            }
+        },
+        {
+            "Name": "Microsoft",
+            "Api": {
+                "PublicKey": "...",
+                "PrivateKey": "..."
+            }
+        }
+    ],
+    "DefaultRedirectTemplate": "auth/{provider}",
+    "DefaultCallbackTemplate": "auth/{provider}/callback"
+}
+</pre>
+    <p><code>PublicKey</code> is the client ID (or app ID) and <code>PrivateKey</code> is the client secret. Don't commit your secrets. Keep them in <a href="https://learn.microsoft.com/aspnet/core/security/app-secrets">user secrets</a> when developing and in environment variables or a secret store when deployed.</p>
+    <p>If you leave out the default templates, the routes are <code>auth/redirect/{provider}</code> and <code>auth/callback/{provider}</code>. Each provider can also have these optional settings:</p>
+    <ul>
+        <li><code>RedirectTemplate</code> and <code>CallbackTemplate</code>: override the default routes for this provider.</li>
+        <li><code>CallbackUrlHost</code>: the host (and port) to use in the callback URL, e.g. <code>"coreauth.nogginbox.co.uk"</code>. Use this if your site is behind a reverse proxy, where the host can't be detected.</li>
+        <li><code>CallbackIsHttps</code>: <code>true</code> or <code>false</code> to always use HTTPS or HTTP in the callback URL. If not set, it's the same as the request.</li>
     </ul>
 </section>
 
-<section class="setup" id="logginButton">
-    <h4>5) Add a login button to your site</h4>
-    <p>So you can use Noggin Core Auth Tag helpers add the following to <span class="code">Views/_ViewImports.cshtml</span>.</p>
-    <pre class="code">@@addTagHelper &quot;*, Noggin.NetCoreAuth&quot;</pre>
+<section class="box content" id="loginButton">
+    <h3>5) Add a login button to your site</h3>
+    <p>So you can use the Noggin Auth tag helpers, add the following to <code>Views/_ViewImports.cshtml</code>:</p>
+    <pre>@@addTagHelper *, Noggin.NetCoreAuth</pre>
     <p>Once this is included all you need to do is add:</p>
-    <pre class="code">&lt;auth-link provider=&quot;github&quot;&gt;Github&lt;/auth-link&gt;</pre>
-    <p>This will render an &lt;a&gt; tag with a link to correct place to kick off authentication. You can set <span class="code">provider</span> to be any of your configured providers.</p>
+    <pre>&lt;auth-link provider=&quot;github&quot;&gt;GitHub&lt;/auth-link&gt;</pre>
+    <p>This will render an &lt;a&gt; tag with a link to the correct place to kick off authentication. You can set <code>provider</code> to be any of your configured providers. Any other attributes, such as <code>class</code>, are added to the link.</p>
 </section>
 
-<section class="setup" id="ssl">
-    <h4>6) Optional - Install SSL on your server</h4>
-    <p>Some providers will only work if you have SSL and if your users need to login to your site then chances are that you'd be better off with an SSL cert installed on your site. If you've not already got SSL setup then read my post on <a href="http://www.nogginbox.co.uk/blog/installing-a-free-ssl-cert-on-your-iis-net-core-mvc-website">setting up a free SSL cert on IIS</a>.</p>
+<section class="box content" id="https">
+    <h3>6) Use HTTPS</h3>
+    <p>Most providers will only send users back to an HTTPS callback URL (localhost is usually allowed for development), and if your users log in to your site you should be using HTTPS anyway. If your site is behind a reverse proxy that handles HTTPS, set <code>CallbackIsHttps</code> and <code>CallbackUrlHost</code> so the callback URL is right.</p>
 </section>
+
+@section Scripts {
+    <script>
+        // Switch between the code tabs
+        document.querySelectorAll('[data-tabs] a').forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                tab.closest('ul').querySelectorAll('li').forEach(function (li) {
+                    li.classList.toggle('is-active', li === tab.parentElement);
+                });
+                document.querySelectorAll('[data-tab-panel]').forEach(function (panel) {
+                    panel.hidden = panel.dataset.tabPanel !== tab.dataset.tab;
+                });
+            });
+        });
+    </script>
+}

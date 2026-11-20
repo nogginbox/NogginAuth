@@ -1,47 +1,79 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Noggin.SampleSite</title>
+    <title>@ViewData["Title"] - Noggin Auth</title>
 
     <environment names="Development">
+        <link rel="stylesheet" href="~/lib/bulma/css/bulma.css" />
         <link rel="stylesheet" href="~/css/site.css" />
     </environment>
     <environment names="Staging,Production">
+        <link rel="stylesheet" href="~/lib/bulma/css/bulma.min.css" asp-append-version="true" />
         <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
 </head>
 <body>
-    <header>
-        <h1><a asp-controller="Home" asp-action="Index" class="navbar-brand">Noggin Auth Demo</a></h1>
-        <nav>
-            <ul class="nav-right">
-                <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
+    @{
+        // Highlight the menu item for the current page
+        var currentPage = $"{ViewContext.RouteData.Values["controller"]}/{ViewContext.RouteData.Values["action"]}";
+        string? ActiveIf(string page) => page == currentPage ? "is-active" : null;
+    }
+
+    <header class="container">
+        <div class="level p-4 mb-0">
+            <div class="level-left">
+                <a class="level-item title is-4" asp-controller="Home" asp-action="Index">Noggin Auth Demo</a>
+            </div>
+            <div class="level-right">
                 @if (User.Identity?.IsAuthenticated != true)
                 {
-                    <li>Login with:</li>
-                    <li><auth-link provider="github">GitHub</auth-link></li>
-                    <li><auth-link provider="google">Google</auth-link></li>
-                    <li><auth-link provider="facebook">Facebook</auth-link></li>
-                    <li><auth-link provider="microsoft">Microsoft</auth-link></li>
+                    <span class="level-item">Log in with:</span>
+                    <div class="level-item buttons">
+                        <auth-link provider="github" class="button is-small">GitHub</auth-link>
+                        <auth-link provider="google" class="button is-small">Google</auth-link>
+                        <auth-link provider="facebook" class="button is-small">Facebook</auth-link>
+                        <auth-link provider="microsoft" class="button is-small">Microsoft</auth-link>
+                    </div>
                 }
                 else
                 {
-                    <li><a asp-controller="UserAdmin" asp-action="Index">User admin</a></li>
-                    <li><a asp-controller="Home" asp-action="Logout">Log out</a></li>
+                    <a class="level-item button is-small" asp-controller="Home" asp-action="Logout">Log out</a>
+                }
+            </div>
+        </div>
+
+        <nav class="tabs mb-0" aria-label="Main menu">
+            <ul>
+                <li class="@ActiveIf("Home/Index")"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="@ActiveIf("Home/TechDetails")"><a asp-controller="Home" asp-action="TechDetails">Tech details</a></li>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <li class="@ActiveIf("UserAdmin/Index")"><a asp-controller="UserAdmin" asp-action="Index">User admin</a></li>
                 }
             </ul>
-
         </nav>
     </header>
-    <div class="container body-content">
-        @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; @DateTime.Now.Year - <a href="http://www.nogginbox.co.uk">Richard Garside (Nogginbox)</a></p>
-        </footer>
-    </div>
+
+    @if (TempData["LoginError"] is string loginError)
+    {
+        <div class="container px-4">
+            <div class="notification is-danger">@loginError</div>
+        </div>
+    }
+
+    @RenderSection("Hero", required: false)
+
+    <main class="section">
+        <div class="container">
+            @RenderBody()
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p class="has-text-centered">&copy; @DateTime.Now.Year - <a href="http://www.nogginbox.co.uk">Richard Garside (Nogginbox)</a></p>
+    </footer>
 
     @RenderSection("Scripts", required: false)
 </body>

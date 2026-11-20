@@ -1,99 +1,92 @@
-﻿* {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
+﻿/* Small overrides on top of Bulma (wwwroot/lib/bulma). Bundled to site.min.css. */
+
+/* Dark blue hero banner (is-link provides the white text) */
+.hero.is-link {
+    background-color: #1e3a8a;
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #eee;
+/* Bulma's coloured hero doesn't recolour links or bold text */
+.hero a,
+.hero strong {
+    color: inherit;
 }
 
-li {
-    margin: 0 0 0.5em 1em;
+.hero a {
+    text-decoration: underline;
 }
 
-p {
-    margin: 0 0 1em 0;
+/* Let the login buttons wrap on small screens */
+.level-item.buttons {
+    flex-shrink: 1;
 }
 
-header {
-    background-color: #000;
-    color: #fff;
+.content pre {
+    font-size: 0.875rem;
 }
 
-    header a {
-        color: #fff;
-        text-decoration: none;
-    }
-
-    header h1 {
-        display: inline-block;
-        vertical-align: central;
-        width: 29%;
-        padding: 10px;
-    }
-
-    header nav {
-        display: inline-block;
-        vertical-align: middle;
-        width: 70%;
-    }
-
-nav {
-    font-size: 1.5em;
+/* Login flow diagram (Views/Home/_LoginFlowDiagram.cshtml). Uses Bulma's colours so it works in dark mode. */
+.flow-diagram-wrapper {
+    overflow-x: auto;
 }
 
-nav ul {
-    list-style: none;
-    margin: 0;
-    vertical-align: middle;
-}
-
-nav li {
-    display: inline;
-    padding: 5px;
-}
-
-nav li a {
-    padding: 10px;
-}
-
-nav li a:hover {
-    background-color: #111;
-}
-
-table.data {
+.flow-diagram {
+    display: block;
     width: 100%;
-    border: 1px solid black;
-    border-collapse: collapse;
+    min-width: 720px;
+    max-width: 900px;
+    margin: 0 auto;
+    color: var(--bulma-text);
 }
 
-    table.data td, table.data td {
-        border: 1px solid black;
-        
-        padding: 4px;
-    }
-
-    section.col2 {
-        display: inline-block;
-        width: 45%;
-        margin: 1em;
-    }
-
-section.setup, section.intro {
-    margin: 10px 5em;
-    padding: 1em;
-    background-color: #fff;
+.flow-diagram text {
+    fill: currentColor;
+    font-size: 14px;
 }
 
-pre.code {
-    background-color: #000;
-    color: #fff;
-    padding: 10px;
-    margin: 10px;
+.flow-diagram .actor {
+    fill: var(--bulma-scheme-main-ter);
+    stroke: var(--bulma-text-strong);
 }
 
-.code {
-    font-family: Courier New, Courier, monospace;
+.flow-diagram .actor-name {
+    fill: var(--bulma-text-strong);
+    font-weight: bold;
+}
+
+.flow-diagram .code {
+    fill: var(--bulma-code);
+    font-family: monospace;
+}
+
+.flow-diagram .small {
+    font-size: 12px;
+}
+
+.flow-diagram .lifeline {
+    stroke: var(--bulma-border);
+    stroke-dasharray: 4 4;
+}
+
+.flow-diagram .note {
+    fill: var(--bulma-scheme-main-bis);
+    stroke: var(--bulma-border);
+}
+
+.flow-diagram .via-browser {
+    stroke: var(--bulma-text);
+    stroke-width: 1.5;
+    stroke-dasharray: 7 4;
+}
+
+.flow-diagram .direct {
+    stroke: var(--bulma-link);
+    stroke-width: 2.5;
+}
+
+.flow-diagram .arrow-head {
+    fill: var(--bulma-text);
+}
+
+.flow-diagram .arrow-head-direct {
+    fill: var(--bulma-link);
 }

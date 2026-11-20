@@ -1,36 +1,41 @@
 ﻿@model Noggin.SampleSite.ViewModels.UserAdmin.IndexViewModel
+@{
+    ViewBag.Title = "User admin";
+}
 
-<section>
+<section class="box content">
     <h1>Your account</h1>
-    <p><strong>Name: @Model.User.Name</strong>
+    <p><strong>Name: @Model.User.Name</strong></p>
     <p>Linked accounts: @Model.User.AuthAccountNames (@Model.User.NumberOfAuthAccount)</p>
     @if (Model.UnlinkedProviders.Any())
     {
-        <p>
-            Link new account:
-            <ul>
-                @foreach (var provider in Model.UnlinkedProviders)
-                {
-                    <auth-link provider="@provider">@provider</auth-link>
-                }
-            </ul>
-        </p>
+        <p>Link new account:</p>
+        <div class="buttons">
+            @foreach (var provider in Model.UnlinkedProviders)
+            {
+                <auth-link provider="@provider" class="button">@provider</auth-link>
+            }
+        </div>
     }
 </section>
 
-<section>
+<section class="box content">
     <h1>Registered users (last 25 logged in)</h1>
-    <table class="data">
-        <tr>
-            <th>Username</th>
-            <th>Linked accounts</th>
-        </tr>
-        @foreach(var user in Model.AllUsers)
-        {
+    <table class="table is-fullwidth is-striped">
+        <thead>
             <tr>
-                <td>@user.Name</td>
-                <td>@user.AuthAccountNames (@user.NumberOfAuthAccount)</td>
+                <th>Username</th>
+                <th>Linked accounts</th>
             </tr>
-        }
+        </thead>
+        <tbody>
+            @foreach (var user in Model.AllUsers)
+            {
+                <tr>
+                    <td>@user.Name</td>
+                    <td>@user.AuthAccountNames (@user.NumberOfAuthAccount)</td>
+                </tr>
+            }
+        </tbody>
     </table>
 </section>

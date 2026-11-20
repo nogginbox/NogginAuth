@@ -1,0 +1,96 @@
+@* Sequence diagram of a Noggin Auth login. Colours come from site.css (.flow-diagram) so it works in light and dark mode. *@
+<div class="flow-diagram-wrapper">
+    <svg class="flow-diagram" viewBox="0 0 900 840" role="img" aria-labelledby="flow-title flow-desc">
+        <title id="flow-title">Noggin Auth login flow</title>
+        <desc id="flow-desc">A sequence diagram between the browser, your site and the login provider. The numbered steps are described in the list below the diagram.</desc>
+
+        <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" class="arrow-head" />
+            </marker>
+            <marker id="arrow-direct" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" class="arrow-head-direct" />
+            </marker>
+        </defs>
+
+        <!-- Participants and lifelines -->
+        <line class="lifeline" x1="110" y1="62" x2="110" y2="780" />
+        <line class="lifeline" x1="450" y1="62" x2="450" y2="780" />
+        <line class="lifeline" x1="790" y1="62" x2="790" y2="780" />
+
+        <rect class="actor" x="30" y="16" width="160" height="46" rx="6" />
+        <text class="actor-name" x="110" y="45" text-anchor="middle">Browser</text>
+
+        <rect class="actor" x="350" y="16" width="200" height="46" rx="6" />
+        <text class="actor-name" x="450" y="36" text-anchor="middle">Your site</text>
+        <text x="450" y="54" text-anchor="middle">with Noggin Auth</text>
+
+        <rect class="actor" x="700" y="16" width="180" height="46" rx="6" />
+        <text class="actor-name" x="790" y="45" text-anchor="middle">Login provider</text>
+
+        <!-- 1 -->
+        <line class="via-browser" x1="110" y1="104" x2="448" y2="104" marker-end="url(#arrow)" />
+        <text x="280" y="96" text-anchor="middle">1. GET /auth/github (login link)</text>
+
+        <rect class="note" x="330" y="120" width="240" height="44" rx="4" />
+        <text class="code" x="450" y="138" text-anchor="middle">GenerateStartRequestUrl</text>
+        <text x="450" y="156" text-anchor="middle">new secret saved in session</text>
+
+        <!-- 2 -->
+        <line class="via-browser" x1="450" y1="196" x2="112" y2="196" marker-end="url(#arrow)" />
+        <text x="280" y="188" text-anchor="middle">2. Redirect to provider (state)</text>
+
+        <!-- 3 -->
+        <line class="via-browser" x1="110" y1="244" x2="788" y2="244" marker-end="url(#arrow)" />
+        <text x="470" y="236">3. Authorise URL: client_id, redirect_uri, state</text>
+
+        <rect class="note" x="700" y="260" width="180" height="44" rx="4" />
+        <text x="790" y="278" text-anchor="middle">User logs in</text>
+        <text x="790" y="296" text-anchor="middle">and approves</text>
+
+        <!-- 4 -->
+        <line class="via-browser" x1="790" y1="336" x2="112" y2="336" marker-end="url(#arrow)" />
+        <text x="470" y="328">4. Redirect to callback: code, state</text>
+
+        <!-- 5 -->
+        <line class="via-browser" x1="110" y1="384" x2="448" y2="384" marker-end="url(#arrow)" />
+        <text x="280" y="376" text-anchor="middle">5. GET /auth/github/callback</text>
+
+        <rect class="note" x="330" y="400" width="240" height="62" rx="4" />
+        <text class="code" x="450" y="418" text-anchor="middle">AuthenticateUser</text>
+        <text x="450" y="436" text-anchor="middle">state matches session?</text>
+        <text x="450" y="454" text-anchor="middle">then get the code</text>
+
+        <!-- 6 -->
+        <line class="direct" x1="450" y1="494" x2="788" y2="494" marker-end="url(#arrow-direct)" />
+        <text x="620" y="486" text-anchor="middle">6. Code + client secret</text>
+        <text class="code small" x="620" y="512" text-anchor="middle">RetrieveAccessToken</text>
+
+        <!-- 7 -->
+        <line class="direct" x1="790" y1="546" x2="452" y2="546" marker-end="url(#arrow-direct)" />
+        <text x="620" y="538" text-anchor="middle">7. Access token</text>
+
+        <!-- 8 -->
+        <line class="direct" x1="450" y1="594" x2="788" y2="594" marker-end="url(#arrow-direct)" />
+        <text x="620" y="586" text-anchor="middle">8. Get user (access token)</text>
+        <text class="code small" x="620" y="612" text-anchor="middle">RetrieveUserInformationAsync</text>
+
+        <!-- 9 -->
+        <line class="direct" x1="790" y1="646" x2="452" y2="646" marker-end="url(#arrow-direct)" />
+        <text x="620" y="638" text-anchor="middle">9. User details</text>
+
+        <rect class="note" x="330" y="662" width="240" height="44" rx="4" />
+        <text class="code" x="450" y="680" text-anchor="middle">ILoginHandler</text>
+        <text x="450" y="698" text-anchor="middle">SuccessfulLoginFrom</text>
+
+        <!-- 10 -->
+        <line class="via-browser" x1="450" y1="742" x2="112" y2="742" marker-end="url(#arrow)" />
+        <text x="280" y="734" text-anchor="middle">10. Your response</text>
+
+        <!-- Legend -->
+        <line class="via-browser" x1="40" y1="812" x2="90" y2="812" />
+        <text x="100" y="816">Redirect through the browser</text>
+        <line class="direct" x1="380" y1="812" x2="430" y2="812" />
+        <text x="440" y="816">Direct from your site to the provider</text>
+    </svg>
+</div>

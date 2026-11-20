@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
-using Noggin.NetCoreAuth.Exceptions;
+using Microsoft.Extensions.Logging;
 using Noggin.NetCoreAuth.Extensions;
 using Noggin.NetCoreAuth.Model;
 using Noggin.NetCoreAuth.Providers;
@@ -21,10 +22,14 @@ namespace Noggin.SampleSite;
 public class SampleLoginHandler : ILoginHandler
 {
     private readonly ISimpleDbContext _dbContext;
+    private readonly ILogger<SampleLoginHandler> _logger;
+    private readonly ITempDataDictionaryFactory _tempDataFactory;
 
-    public SampleLoginHandler(ISimpleDbContext dbContext)
+    public SampleLoginHandler(ISimpleDbContext dbContext, ILogger<SampleLoginHandler> logger, ITempDataDictionaryFactory tempDataFactory)
     {
         _dbContext = dbContext;
+        _logger = logger;
+        _tempDataFactory = tempDataFactory;
     }
 
 	/// <summary>
@@ -45,15 +50,15 @@ public class SampleLoginHandler : ILoginHandler
 
 	public Task<IActionResult> FailedLoginFrom(string provider, AuthenticationFailInformation failInfo, HttpContext context)
     {
-        // Todo: Set Temp data message and display message to user
-        if (failInfo != null)
-        {
-            // Just throw exception for now
-            throw new NogginNetCoreAuthException(failInfo.Reason);
-        }
-     
+        // Log the details for you, but only show the user a friendly message
+        _logger.LogWarning(failInfo.Exception, "Login with {Provider} failed: {Reason}", provider, failInfo.Reason);
+
+        // TempData keeps the message for the next request, so it can be shown after the redirect (see _Layout.cshtml)
+        var tempData = _tempDataFactory.GetTempData(context);
+        tempData["LoginError"] = $"Sorry, logging in with {provider} didn't work. Please try again.";
+
         // Nothing to await so just returning a task of our result
-        return Task.FromResult(new RedirectToActionResult("About", "Home", new { type = "failed" }) as IActionResult);
+        return Task.FromResult<IActionResult>(new RedirectToActionResult("Index", "Home", null));
     }
 
     public async Task<IActionResult> SuccessfulLoginFrom(string provider, UserInformation userInfo, HttpContext httpContext)
