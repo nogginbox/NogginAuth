@@ -44,8 +44,6 @@ See the project site for instructions and the sample site implementation on for 
   
   <ItemGroup>
     <PackageReference Include="Flurl.Http" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
   </ItemGroup>
 
   <ItemGroup>
