@@ -12,6 +12,7 @@ using Noggin.SampleSite.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -62,7 +63,7 @@ public class SampleLoginHandler : ILoginHandler
 			.FindUserWithProvider(userInfo.Id, provider);
 
 		// User is already logged in
-		if (httpContext.User.Identity.IsAuthenticated)
+		if (httpContext.User.Identity?.IsAuthenticated == true)
 		{
 			var loggedInUserProvider = httpContext.User.Claims.FindStringClaimValue("LoginProvider");
 			if(loggedInUserProvider == provider)
@@ -82,7 +83,8 @@ public class SampleLoginHandler : ILoginHandler
 
 			var loggedInUser = _dbContext.Users
 				.Include(u => u.AuthAccounts)
-				.FirstOrDefault(u => u.Id == loggedInUserId);
+				.FirstOrDefault(u => u.Id == loggedInUserId)
+				?? throw new AuthenticationException("Failed to get valid user details for logged in user");
 
 			loggedInUser.LastLoggedIn = DateTime.Now;
 

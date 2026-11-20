@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Noggin.NetCoreAuth.Providers.Google.Model;
 
@@ -6,6 +6,6 @@ public class GoogleError
 {
 	public string Error { get; init; }
 
-	[JsonProperty(PropertyName = "error_description")]
+	[JsonPropertyName("error_description")]
 	public string Description { get; init; }
 }

@@ -1,16 +1,16 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Noggin.NetCoreAuth.Providers.Facebook.Model;
 
 internal class AccessTokenResult
 {
-    [JsonProperty(PropertyName = "access_token")]
+    [JsonPropertyName("access_token")]
 	public string AccessToken { get; init; }
 
-    [JsonProperty(PropertyName = "token_type")]
+    [JsonPropertyName("token_type")]
     public string TokenType { get; init; }
 
-    [JsonProperty(PropertyName = "expires_in")]
+    [JsonPropertyName("expires_in")]
     public int ExpiresIn { get; init; }
 
     public Error Error { get; init; }

@@ -118,7 +118,7 @@ internal class FacebookProvider : Provider
         catch (FlurlHttpException ex)
         {
             var error = (await ex.GetResponseJsonAsync<ErrorResult>())?.Error;
-            throw new NogginNetCoreAuthException($"Failed to get access token from Facebook: {ex.Message} - {error?.Code}: {error?.Message}", ex);
+            throw new NogginNetCoreAuthException($"Failed to get access token from Facebook: {ex.Message} - {error?.Code}: {error?.Message} (fbtrace_id: {error?.FbtraceId})", ex);
         }
         catch (Exception ex)
 		{
@@ -151,18 +151,22 @@ internal class FacebookProvider : Provider
         catch (FlurlHttpException ex)
         {
             var error = (await ex.GetResponseJsonAsync<ErrorResult>())?.Error;
-            throw new NogginNetCoreAuthException($"Failed to get access token from Facebook: {ex.Message} - {error?.Code}: {error?.Message}", ex);
+            throw new NogginNetCoreAuthException($"Failed to get user information from Facebook: {ex.Message} - {error?.Code}: {error?.Message} (fbtrace_id: {error?.FbtraceId})", ex);
         }
         catch (Exception ex)
 		{
 			throw new NogginNetCoreAuthException($"Failed to retrieve any Me data from the Facebook Api - {ex.Message}", ex);
 		}
 
-		var id = me.Id < 0 ? 0 : me.Id;
+		var id = me.Id;
+		if (string.IsNullOrWhiteSpace(id))
+		{
+			throw new NogginNetCoreAuthException("Facebook Me data did not include a user id");
+		}
 
 		var userInformation = new UserInformation
 		{
-			Id = id.ToString(),
+			Id = id,
 			Name = me.Name,
 			Email = me.Email,
 			Picture = string.Format("https://graph.facebook.com/{0}/picture", id)

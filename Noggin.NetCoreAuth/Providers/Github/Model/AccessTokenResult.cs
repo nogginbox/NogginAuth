@@ -1,15 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Noggin.NetCoreAuth.Providers.GitHub.Model;
 
 internal class AccessTokenResult
 {
-    [JsonProperty(PropertyName = "access_token")]
+    [JsonPropertyName("access_token")]
     public string AccessToken { get; init; }
 
     public string Scope { get; init; }
 
-    [JsonProperty(PropertyName = "token_type")]
+    [JsonPropertyName("token_type")]
     public string TokenType { get; init; }
 
 
@@ -17,10 +17,10 @@ internal class AccessTokenResult
 
     public string? Error { get; init; }
 
-    [JsonProperty(PropertyName = "error_description")]
+    [JsonPropertyName("error_description")]
     public string? ErrorDescription { get; init; }
 
-    [JsonProperty(PropertyName = "error_uri")]
+    [JsonPropertyName("error_uri")]
     public string? ErrorUri { get; init; }
 
     #endregion

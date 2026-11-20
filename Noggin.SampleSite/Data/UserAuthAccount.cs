@@ -6,11 +6,11 @@ namespace Noggin.SampleSite.Data;
 public class UserAuthAccount
 {
     [StringLength(64)]
-    public string Id { get; set; }
+    public required string Id { get; set; }
 
     [StringLength(32)]
-    public string Provider { get; set; }
+    public required string Provider { get; set; }
 
     [StringLength(32)]
-    public string UserName { get; set; }
+    public required string UserName { get; set; }
 	}

@@ -5,9 +5,6 @@
     <File Path="LICENSE.md" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/Solution Items/Pipelines/">
-    <File Path="azure-pipelines.yml" />
-  </Folder>
   <Project Path="Noggin.NetCoreAuth.Tests/Noggin.NetCoreAuth.Tests.csproj" />
   <Project Path="Noggin.NetCoreAuth/Noggin.NetCoreAuth.csproj" />
   <Project Path="Noggin.SampleSite/Noggin.SampleSite.csproj" />
