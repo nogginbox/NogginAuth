@@ -20,16 +20,22 @@ internal class FakeProvider : Provider
     {
     }
 
-    public bool RetrieveUserInformationFromCallbackCalled { get; set; }
+    /// <summary>The auth code passed to RetrieveAccessToken, or null if it wasn't called</summary>
+    public string? CodeUsed { get; set; }
 
     private protected override string CreateAuthoriseUrl(HttpRequest request, string state)
     {
         return $"https://provider.example/authorize?state={state}";
     }
 
-    private protected override Task<UserInformation> RetrieveUserInformationFromCallback(HttpRequest request)
+    private protected override Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl)
     {
-        RetrieveUserInformationFromCallbackCalled = true;
+        CodeUsed = authorizationCode;
+        return Task.FromResult("access-token");
+    }
+
+    private protected override Task<UserInformation> RetrieveUserInformationAsync(string accessToken)
+    {
         return Task.FromResult(new UserInformation { Id = "user-id" });
     }
 }

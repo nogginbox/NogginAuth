@@ -15,7 +15,7 @@ namespace Noggin.NetCoreAuth.Tests.Mvc;
 
 /// <summary>
 /// The controller stores the OAuth state in session and gives it back to the provider.
-/// (The state itself is created and checked by the Provider base class, see ProviderStateTests.)
+/// (The state itself is created and checked by the Provider base class, see ProviderTests.)
 /// </summary>
 public class NogginNetCoreAuthControllerTests
 {
@@ -49,13 +49,13 @@ public class NogginNetCoreAuthControllerTests
     {
         _session.SetString(NogginNetCoreAuthController.StateSessionKey, "the-state");
         await CreateController("?code=abc&state=the-state").ProviderCallback(FakeProvider.ProviderName);
-        _provider.RetrieveUserInformationFromCallbackCalled = false;
+        _provider.CodeUsed = null;
 
         var result = await CreateController("?code=abc&state=the-state").ProviderCallback(FakeProvider.ProviderName);
 
         Assert.Null(_session.GetString(NogginNetCoreAuthController.StateSessionKey));
         Assert.IsType<UnauthorizedResult>(result);
-        Assert.False(_provider.RetrieveUserInformationFromCallbackCalled);
+        Assert.Null(_provider.CodeUsed);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class NogginNetCoreAuthControllerTests
         var result = await CreateController("?code=attackers-code&state=attackers-state").ProviderCallback(FakeProvider.ProviderName);
 
         Assert.IsType<UnauthorizedResult>(result);
-        Assert.False(_provider.RetrieveUserInformationFromCallbackCalled);
+        Assert.Null(_provider.CodeUsed);
         await _loginHandler.DidNotReceiveWithAnyArgs().SuccessfulLoginFrom(default!, default!, default!);
     }
 

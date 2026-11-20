@@ -28,16 +28,6 @@ internal class GoogleProvider : Provider
 		_apiDetails = config.Api;
     }
 
-	private protected async override Task<UserInformation> RetrieveUserInformationFromCallback(HttpRequest request)
-	{
-		var code = GetCode(request.Query);
-		var callback = CreateCallbackUrl(request);
-		var accessToken = await RetrieveAccessToken(code, callback);
-		var userInfo = await RetrieveUserInformationAsync(accessToken);
-
-		return userInfo;
-	}
-
 	private protected override string CreateAuthoriseUrl(HttpRequest request, string state)
 	{
 		var callback = CreateCallbackUrl(request);
@@ -53,33 +43,7 @@ internal class GoogleProvider : Provider
         return url.ToString();
 	}
 
-	private static string GetCode(IQueryCollection queryStringParameters)
-	{
-		if (queryStringParameters == null || !queryStringParameters.Any())
-		{
-			throw new ArgumentOutOfRangeException(nameof(queryStringParameters));
-		}
-
-		// Maybe we have an error?
-		if (queryStringParameters.ContainsKey("error"))
-		{
-			var errorMessage = string.Format("Reason: {0}. Error: {1}. Description: {2}.",
-												queryStringParameters["error_reason"].ToString() ?? "-",
-												queryStringParameters["error"],
-												queryStringParameters["error_description"]);
-
-			throw new NogginNetCoreAuthException(errorMessage);
-		}
-
-		if (!queryStringParameters.ContainsKey("code"))
-		{
-			throw new NogginNetCoreAuthException("No auth code returned by Google");
-		}
-
-		return queryStringParameters["code"].ToString();
-	}
-
-	private async Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl)
+	private protected override async Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl)
 	{
 		var url = _googleOAuthUrl
 			.AppendPathSegment("token")
@@ -116,7 +80,7 @@ internal class GoogleProvider : Provider
 		}
 	}
 
-	private static async Task<UserInformation> RetrieveUserInformationAsync(string accessToken)
+	private protected override async Task<UserInformation> RetrieveUserInformationAsync(string accessToken)
 	{
 		if (accessToken == null)
 		{

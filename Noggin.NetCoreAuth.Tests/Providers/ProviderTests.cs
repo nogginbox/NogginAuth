@@ -10,9 +10,9 @@ using Xunit;
 namespace Noggin.NetCoreAuth.Tests.Providers;
 
 /// <summary>
-/// Tests for the OAuth state handling that the Provider base class does for every provider
+/// Tests for the login flow that the Provider base class runs for every provider
 /// </summary>
-public class ProviderStateTests
+public class ProviderTests
 {
     private readonly FakeProvider _provider = new();
 
@@ -22,20 +22,42 @@ public class ProviderStateTests
     [InlineData("?code=abc&state=", "the-state")]              // Empty state returned
     [InlineData("?code=abc&state=the-state", null)]            // Login not started in this session (login CSRF)
     [InlineData("?code=abc&state=the-state", "")]
-    public async Task AuthenticateUserWithBadStateThrowsWithoutRetrievingUserInformation(string callbackQuery, string? secret)
+    public async Task AuthenticateUserWithBadStateThrowsWithoutUsingCode(string callbackQuery, string? secret)
     {
         await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => _provider.AuthenticateUser(CreateCallback(callbackQuery), secret));
 
-        Assert.False(_provider.RetrieveUserInformationFromCallbackCalled);
+        Assert.Null(_provider.CodeUsed);
     }
 
     [Fact]
-    public async Task AuthenticateUserWithMatchingStateRetrievesUserInformation()
+    public async Task AuthenticateUserWithMatchingStateUsesCodeAndReturnsUser()
     {
         var user = await _provider.AuthenticateUser(CreateCallback("?code=abc&state=the-state"), "the-state");
 
-        Assert.True(_provider.RetrieveUserInformationFromCallbackCalled);
+        Assert.Equal("abc", _provider.CodeUsed);
         Assert.Equal("user-id", user.Id);
+    }
+
+    [Fact]
+    public async Task AuthenticateUserWithNoCodeThrows()
+    {
+        var ex = await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => _provider.AuthenticateUser(CreateCallback("?state=the-state"), "the-state"));
+
+        Assert.Equal("No auth code returned by fake", ex.Message);
+        Assert.Null(_provider.CodeUsed);
+    }
+
+    [Theory]
+    [InlineData("&error=access_denied&error_description=Permissions+error", "fake: access_denied - Permissions error")]
+    [InlineData("&error=access_denied&error_reason=user_denied&error_description=Permissions+error", "fake: access_denied (user_denied) - Permissions error")]
+    public async Task AuthenticateUserWithProviderErrorThrowsWithErrorDetails(string errorQuery, string expectedMessage)
+    {
+        var callback = CreateCallback("?state=the-state" + errorQuery);
+
+        var ex = await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => _provider.AuthenticateUser(callback, "the-state"));
+
+        Assert.Equal(expectedMessage, ex.Message);
+        Assert.Null(_provider.CodeUsed);
     }
 
     private static HttpRequest CreateCallback(string queryString)

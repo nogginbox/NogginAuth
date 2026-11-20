@@ -49,15 +49,22 @@ public abstract class Provider
     public string RedirectTemplate { get; }
 
     /// <summary>
-    /// Complete a login when the provider calls back: check the OAuth state, then retrieve the user's details.
+    /// Complete a login when the provider calls back: check the OAuth state, exchange the code for an access token,
+    /// then use the token to get the user's details from the provider.
     /// </summary>
     /// <param name="state">The secret returned by <see cref="GenerateStartRequestUrl"/> for this browser, or null if there isn't one.</param>
-    /// <exception cref="NogginNetCoreAuthException">The state is missing or doesn't match, so this browser didn't start the login.</exception>
+    /// <exception cref="NogginNetCoreAuthException">
+    /// The state is missing or doesn't match (so this browser didn't start the login), the provider returned an error, or a call to the provider failed.
+    /// </exception>
     internal async Task<UserInformation> AuthenticateUser(HttpRequest request, string? state)
     {
         // Check the state before using the code, so a callback this browser didn't start is rejected (prevents login CSRF)
         ValidateState(state, request.Query["state"].ToString());
-        return await RetrieveUserInformationFromCallback(request);
+
+        var code = GetCode(request.Query);
+        var callbackUrl = CreateCallbackUrl(request);
+        var accessToken = await RetrieveAccessToken(code, callbackUrl);
+        return await RetrieveUserInformationAsync(accessToken);
     }
 
     /// <summary>
@@ -86,11 +93,38 @@ public abstract class Provider
     }
 
     /// <summary>
-    /// Get the user's details using the callback request: read the code from it, exchange the code
-    /// for an access token, then call the provider's API for the user's details.
+    /// Get the auth code from the callback's query string
     /// </summary>
+    /// <exception cref="NogginNetCoreAuthException">The provider returned an error (e.g. the user denied access) or no code.</exception>
+    private string GetCode(IQueryCollection query)
+    {
+        if (query.ContainsKey("error"))
+        {
+            var reason = query.ContainsKey("error_reason") ? $" ({query["error_reason"]})" : "";
+            throw new NogginNetCoreAuthException($"{Name}: {query["error"]}{reason} - {query["error_description"]}");
+        }
+
+        var code = query["code"].ToString();
+        if (string.IsNullOrEmpty(code))
+        {
+            throw new NogginNetCoreAuthException($"No auth code returned by {Name}");
+        }
+
+        return code;
+    }
+
+    /// <summary>
+    /// Exchange the auth code for an access token using the provider's token endpoint
+    /// </summary>
+    /// <param name="callbackUrl">The callback URL used to start the login. Some providers require it to match.</param>
     /// <remarks>Only overridable by providers in this library, and only called by <see cref="AuthenticateUser"/> after the state has been checked.</remarks>
-    private protected abstract Task<UserInformation> RetrieveUserInformationFromCallback(HttpRequest request);
+    private protected abstract Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl);
+
+    /// <summary>
+    /// Get the user's details from the provider's API using the access token
+    /// </summary>
+    /// <remarks>Only overridable by providers in this library, and only called by <see cref="AuthenticateUser"/>.</remarks>
+    private protected abstract Task<UserInformation> RetrieveUserInformationAsync(string accessToken);
 
     private static void ValidateState(string? expectedState, string? returnedState)
     {
