@@ -119,6 +119,59 @@ public class GoogleProviderTests : BaseForProviderTests
         Assert.Equal("hotdang.jpg", authenticatedUser.Picture);
     }
 
+    /// <summary>
+    /// Uses raw JSON in the shape Google's OAuth and v3 userinfo endpoints actually send,
+    /// rather than serialising our own model, so serializer/type mismatches are caught.
+    /// </summary>
+    [Fact]
+    public async Task AuthenticateUserParsesRealGoogleJson()
+    {
+        // Arrange
+        var config = CreateProviderConfig();
+        using var httpTest = new HttpTest();
+
+        httpTest.RespondWith("""
+            {
+              "access_token": "ya29.a0AfH6SMBtestaccesstoken",
+              "expires_in": 3599,
+              "scope": "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
+              "token_type": "Bearer",
+              "id_token": "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMTAxNjk0ODQ0NzQzODYyNzYzMzQifQ.sig"
+            }
+            """);
+
+        httpTest.RespondWith("""
+            {
+              "sub": "110169484474386276334",
+              "name": "Test User",
+              "given_name": "Test",
+              "family_name": "User",
+              "picture": "https://lh3.googleusercontent.com/a/test-picture",
+              "email": "test.user@example.com",
+              "email_verified": true,
+              "hd": "example.com"
+            }
+            """);
+
+        var provider = new GoogleProvider(config, "url1", "url2", NullLogger<GoogleProvider>.Instance);
+
+        var http = Substitute.For<HttpRequest>();
+        http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
+            { "state", new StringValues("TestState") },
+            { "code", new StringValues("TestCode") },
+        }));
+
+        // Act
+        var authenticatedUser = await provider.AuthenticateUser(http, "secret");
+
+        // Assert
+        Assert.Equal("110169484474386276334", authenticatedUser.Id);
+        Assert.Equal("Test User", authenticatedUser.Name);
+        Assert.Equal("test.user@example.com", authenticatedUser.Email);
+        Assert.Equal("test.user@example.com", authenticatedUser.UserName);
+        Assert.Equal("https://lh3.googleusercontent.com/a/test-picture", authenticatedUser.Picture);
+    }
+
     private static ProviderConfig CreateProviderConfig()
     {
         return new ProviderConfig

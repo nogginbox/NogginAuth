@@ -113,6 +113,63 @@ public class MicrosoftProviderTests : BaseForProviderTests
         Assert.Null(authenticatedUser.Picture);
     }
 
+    /// <summary>
+    /// Uses raw JSON in the shape Microsoft identity platform and Graph /me actually send
+    /// (including @odata.context, nulls and extra fields), rather than serialising our own model,
+    /// so serializer/type mismatches are caught.
+    /// </summary>
+    [Fact]
+    public async Task AuthenticateUserParsesRealMicrosoftJson()
+    {
+        // Arrange
+        var config = CreateProviderConfig();
+        using var httpTest = new HttpTest();
+
+        httpTest.RespondWith("""
+            {
+              "token_type": "Bearer",
+              "scope": "openid https://graph.microsoft.com/User.Read",
+              "expires_in": 3599,
+              "ext_expires_in": 3599,
+              "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.test.sig"
+            }
+            """);
+
+        httpTest.RespondWith("""
+            {
+              "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users/$entity",
+              "businessPhones": [],
+              "displayName": "Test User",
+              "givenName": "Test",
+              "jobTitle": null,
+              "mail": "test.user@example.com",
+              "mobilePhone": null,
+              "officeLocation": null,
+              "preferredLanguage": "en-GB",
+              "surname": "User",
+              "userPrincipalName": "test.user@example.com",
+              "id": "48d31887-5fad-4d73-a9f5-3c356e68a038"
+            }
+            """);
+
+        var provider = new MicrosoftProvider(config, "url1", "url2", NullLogger<MicrosoftProvider>.Instance);
+
+        var http = Substitute.For<HttpRequest>();
+        http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
+            { "code", new StringValues("TestCode") },
+        }));
+
+        // Act
+        var authenticatedUser = await provider.AuthenticateUser(http, "secret");
+
+        // Assert
+        Assert.Equal("48d31887-5fad-4d73-a9f5-3c356e68a038", authenticatedUser.Id);
+        Assert.Equal("Test User", authenticatedUser.Name);
+        Assert.Equal("test.user@example.com", authenticatedUser.Email);
+        Assert.Equal("test.user@example.com", authenticatedUser.UserName);
+        Assert.Null(authenticatedUser.Picture);
+    }
+
     private static ProviderConfig CreateProviderConfig()
     {
         return new ProviderConfig

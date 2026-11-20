@@ -114,6 +114,68 @@ public class GitHubProviderTests : BaseForProviderTests
         Assert.Equal("lookingood.jpg", authenticatedUser.Picture);
     }
 
+    /// <summary>
+    /// Uses raw JSON in the shape GitHub's API actually sends (numeric id, nulls, extra fields),
+    /// rather than serialising our own model, so serializer/type mismatches are caught.
+    /// </summary>
+    [Fact]
+    public async Task AuthenticateUserParsesRealGitHubJson()
+    {
+        // Arrange
+        var config = CreateProviderConfig();
+        using var httpTest = new HttpTest();
+
+        httpTest.RespondWith("""
+            {
+              "access_token": "gho_16C7e42F292c6912E7710c838347Ae178B4a",
+              "scope": "read:user,user:email",
+              "token_type": "bearer"
+            }
+            """);
+
+        httpTest.RespondWith("""
+            {
+              "login": "testuser",
+              "id": 1234567,
+              "node_id": "MDQ6VXNlcjEyMzQ1Njc=",
+              "avatar_url": "https://avatars.githubusercontent.com/u/1234567?v=4",
+              "gravatar_id": "",
+              "html_url": "https://github.com/testuser",
+              "type": "User",
+              "site_admin": false,
+              "name": "Test User",
+              "company": null,
+              "blog": "",
+              "location": "Leeds",
+              "email": "test.user@example.com",
+              "hireable": null,
+              "bio": null,
+              "public_repos": 42,
+              "followers": 10,
+              "following": 3,
+              "created_at": "2010-01-14T04:33:35Z",
+              "updated_at": "2026-01-01T12:00:00Z"
+            }
+            """);
+
+        var provider = new GitHubProvider(config, "url1", "url2", NullLogger<GitHubProvider>.Instance);
+
+        var http = Substitute.For<HttpRequest>();
+        http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
+            { "code", new StringValues("TestCode") },
+        }));
+
+        // Act
+        var authenticatedUser = await provider.AuthenticateUser(http, "secret");
+
+        // Assert
+        Assert.Equal("1234567", authenticatedUser.Id);
+        Assert.Equal("Test User", authenticatedUser.Name);
+        Assert.Equal("testuser", authenticatedUser.UserName);
+        Assert.Equal("test.user@example.com", authenticatedUser.Email);
+        Assert.Equal("https://avatars.githubusercontent.com/u/1234567?v=4", authenticatedUser.Picture);
+    }
+
     private static ProviderConfig CreateProviderConfig()
     {
         return new ProviderConfig

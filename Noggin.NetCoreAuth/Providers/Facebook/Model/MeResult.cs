@@ -4,7 +4,10 @@ namespace Noggin.NetCoreAuth.Providers.Facebook.Model;
 
 internal class MeResult
 {
-	public long Id { get; init; }
+	/// <summary>
+	/// App-scoped user id. Facebook sends this as a numeric string; treat as opaque text.
+	/// </summary>
+	public string? Id { get; init; }
 
     public string Name { get; init; }
 
