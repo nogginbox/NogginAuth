@@ -28,7 +28,7 @@ public class GitHubProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act
-        var url = await provider.GenerateStartRequestUrl(http, "TestState");
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
         httpTest.ShouldNotHaveMadeACall();
@@ -48,10 +48,10 @@ public class GitHubProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act 
-        var url = await provider.GenerateStartRequestUrl(http, "TestState");
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
-        Assert.Equal("TestState", new Url(url).QueryParams.FirstOrDefault("state"));
+        Assert.Equal(secret, new Url(url).QueryParams.FirstOrDefault("state"));
     }
 
     [Fact]
@@ -72,11 +72,12 @@ public class GitHubProviderTests : BaseForProviderTests
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
+            { "state", new StringValues("TestState") },
             { "code", new StringValues("TestCode") }
         }));
 
         // Act / Assert
-        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http));
+        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "TestState"));
     }
 
     [Fact]
@@ -103,11 +104,12 @@ public class GitHubProviderTests : BaseForProviderTests
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
+            { "state", new StringValues("TestState") },
             { "code", new StringValues("TestCode") },
         }));
 
         // Act
-        var authenticatedUser = await provider.AuthenticateUser(http);
+        var authenticatedUser = await provider.AuthenticateUser(http, "TestState");
 
         // Assert
         Assert.Equal("Richard Garside", authenticatedUser.Name);
@@ -163,11 +165,12 @@ public class GitHubProviderTests : BaseForProviderTests
 
         var http = Substitute.For<HttpRequest>();
         http.Query.Returns(new QueryCollection(new Dictionary<string, StringValues> {
+            { "state", new StringValues("TestState") },
             { "code", new StringValues("TestCode") },
         }));
 
         // Act
-        var authenticatedUser = await provider.AuthenticateUser(http);
+        var authenticatedUser = await provider.AuthenticateUser(http, "TestState");
 
         // Assert
         Assert.Equal("1234567", authenticatedUser.Id);

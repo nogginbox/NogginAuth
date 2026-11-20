@@ -29,7 +29,7 @@ public class FacebookProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act
-        var url = await provider.GenerateStartRequestUrl(http, "TestState");
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
         httpTest.ShouldNotHaveMadeACall();
@@ -48,10 +48,10 @@ public class FacebookProviderTests : BaseForProviderTests
         var http = Substitute.For<HttpRequest>();
 
         // Act 
-        var url = await provider.GenerateStartRequestUrl(http, "TestState");
+        var (url, secret) = await provider.GenerateStartRequestUrl(http);
 
         // Assert
-        Assert.Equal("TestState", new Url(url).QueryParams.FirstOrDefault("state"));
+        Assert.Equal(secret, new Url(url).QueryParams.FirstOrDefault("state"));
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public class FacebookProviderTests : BaseForProviderTests
         }));
 
         // Act / Assert
-        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http));
+        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "TestState"));
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public class FacebookProviderTests : BaseForProviderTests
         }));
 
         // Act
-        var authenticatedUser = await provider.AuthenticateUser(http);
+        var authenticatedUser = await provider.AuthenticateUser(http, "TestState");
 
         // Assert
         Assert.Equal("Richard Garside", authenticatedUser.Name);
@@ -157,7 +157,7 @@ public class FacebookProviderTests : BaseForProviderTests
         var http = CreateCallbackRequest();
 
         // Act
-        var authenticatedUser = await provider.AuthenticateUser(http);
+        var authenticatedUser = await provider.AuthenticateUser(http, "TestState");
 
         // Assert
         Assert.Equal("10158123456789012", authenticatedUser.Id);
@@ -180,7 +180,7 @@ public class FacebookProviderTests : BaseForProviderTests
         var http = CreateCallbackRequest();
 
         // Act / Assert
-        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http));
+        await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "TestState"));
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public class FacebookProviderTests : BaseForProviderTests
         var http = CreateCallbackRequest();
 
         // Act
-        var ex = await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http));
+        var ex = await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "TestState"));
 
         // Assert
         Assert.Contains("190: Invalid OAuth access token.", ex.Message);

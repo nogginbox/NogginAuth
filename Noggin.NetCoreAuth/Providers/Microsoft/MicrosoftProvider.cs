@@ -30,17 +30,7 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
             _apiDetails = config.Api;
         }
 
-        internal async override Task<UserInformation> AuthenticateUser(HttpRequest request)
-        {
-            var code = GetCode(request.Query);
-            var callback = CreateCallbackUrl(request);
-            var accessToken = await RetrieveAccessToken(code, callback);
-            var userInfo = await RetrieveUserInformationAsync(accessToken);
-
-            return userInfo;
-        }
-
-        internal override Task<string> GenerateStartRequestUrl(HttpRequest request, string state)
+        private protected override string CreateAuthoriseUrl(HttpRequest request, string state)
         {
             var callback = CreateCallbackUrl(request);
             var url = _msOAuthUrl
@@ -55,32 +45,10 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
                     state
                 });
 
-            return Task.FromResult(url.ToString());
-        }
-        private static string GetCode(IQueryCollection queryStringParameters)
-        {
-            if (queryStringParameters == null || !queryStringParameters.Any())
-            {
-                throw new ArgumentOutOfRangeException(nameof(queryStringParameters));
-            }
-
-            // Maybe we have an error?
-            if (queryStringParameters.ContainsKey("error"))
-            {
-                var errorMessage = $"{queryStringParameters["error"]}: {queryStringParameters["error_description"]}";
-
-                throw new NogginNetCoreAuthException(errorMessage);
-            }
-
-            if (!queryStringParameters.ContainsKey("code"))
-            {
-                throw new NogginNetCoreAuthException("No auth code returned by Microsoft");
-            }
-
-            return queryStringParameters["code"].ToString();
+            return url.ToString();
         }
 
-        private async Task<string> RetrieveAccessToken(string authorizationCode, string callback)
+        private protected override async Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl)
         {
             if (string.IsNullOrEmpty(authorizationCode))
             {
@@ -98,7 +66,7 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
                 client_secret = _apiDetails.PrivateKey,
                 code = authorizationCode,
                 grant_type = "authorization_code",
-                redirect_uri = callback,
+                redirect_uri = callbackUrl,
             };
 
             try
@@ -124,7 +92,7 @@ namespace Noggin.NetCoreAuth.Providers.Microsoft
         /// <param name="authToken">Microsoft token</param>
         /// <exception cref="NogginNetCoreAuthException"></exception>
         /// <remarks>Microsoft API ref: </remarks>
-        protected static async Task<UserInformation> RetrieveUserInformationAsync(string authToken)
+        private protected override async Task<UserInformation> RetrieveUserInformationAsync(string authToken)
         {
             UserResult? user;
 

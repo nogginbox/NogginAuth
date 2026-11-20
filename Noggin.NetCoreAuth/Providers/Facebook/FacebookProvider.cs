@@ -30,7 +30,7 @@ internal class FacebookProvider : Provider
         _apiDetails = config.Api;
     }
 
-    internal override Task<string> GenerateStartRequestUrl(HttpRequest request, string state)
+    private protected override string CreateAuthoriseUrl(HttpRequest request, string state)
     {
 		var callback = CreateCallbackUrl(request);
 
@@ -41,47 +41,10 @@ internal class FacebookProvider : Provider
 			.SetQueryParam("state", state)
 			.SetQueryParam("redirect_uri", callback);
 
-		// This implementation of method does not need to be async, so convert result to task
-		return Task.FromResult(url.ToString());
+		return url.ToString();
 	}
 
-    internal override async Task<UserInformation> AuthenticateUser(HttpRequest request)
-    {
-		var code = GetCode(request.Query);
-		var callback = CreateCallbackUrl(request);
-        var accessToken = await RetrieveAccessToken(code, callback);
-        var userInfo = await RetrieveUserInformationAsync(accessToken);
-
-        return userInfo;
-    }
-
-    private static string GetCode(IQueryCollection queryStringParameters)
-    {
-		if (queryStringParameters == null || !queryStringParameters.Any())
-		{
-			throw new ArgumentOutOfRangeException(nameof(queryStringParameters));
-		}
-
-		// Maybe we have an error?
-		if(queryStringParameters.ContainsKey("error"))
-		{
-			var errorMessage = string.Format("Reason: {0}. Error: {1}. Description: {2}.",
-												queryStringParameters["error_reason"].ToString() ?? "-",
-												queryStringParameters["error"],
-												queryStringParameters["error_description"]);
-
-			throw new NogginNetCoreAuthException(errorMessage);
-		}
-
-		if (!queryStringParameters.ContainsKey("code"))
-		{
-			throw new NogginNetCoreAuthException("No auth code returned by Facebook");
-		}
-
-		return queryStringParameters["code"].ToString();
-	}
-
-	private async Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl)
+	private protected override async Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl)
 	{
 		if (string.IsNullOrEmpty(authorizationCode))
 		{
@@ -127,7 +90,7 @@ internal class FacebookProvider : Provider
         return token.AccessToken;
     }
 
-	protected static async Task<UserInformation> RetrieveUserInformationAsync(string authToken)
+	private protected override async Task<UserInformation> RetrieveUserInformationAsync(string authToken)
 	{
 		MeResult me;
 		

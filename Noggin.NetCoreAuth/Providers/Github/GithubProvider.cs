@@ -30,7 +30,7 @@ internal class GitHubProvider : Provider
         _apiDetails = config.Api;
     }
 
-    internal override Task<string> GenerateStartRequestUrl(HttpRequest request, string state)
+    private protected override string CreateAuthoriseUrl(HttpRequest request, string state)
     {
         var callback = CreateCallbackUrl(request);
         var url = _githubOAuthUrl
@@ -42,18 +42,8 @@ internal class GitHubProvider : Provider
 
 		Logger.LogDebug("Provider {name} setting callback URL to {callback-url}", Name, callback);
 
-		// This implementation of method does not need to be async, so convert result to task
-		return Task.FromResult(url.ToString());
+		return url.ToString();
 	}
-
-    internal override async Task<UserInformation> AuthenticateUser(HttpRequest request)
-    {
-		var code = GetCode(request.Query);
-        var accessToken = await RetrieveAccessToken(code);
-        var userInfo = await RetrieveUserInformationAsync(accessToken);
-
-        return userInfo;
-    }
 
 	private static void CheckValid(AccessTokenResult tokenResult)
 	{
@@ -63,30 +53,7 @@ internal class GitHubProvider : Provider
 		}
 	}
 
-    private static string GetCode(IQueryCollection queryStringParameters)
-    {
-		if (queryStringParameters == null || !queryStringParameters.Any())
-		{
-			throw new ArgumentOutOfRangeException(nameof(queryStringParameters));
-		}
-
-		// Maybe we have an error?
-		if(queryStringParameters.ContainsKey("error"))
-		{
-        var errorMessage = $"{queryStringParameters["error"]}: {queryStringParameters["error_description"]}";
-
-			throw new NogginNetCoreAuthException(errorMessage);
-		}
-
-		if (!queryStringParameters.ContainsKey("code"))
-		{
-			throw new NogginNetCoreAuthException("No auth code returned by GitHub");
-		}
-
-		return queryStringParameters["code"].ToString();
-	}
-
-	private async Task<string> RetrieveAccessToken(string authorizationCode)
+	private protected override async Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl)
 	{
 		if (string.IsNullOrEmpty(authorizationCode))
 		{
@@ -124,7 +91,7 @@ internal class GitHubProvider : Provider
     /// <param name="authToken">Github token</param>
     /// <exception cref="NogginNetCoreAuthException"></exception>
     /// <remarks>Github API ref: https://docs.github.com/en/rest/users/users</remarks>
-    protected static async Task<UserInformation> RetrieveUserInformationAsync(string authToken)
+    private protected override async Task<UserInformation> RetrieveUserInformationAsync(string authToken)
 	{
 		UserResult? user;
 
