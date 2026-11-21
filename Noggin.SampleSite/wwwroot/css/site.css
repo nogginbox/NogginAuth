@@ -1,8 +1,39 @@
 ﻿/* Small overrides on top of Bulma (wwwroot/lib/bulma). Bundled to site.min.css. */
 
+/* Brand blue, shared by the hero banner and headings.
+   Headings use a lighter tint in dark mode so they stay readable. */
+:root {
+    --site-brand: #1e5a8a;
+    --site-heading: var(--site-brand);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --site-heading: #8bb8de;
+    }
+}
+
+:root[data-theme="dark"] {
+    --site-heading: #8bb8de;
+}
+
+/* Headings in the brand blue. The hero's own white title wins (more specific). */
+.content {
+    --bulma-content-heading-color: var(--site-heading);
+}
+
+.title {
+    --bulma-title-color: var(--site-heading);
+}
+
+/* Except in coloured notifications, where headings match the notification's text */
+.notification {
+    --bulma-content-heading-color: currentColor;
+}
+
 /* Dark blue hero banner (is-link provides the white text) */
 .hero.is-link {
-    background-color: #1e3a8a;
+    background-color: var(--site-brand);
 }
 
 /* Bulma's coloured hero doesn't recolour links or bold text */
@@ -13,6 +44,37 @@
 
 .hero a {
     text-decoration: underline;
+}
+
+/* Homepage hero: logo on the left, as tall as the banner content.
+   CSS can't size the logo from the text's height (the text height depends on the
+   width the logo leaves), so the logo gets a fixed height a little taller than the
+   text and the text is centred beside it. Stacked above the text on mobile. */
+.hero-logo {
+    display: block;
+    height: 8rem;
+    width: auto;
+    margin-bottom: 1.5rem;
+}
+
+@media screen and (min-width: 769px) {
+    .hero-with-logo {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .hero-logo {
+        flex: none;
+        height: 22rem;
+        margin-bottom: 0;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .hero-logo {
+        height: 17rem;
+    }
 }
 
 /* Let the login buttons wrap on small screens */
