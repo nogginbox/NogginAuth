@@ -20,8 +20,14 @@ namespace Noggin.NetCoreAuth.Providers.Facebook;
 /// </remarks>
 internal class FacebookProvider : Provider
 {
-	private const string _facebookUrl = "https://www.facebook.com/v2.12";
-    private const string _facebookGraphUrl = "https://graph.facebook.com/v2.12/";
+	/// <summary>
+	/// Graph API version used for the login dialog and all Graph API calls.
+	/// See https://developers.facebook.com/docs/graph-api/changelog/ for available versions.
+	/// </summary>
+	internal const string GraphApiVersion = "v27.0";
+
+	private const string _facebookUrl = $"https://www.facebook.com/{GraphApiVersion}";
+	private const string _facebookGraphUrl = $"https://graph.facebook.com/{GraphApiVersion}/";
 
     private readonly ApiConfig _apiDetails;
 
@@ -56,26 +62,22 @@ internal class FacebookProvider : Provider
 			throw new ArgumentNullException(nameof(callbackUrl));
 		}
 
-		var url = _facebookGraphUrl
+		var request = _facebookGraphUrl
 			.AppendPathSegments("oauth", "access_token")
-            .WithHeader("User-Agent", NogginAuthUserAgentName)
-            .WithHeader("Content-Type", "application/json");
-
-		var form = new
-		{
-            client_id = _apiDetails.PublicKey,
-            client_secret = _apiDetails.PrivateKey,
-            code = authorizationCode,
-			redirect_uri = callbackUrl,
-			format = "json"
-        };
+			.SetQueryParams(new
+			{
+				client_id = _apiDetails.PublicKey,
+				client_secret = _apiDetails.PrivateKey,
+				code = authorizationCode,
+				redirect_uri = callbackUrl
+			})
+			.WithHeader("User-Agent", NogginAuthUserAgentName);
 
         AccessTokenResult token;
 
         try
 		{
-			var tokenResponse = await url.PostJsonAsync(form);
-			token = await tokenResponse.GetJsonAsync<AccessTokenResult>();
+			token = await request.GetJsonAsync<AccessTokenResult>();
 		}
         catch (FlurlHttpException ex)
         {
@@ -94,21 +96,18 @@ internal class FacebookProvider : Provider
 	{
 		MeResult me;
 		
-		var url = _facebookGraphUrl
-            .AppendPathSegment("me")
+		var request = _facebookGraphUrl
+			.AppendPathSegment("me")
+			.SetQueryParams(new
+			{
+				fields = "id,name,email,first_name,last_name",
+				access_token = authToken
+			})
 			.WithHeader("User-Agent", NogginAuthUserAgentName);
-
-		var form = new
-		{
-            access_token = authToken,
-            fields = "id,name,email,first_name,last_name",
-        };
 
 		try
 		{
-			var response = await url.PostJsonAsync(form);
-			var content = await response.GetStringAsync();
-			me = await response.GetJsonAsync<MeResult>();
+			me = await request.GetJsonAsync<MeResult>();
 		}
         catch (FlurlHttpException ex)
         {
