@@ -20,8 +20,14 @@ namespace Noggin.NetCoreAuth.Providers.Facebook;
 /// </remarks>
 internal class FacebookProvider : Provider
 {
-	private const string _facebookUrl = "https://www.facebook.com/v2.12";
-    private const string _facebookGraphUrl = "https://graph.facebook.com/v2.12/";
+	/// <summary>
+	/// Graph API version used for the login dialog and all Graph API calls.
+	/// See https://developers.facebook.com/docs/graph-api/changelog/ for available versions.
+	/// </summary>
+	internal const string GraphApiVersion = "v27.0";
+
+	private const string _facebookUrl = $"https://www.facebook.com/{GraphApiVersion}";
+	private const string _facebookGraphUrl = $"https://graph.facebook.com/{GraphApiVersion}/";
 
     private readonly ApiConfig _apiDetails;
 
@@ -44,6 +50,30 @@ internal class FacebookProvider : Provider
 		return url.ToString();
 	}
 
+	/// <summary>
+	/// Create the exception for a failed Graph API call, using the status code and Facebook's error details.
+	/// </summary>
+	/// <remarks>
+	/// Flurl's exception message includes the request URL, which can contain the client secret and auth code.
+	/// So neither its message nor the exception itself is passed on, to keep secrets out of logs.
+	/// </remarks>
+	private static async Task<NogginNetCoreAuthException> CreateCallFailedException(string action, FlurlHttpException ex)
+	{
+		Error? error = null;
+		try
+		{
+			error = (await ex.GetResponseJsonAsync<ErrorResult>())?.Error;
+		}
+		catch
+		{
+			// The response wasn't Facebook's error JSON, so there are no details to add
+		}
+
+		var status = ex.StatusCode is int statusCode ? $"status code {statusCode}" : "no response";
+		var details = error == null ? "" : $" - {error.Code}: {error.Message} (fbtrace_id: {error.FbtraceId})";
+		return new NogginNetCoreAuthException($"Failed to {action} from Facebook ({status}){details}");
+	}
+
 	private protected override async Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl)
 	{
 		if (string.IsNullOrEmpty(authorizationCode))
@@ -56,31 +86,26 @@ internal class FacebookProvider : Provider
 			throw new ArgumentNullException(nameof(callbackUrl));
 		}
 
-		var url = _facebookGraphUrl
+		var request = _facebookGraphUrl
 			.AppendPathSegments("oauth", "access_token")
-            .WithHeader("User-Agent", NogginAuthUserAgentName)
-            .WithHeader("Content-Type", "application/json");
-
-		var form = new
-		{
-            client_id = _apiDetails.PublicKey,
-            client_secret = _apiDetails.PrivateKey,
-            code = authorizationCode,
-			redirect_uri = callbackUrl,
-			format = "json"
-        };
+			.SetQueryParams(new
+			{
+				client_id = _apiDetails.PublicKey,
+				client_secret = _apiDetails.PrivateKey,
+				code = authorizationCode,
+				redirect_uri = callbackUrl
+			})
+			.WithHeader("User-Agent", NogginAuthUserAgentName);
 
         AccessTokenResult token;
 
         try
 		{
-			var tokenResponse = await url.PostJsonAsync(form);
-			token = await tokenResponse.GetJsonAsync<AccessTokenResult>();
+			token = await request.GetJsonAsync<AccessTokenResult>();
 		}
         catch (FlurlHttpException ex)
         {
-            var error = (await ex.GetResponseJsonAsync<ErrorResult>())?.Error;
-            throw new NogginNetCoreAuthException($"Failed to get access token from Facebook: {ex.Message} - {error?.Code}: {error?.Message} (fbtrace_id: {error?.FbtraceId})", ex);
+            throw await CreateCallFailedException("get access token", ex);
         }
         catch (Exception ex)
 		{
@@ -94,26 +119,19 @@ internal class FacebookProvider : Provider
 	{
 		MeResult me;
 		
-		var url = _facebookGraphUrl
-            .AppendPathSegment("me")
+		var request = _facebookGraphUrl
+			.AppendPathSegment("me")
+			.SetQueryParam("fields", "id,name,email,first_name,last_name")
+			.WithOAuthBearerToken(authToken)
 			.WithHeader("User-Agent", NogginAuthUserAgentName);
-
-		var form = new
-		{
-            access_token = authToken,
-            fields = "id,name,email,first_name,last_name",
-        };
 
 		try
 		{
-			var response = await url.PostJsonAsync(form);
-			var content = await response.GetStringAsync();
-			me = await response.GetJsonAsync<MeResult>();
+			me = await request.GetJsonAsync<MeResult>();
 		}
         catch (FlurlHttpException ex)
         {
-            var error = (await ex.GetResponseJsonAsync<ErrorResult>())?.Error;
-            throw new NogginNetCoreAuthException($"Failed to get user information from Facebook: {ex.Message} - {error?.Code}: {error?.Message} (fbtrace_id: {error?.FbtraceId})", ex);
+            throw await CreateCallFailedException("get user information", ex);
         }
         catch (Exception ex)
 		{

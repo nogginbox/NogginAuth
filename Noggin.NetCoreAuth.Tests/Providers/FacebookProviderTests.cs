@@ -9,6 +9,7 @@ using Noggin.NetCoreAuth.Providers.Facebook.Model;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -52,6 +53,21 @@ public class FacebookProviderTests : BaseForProviderTests
 
         // Assert
         Assert.Equal(secret, new Url(url).QueryParams.FirstOrDefault("state"));
+    }
+
+    [Fact]
+    public async Task GenerateStartRequestUrlUsesGraphApiVersion()
+    {
+        // Arrange
+        var config = CreateProviderConfig();
+        var provider = new FacebookProvider(config, "url1", "url2", NullLogger<FacebookProvider>.Instance);
+        var http = Substitute.For<HttpRequest>();
+
+        // Act
+        var (url, _) = await provider.GenerateStartRequestUrl(http);
+
+        // Assert
+        Assert.StartsWith("https://www.facebook.com/v27.0/dialog/oauth?", url);
     }
 
     [Fact]
@@ -184,6 +200,48 @@ public class FacebookProviderTests : BaseForProviderTests
     }
 
     [Fact]
+    public async Task AuthenticateUserErrorDoesNotIncludeAccessToken()
+    {
+        // Arrange
+        var config = CreateProviderConfig();
+        using var httpTest = new HttpTest();
+
+        SetupTokenResultSuccess(httpTest, "SecretAccessToken123");
+        httpTest.RespondWith("""{ "error": { "message": "Invalid OAuth access token.", "code": 190 } }""", 400);
+
+        var provider = new FacebookProvider(config, "url1", "url2", NullLogger<FacebookProvider>.Instance);
+        var http = CreateCallbackRequest();
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "TestState"));
+
+        // Assert - ToString includes any inner exceptions, which is what gets logged
+        Assert.DoesNotContain("SecretAccessToken123", ex.ToString());
+    }
+
+    [Fact]
+    public async Task AuthenticateUserErrorDoesNotIncludeClientSecretOrCode()
+    {
+        // Arrange
+        var config = CreateProviderConfig();
+        using var httpTest = new HttpTest();
+
+        httpTest.RespondWith("""{ "error": { "message": "Error validating client secret.", "code": 1 } }""", 400);
+
+        var provider = new FacebookProvider(config, "url1", "url2", NullLogger<FacebookProvider>.Instance);
+        var http = CreateCallbackRequest();
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "TestState"));
+
+        // Assert - ToString includes any inner exceptions, which is what gets logged
+        var logged = ex.ToString();
+        Assert.Contains("1: Error validating client secret.", logged);
+        Assert.DoesNotContain("privateKey", logged);
+        Assert.DoesNotContain("TestCode", logged);
+    }
+
+    [Fact]
     public async Task AuthenticateUserErrorIncludesFacebookErrorDetails()
     {
         // Arrange
@@ -213,6 +271,57 @@ public class FacebookProviderTests : BaseForProviderTests
         // Assert
         Assert.Contains("190: Invalid OAuth access token.", ex.Message);
         Assert.Contains("fbtrace_id: AbCdEfGh123", ex.Message);
+    }
+
+    [Fact]
+    public async Task AuthenticateUserGetsAccessTokenFromGraphApi()
+    {
+        // Arrange
+        var config = CreateProviderConfig();
+        using var httpTest = new HttpTest();
+
+        SetupTokenResultSuccess(httpTest, "token");
+        httpTest.RespondWithJson(new MeResult { Id = "2268" });
+
+        var provider = new FacebookProvider(config, "url1", "url2", NullLogger<FacebookProvider>.Instance);
+        var http = CreateCallbackRequest();
+
+        // Act
+        await provider.AuthenticateUser(http, "TestState");
+
+        // Assert
+        httpTest.ShouldHaveCalled("https://graph.facebook.com/v27.0/oauth/access_token?*")
+            .WithVerb(HttpMethod.Get)
+            .WithQueryParam("client_id", "publicKey")
+            .WithQueryParam("client_secret", "privateKey")
+            .WithQueryParam("code", "TestCode")
+            .WithQueryParam("redirect_uri")
+            .Times(1);
+    }
+
+    [Fact]
+    public async Task AuthenticateUserGetsUserInfoFromGraphApi()
+    {
+        // Arrange
+        var config = CreateProviderConfig();
+        using var httpTest = new HttpTest();
+
+        SetupTokenResultSuccess(httpTest, "token");
+        httpTest.RespondWithJson(new MeResult { Id = "2268" });
+
+        var provider = new FacebookProvider(config, "url1", "url2", NullLogger<FacebookProvider>.Instance);
+        var http = CreateCallbackRequest();
+
+        // Act
+        await provider.AuthenticateUser(http, "TestState");
+
+        // Assert
+        httpTest.ShouldHaveCalled("https://graph.facebook.com/v27.0/me?*")
+            .WithVerb(HttpMethod.Get)
+            .WithHeader("Authorization", "Bearer token")
+            .WithQueryParam("fields", "id,name,email,first_name,last_name")
+            .WithoutQueryParam("access_token")
+            .Times(1);
     }
 
     private static HttpRequest CreateCallbackRequest()
