@@ -2,6 +2,8 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
+# .NET 8+ images listen on 8080 by default. Keep port 80 so existing hosting (nginx) doesn't need changing.
+ENV ASPNETCORE_HTTP_PORTS=80
 EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
