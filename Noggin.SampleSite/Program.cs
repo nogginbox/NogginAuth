@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Noggin.NetCoreAuth.Config;
@@ -8,6 +9,17 @@ using Noggin.SampleSite.Data;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Behind a reverse proxy (e.g. nginx) that terminates HTTPS, trust its X-Forwarded-* headers so the request
+// scheme is https and callback URLs sent to login providers use https.
+// The proxy's address isn't known in advance (e.g. a Docker network), so the default loopback-only lists are cleared.
+// Only do this when the app can't be reached except through the proxy.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // Point Noggin Auth at your login handler and give it the app's configuration (reads the "NogginNetAuth" section)
 builder.Services.AddNogginNetCoreAuth<SampleLoginHandler>(builder.Configuration);
@@ -35,6 +47,9 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+// Must run before anything that reads the request scheme, host or client IP
+app.UseForwardedHeaders();
 
 if (!app.Environment.IsDevelopment())
 {
