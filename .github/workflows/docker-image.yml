@@ -30,6 +30,7 @@ jobs:
           NogginNetAuth.Providers.0.Api.PrivateKey: "${{secrets.NOGGINAUTH_SECRET_FACEBOOK}}"
           NogginNetAuth.Providers.1.Api.PrivateKey: "${{secrets.NOGGINAUTH_SECRET_GITHUB}}"
           NogginNetAuth.Providers.2.Api.PrivateKey: "${{secrets.NOGGINAUTH_SECRET_GOOGLE}}"
+          NogginNetAuth.Providers.3.Api.PrivateKey: "${{secrets.NOGGINAUTH_SECRET_MICROSOFT}}"
 
       - name: Log in to the Container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9

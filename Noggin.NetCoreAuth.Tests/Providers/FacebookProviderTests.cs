@@ -200,6 +200,48 @@ public class FacebookProviderTests : BaseForProviderTests
     }
 
     [Fact]
+    public async Task AuthenticateUserErrorDoesNotIncludeAccessToken()
+    {
+        // Arrange
+        var config = CreateProviderConfig();
+        using var httpTest = new HttpTest();
+
+        SetupTokenResultSuccess(httpTest, "SecretAccessToken123");
+        httpTest.RespondWith("""{ "error": { "message": "Invalid OAuth access token.", "code": 190 } }""", 400);
+
+        var provider = new FacebookProvider(config, "url1", "url2", NullLogger<FacebookProvider>.Instance);
+        var http = CreateCallbackRequest();
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "TestState"));
+
+        // Assert - ToString includes any inner exceptions, which is what gets logged
+        Assert.DoesNotContain("SecretAccessToken123", ex.ToString());
+    }
+
+    [Fact]
+    public async Task AuthenticateUserErrorDoesNotIncludeClientSecretOrCode()
+    {
+        // Arrange
+        var config = CreateProviderConfig();
+        using var httpTest = new HttpTest();
+
+        httpTest.RespondWith("""{ "error": { "message": "Error validating client secret.", "code": 1 } }""", 400);
+
+        var provider = new FacebookProvider(config, "url1", "url2", NullLogger<FacebookProvider>.Instance);
+        var http = CreateCallbackRequest();
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NogginNetCoreAuthException>(() => provider.AuthenticateUser(http, "TestState"));
+
+        // Assert - ToString includes any inner exceptions, which is what gets logged
+        var logged = ex.ToString();
+        Assert.Contains("1: Error validating client secret.", logged);
+        Assert.DoesNotContain("privateKey", logged);
+        Assert.DoesNotContain("TestCode", logged);
+    }
+
+    [Fact]
     public async Task AuthenticateUserErrorIncludesFacebookErrorDetails()
     {
         // Arrange
@@ -276,8 +318,9 @@ public class FacebookProviderTests : BaseForProviderTests
         // Assert
         httpTest.ShouldHaveCalled("https://graph.facebook.com/v27.0/me?*")
             .WithVerb(HttpMethod.Get)
-            .WithQueryParam("access_token", "token")
+            .WithHeader("Authorization", "Bearer token")
             .WithQueryParam("fields", "id,name,email,first_name,last_name")
+            .WithoutQueryParam("access_token")
             .Times(1);
     }
 

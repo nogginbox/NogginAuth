@@ -50,6 +50,30 @@ internal class FacebookProvider : Provider
 		return url.ToString();
 	}
 
+	/// <summary>
+	/// Create the exception for a failed Graph API call, using the status code and Facebook's error details.
+	/// </summary>
+	/// <remarks>
+	/// Flurl's exception message includes the request URL, which can contain the client secret and auth code.
+	/// So neither its message nor the exception itself is passed on, to keep secrets out of logs.
+	/// </remarks>
+	private static async Task<NogginNetCoreAuthException> CreateCallFailedException(string action, FlurlHttpException ex)
+	{
+		Error? error = null;
+		try
+		{
+			error = (await ex.GetResponseJsonAsync<ErrorResult>())?.Error;
+		}
+		catch
+		{
+			// The response wasn't Facebook's error JSON, so there are no details to add
+		}
+
+		var status = ex.StatusCode is int statusCode ? $"status code {statusCode}" : "no response";
+		var details = error == null ? "" : $" - {error.Code}: {error.Message} (fbtrace_id: {error.FbtraceId})";
+		return new NogginNetCoreAuthException($"Failed to {action} from Facebook ({status}){details}");
+	}
+
 	private protected override async Task<string> RetrieveAccessToken(string authorizationCode, string callbackUrl)
 	{
 		if (string.IsNullOrEmpty(authorizationCode))
@@ -81,8 +105,7 @@ internal class FacebookProvider : Provider
 		}
         catch (FlurlHttpException ex)
         {
-            var error = (await ex.GetResponseJsonAsync<ErrorResult>())?.Error;
-            throw new NogginNetCoreAuthException($"Failed to get access token from Facebook: {ex.Message} - {error?.Code}: {error?.Message} (fbtrace_id: {error?.FbtraceId})", ex);
+            throw await CreateCallFailedException("get access token", ex);
         }
         catch (Exception ex)
 		{
@@ -98,11 +121,8 @@ internal class FacebookProvider : Provider
 		
 		var request = _facebookGraphUrl
 			.AppendPathSegment("me")
-			.SetQueryParams(new
-			{
-				fields = "id,name,email,first_name,last_name",
-				access_token = authToken
-			})
+			.SetQueryParam("fields", "id,name,email,first_name,last_name")
+			.WithOAuthBearerToken(authToken)
 			.WithHeader("User-Agent", NogginAuthUserAgentName);
 
 		try
@@ -111,8 +131,7 @@ internal class FacebookProvider : Provider
 		}
         catch (FlurlHttpException ex)
         {
-            var error = (await ex.GetResponseJsonAsync<ErrorResult>())?.Error;
-            throw new NogginNetCoreAuthException($"Failed to get user information from Facebook: {ex.Message} - {error?.Code}: {error?.Message} (fbtrace_id: {error?.FbtraceId})", ex);
+            throw await CreateCallFailedException("get user information", ex);
         }
         catch (Exception ex)
 		{
